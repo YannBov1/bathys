@@ -1,0 +1,14 @@
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\PrepareGrid.exe
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\PrepareGrid.deps.json
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\PrepareGrid.runtimeconfig.json
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\PrepareGrid.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\PrepareGrid.pdb
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.AssemblyInfoInputs.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.AssemblyInfo.cs
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.csproj.CoreCompileInputs.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\refint\PrepareGrid.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.pdb
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\PrepareGrid.genruntimeconfig.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ref\PrepareGrid.dll

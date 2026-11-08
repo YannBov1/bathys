@@ -1,0 +1,50 @@
+{
+  "source": "DivingPhysiology sibling repository",
+  "note": "Agreement is a porting check only; Python source is not independently validated.",
+  "tissueSamples": [
+    {
+      "ambientBar": 2.0,
+      "seconds": 60.0,
+      "ceilingBar": 1.0,
+      "compartment": 16,
+      "n2FastBar": 0.7889587509219766,
+      "n2SlowBar": 0.7407882424378158
+    },
+    {
+      "ambientBar": 5.0,
+      "seconds": 1800.0,
+      "ceilingBar": 1.2982758138522112,
+      "compartment": 2,
+      "n2FastBar": 3.1383080009356545,
+      "n2SlowBar": 0.7968441318028283
+    },
+    {
+      "ambientBar": 3.0,
+      "seconds": 240.0,
+      "ceilingBar": 1.3092501046672655,
+      "compartment": 2,
+      "n2FastBar": 2.9453224299078813,
+      "n2SlowBar": 0.8057209839735151
+    },
+    {
+      "ambientBar": 1.0,
+      "seconds": 180.0,
+      "ceilingBar": 1.1805832986885787,
+      "compartment": 3,
+      "n2FastBar": 2.2915920930073654,
+      "n2SlowBar": 0.8076457907827148
+    }
+  ],
+  "densityGPerL": 3.655097205646343,
+  "tankAfterAbsoluteBar": 191.88767007424974,
+  "cnsPercent": 2.415458937198068,
+  "otu": 7.055676764406837,
+  "surfaceBar500m": 0.954608340286643,
+  "freshwaterDensity18C": 998.5975831027766,
+  "plannerAt20m20min": {
+    "ndlS": 1560.0,
+    "ttsS": 133.33333333333334,
+    "ceilingM": 0.0,
+    "controllingCompartment": 3
+  }
+}

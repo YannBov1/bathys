@@ -1,0 +1,94 @@
+{
+  "id": "lac-des-iles-sion",
+  "name": "Lac des Îles · Sion",
+  "originLatitudeDeg": 46.2137269,
+  "originLongitudeDeg": 7.3307894,
+  "horizontalDatum": "CH1903+ / LV95 (EPSG:2056)",
+  "verticalDatum": "Swiss national levelling NF02 (LN02), metres elevation",
+  "bathymetryFile": "NavSurf_2015_50x50cm_MN95-NF02.csv",
+  "sampleSpacingM": 0.5,
+  "waterSurfaceReferenceM": 478.5,
+  "bathymetryProvenance": "NavSurf 2015; 439,564 measured points at nominal 0.5 m spacing. Source CSV columns interpreted as LV95 easting, LV95 northing, NF02 elevation. Waterline 478.50 m is an editable illustrative reference equal to the highest supplied sample, not a recorded gauge level",
+  "pois": [
+    {
+      "id": "entrance",
+      "name": "Dive entrance",
+      "latitudeDeg": 46.2137269,
+      "longitudeDeg": 7.3307894,
+      "depthM": 0.0,
+      "spreadM": null
+    },
+    {
+      "id": "tribute",
+      "name": "Tribute",
+      "latitudeDeg": 46.21331431,
+      "longitudeDeg": 7.33068276,
+      "depthM": 22.3,
+      "spreadM": 3.33
+    },
+    {
+      "id": "doll",
+      "name": "Doll",
+      "latitudeDeg": 46.21337294,
+      "longitudeDeg": 7.33105366,
+      "depthM": 23.5,
+      "spreadM": 1.54
+    },
+    {
+      "id": "skeleton",
+      "name": "Halloween Skeleton",
+      "latitudeDeg": 46.21323325,
+      "longitudeDeg": 7.33128919,
+      "depthM": 28.0,
+      "spreadM": 1.12
+    },
+    {
+      "id": "chill",
+      "name": "Chill Diver",
+      "latitudeDeg": 46.21316222,
+      "longitudeDeg": 7.33164693,
+      "depthM": 24.5,
+      "spreadM": 1.06
+    },
+    {
+      "id": "hanging_tree",
+      "name": "Hanging Tree",
+      "latitudeDeg": 46.21322609,
+      "longitudeDeg": 7.33227558,
+      "depthM": 24.2,
+      "spreadM": 2.26
+    },
+    {
+      "id": "small_tree",
+      "name": "Small Tree",
+      "latitudeDeg": 46.21306960,
+      "longitudeDeg": 7.33209779,
+      "depthM": 28.5,
+      "spreadM": 1.5
+    },
+    {
+      "id": "metal_grid",
+      "name": "Metal Grid",
+      "latitudeDeg": 46.21330383,
+      "longitudeDeg": 7.33213342,
+      "depthM": 26.0,
+      "spreadM": 3.3
+    },
+    {
+      "id": "pay_phone",
+      "name": "Pay Phone",
+      "latitudeDeg": 46.21343878,
+      "longitudeDeg": 7.33223367,
+      "depthM": 13.5,
+      "spreadM": 2.3
+    },
+    {
+      "id": "shopping_cart",
+      "name": "Shopping Cart",
+      "latitudeDeg": 46.21344867,
+      "longitudeDeg": 7.33238831,
+      "depthM": 13.6,
+      "spreadM": 2.9
+    }
+  ]
+}

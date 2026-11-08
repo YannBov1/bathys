@@ -1,0 +1,14 @@
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\ReferenceFrames.exe
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\ReferenceFrames.deps.json
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\ReferenceFrames.runtimeconfig.json
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\ReferenceFrames.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\bin\Debug\net9.0\ReferenceFrames.pdb
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.AssemblyInfoInputs.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.AssemblyInfo.cs
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.csproj.CoreCompileInputs.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\refint\ReferenceFrames.dll
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.pdb
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ReferenceFrames.genruntimeconfig.cache
+C:\Users\ybovi\Godot\bathys-web\Tools\obj\Debug\net9.0\ref\ReferenceFrames.dll

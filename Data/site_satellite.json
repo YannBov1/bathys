@@ -1,0 +1,16 @@
+{
+  "image": "site_satellite.jpg",
+  "projection": "EPSG:3857",
+  "zoom": 18,
+  "tileSizePx": 256,
+  "tileXMin": 136403,
+  "tileXMax": 136412,
+  "tileYMin": 93035,
+  "tileYMax": 93039,
+  "cropLeftPx": 0,
+  "cropTopPx": 0,
+  "source": "© swisstopo SWISSIMAGE, WMTS current",
+  "sourceCache": "Local SWISSIMAGE cache used by Tools/prepare_satellite.ps1",
+  "horizontalDatum": "WGS84 Web Mercator tile grid",
+  "note": "Full lake and NavSurf survey bounds plus margin. Aerial imagery shows the surface and is not depth data."
+}

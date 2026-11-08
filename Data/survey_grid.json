@@ -1,0 +1,12 @@
+{
+  "width": 1304,
+  "height": 630,
+  "minE": 2591239.25,
+  "maxN": 1118047.25,
+  "spacingM": 0.5,
+  "measuredCount": 439564,
+  "interpolatedCount": 2184,
+  "interpolatedPatchCount": 640,
+  "displaySmoothedMeasuredCount": 16474,
+  "elevationEncoding": "uint16 little endian, centimetres above 400 m NF02; 65535 means absent"
+}
