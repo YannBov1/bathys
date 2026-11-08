@@ -133,7 +133,7 @@ func run_checks() -> void:
 	var python_planner: Dictionary = reference["plannerAt20m20min"] as Dictionary
 	near(float(short_projection["ndlS"]), float(python_planner["ndlS"]), 120.0, "NDL vs Python planner (existing tolerance)")
 	near(float(short_projection["ttsS"]), float(python_planner["ttsS"]), 10.0, "TTS vs Python planner (existing tolerance)")
-	var result: Dictionary = BathysSimulation.run(source, plan)
+	var result: Dictionary = await BathysSimulation.run(source, plan)
 	check(str(result.get("error", "")) == "", "example simulation: " + str(result.get("error", "")))
 	if str(result.get("error", "")) == "":
 		var frames: Array[Dictionary] = []
@@ -168,3 +168,4 @@ func run_checks() -> void:
 			compare_frame(frames[index], case["frame"] as Dictionary, "C# scrub " + str(case["queryTimeS"]))
 	print("REFERENCE_CHECKS passed=", passed, " failed=", failed)
 	quit(0 if failed == 0 else 1)
+

@@ -13,7 +13,12 @@ config_version=5
 config/name="Bathys Web"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://Assets/Brand/bathys-512.png"
+boot_splash/image="res://Assets/Brand/bathys-256.png"
+boot_splash/show_image=true
+boot_splash/fullsize=false
+boot_splash/use_filter=true
+boot_splash/bg_color=Color(0.02745, 0.1098, 0.16078, 1)
 
 [display]
 

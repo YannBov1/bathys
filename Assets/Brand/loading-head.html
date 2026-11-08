@@ -1,0 +1,26 @@
+<meta name="theme-color" content="#071c29">
+<meta name="description" content="Bathys - explore the depths of Lac des Iles. An educational dive simulation.">
+<style>
+body { background: #071c29; }
+#status { background: radial-gradient(ellipse at center, #103344 0%, #071c29 65%); }
+#status-splash.fullsize--false, #status-splash.fullsize--true {
+  width: clamp(128px, 24vh, 192px); height: auto;
+  max-width: 42vw; max-height: 32vh; object-fit: contain;
+  transform: translateY(-40px);
+}
+#status::after {
+  content: "BATHYS"; position: absolute;
+  top: calc(50% + 72px); left: 0; right: 0;
+  color: #e6f8f4; text-align: center;
+  font: 600 28px/1.2 system-ui, sans-serif; letter-spacing: .22em;
+  text-indent: .22em;
+}
+#status-progress {
+  top: calc(50% + 130px); bottom: auto; width: 176px; height: 4px;
+  border: 0; border-radius: 8px; overflow: hidden; accent-color: #5ce1dc;
+}
+#status-progress::-webkit-progress-bar { background: #244754; }
+#status-progress::-webkit-progress-value { background: #5ce1dc; border-radius: 8px; }
+#status-progress::-moz-progress-bar { background: #5ce1dc; border-radius: 8px; }
+#status-notice { max-width: 34rem; }
+</style>

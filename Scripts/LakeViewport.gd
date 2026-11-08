@@ -21,6 +21,7 @@ var marker_root: Node3D
 var diver: MeshInstance3D
 var hud: Control
 var labels: Array[Label] = []
+var label_leaders: Array[Line2D] = []
 var markers: Array[Dictionary] = []
 var target: Vector3 = Vector3(40.0, -16.0, 40.0)
 var distance: float = 155.0
@@ -69,7 +70,7 @@ func _ready() -> void:
 	hud = Control.new()
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.clip_contents = true
-	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	add_child(hud)
 	update_camera()
 
@@ -170,9 +171,12 @@ func refresh_pois() -> void:
 		return
 	for child: Node in marker_root.get_children():
 		child.queue_free()
-	for child: Node in hud.get_children():
-		child.queue_free()
+	for caption: Label in labels:
+		caption.queue_free()
+	for leader: Line2D in label_leaders:
+		leader.queue_free()
 	labels.clear()
+	label_leaders.clear()
 	markers.clear()
 	for index: int in site.pois.size():
 		var poi: Dictionary = site.pois[index]
@@ -189,7 +193,15 @@ func refresh_pois() -> void:
 		caption.text = str(poi["name"])
 		caption.add_theme_font_size_override("font_size", 13)
 		caption.add_theme_color_override("font_color", AMBER if index == 0 else AQUA)
+		caption.add_theme_color_override("font_outline_color", Color("092531"))
+		caption.add_theme_constant_override("outline_size", 3)
 		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var leader := Line2D.new()
+		leader.width = 1.0
+		leader.default_color = Color(0.45, 0.8, 0.78, 0.45)
+		leader.antialiased = true
+		hud.add_child(leader)
+		label_leaders.append(leader)
 		hud.add_child(caption)
 		labels.append(caption)
 		markers.append({"poi": poi, "position": p})
@@ -198,15 +210,37 @@ func refresh_pois() -> void:
 func update_labels() -> void:
 	if camera == null or not camera.is_inside_tree():
 		return
+	hud.size = size
+	var occupied: Array[Rect2] = []
 	for index: int in markers.size():
 		var p: Vector3 = markers[index]["position"] as Vector3
 		var label_node: Label = labels[index]
 		if camera.is_position_behind(p):
 			label_node.visible = false
+			label_leaders[index].visible = false
 			continue
 		var screen: Vector2 = camera.unproject_position(p)
 		label_node.visible = screen.x >= 0.0 and screen.y >= 0.0 and screen.x < size.x and screen.y < size.y
-		label_node.position = screen + Vector2(8.0, -16.0)
+		var caption_size: Vector2 = label_node.get_minimum_size()
+		var anchor: Vector2 = screen + Vector2(8, -16)
+		anchor.x = clampf(anchor.x, 4, maxf(4, size.x - caption_size.x - 4))
+		for attempt: int in 14:
+			var bounds := Rect2(anchor, caption_size).grow(3)
+			var collides: bool = false
+			for prior: Rect2 in occupied:
+				if bounds.intersects(prior):
+					collides = true
+					break
+			if not collides:
+				break
+			anchor.y -= caption_size.y + 4
+		anchor.y = clampf(anchor.y, 4, maxf(4, size.y - caption_size.y - 4))
+		label_node.position = anchor
+		if label_node.visible:
+			occupied.append(Rect2(anchor, caption_size).grow(3))
+		var leader: Line2D = label_leaders[index]
+		leader.visible = label_node.visible and screen.distance_to(anchor) > 24
+		leader.points = PackedVector2Array([screen, anchor + Vector2(0, caption_size.y / 2)])
 
 func line_between(a: Vector3, b: Vector3, color: Color, radius: float, parent: Node3D) -> void:
 	var delta: Vector3 = b - a

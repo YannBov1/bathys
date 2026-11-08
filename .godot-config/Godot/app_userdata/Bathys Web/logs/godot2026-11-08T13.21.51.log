@@ -1,21 +1,20 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-PASS packaged site and grid load
-PASS measured and interpolated counts
-PASS ISA surface pressure vs Python difference=0.0
-PASS water density vs Python difference=0.0
-PASS pressure inversion difference=-0.00000016018748
-PASS Peng-Robinson density vs Python difference=0.0
-PASS NOAA CNS vs Python difference=-0.0
-PASS OTU vs Python difference=-0.0
-PASS tank mass balance vs Python difference=-0.00000000020228
-PASS fast N2 tissue difference=0.0
-PASS slow N2 tissue difference=0.0
-PASS ZH-L16C ceiling difference=0.0
-PASS controlling compartment
-PASS fast N2 tissue difference=0.0
-PASS slow N2 tissue difference=0.0
-PASS ZH-L16C ceiling difference=0.0
+PASS packaged siPASS calculation yields across rendered frames
+PASS all cooperative simulation frames exactly match synchronous results
+PASS superseded calculation cancels at next batch
+BATHYS_STARTUP_MS=132
+BATHYS_TERRAIN_TRIANGLES=878652
+BATHYS_TERRAIN_LOAD_MS=40
+BATHYS_SIM_MS=1791
+PASS map route updates before simulation completes
+PASS waypoint is drawable on the first frame before calculation
+BATHYS_SIM_MS=590
+PASS rapid successive clicks retain both waypoints and only publish latest simulation
+PASS Site controls have no nested panels
+PASS removed Site POI section has no remaining handler
+RESPONSIVENESS failures=0
+ceiling difference=0.0
 PASS controlling compartment
 PASS fast N2 tissue difference=0.0
 PASS slow N2 tissue difference=0.0
@@ -30,6 +29,10 @@ PASS POI edits/deletion and offline addition merge
 PASS POI source rename and independent UI edit
 PASS legacy waterline migration difference=0.0
 PASS empty route remains saveable
+PASS reordered hold inherits depth difference=0.0
+PASS hold follows preceding depth edit difference=0.0
+PASS NDL vs Python planner (existing tolerance) difference=-60.0
+PASS TTS vs Python planner (existing tolerance) difference=2.87313895920911
 PASS example simulation: 
 PASS one-second frames
 PASS clear surface
@@ -479,4 +482,4 @@ PASS C# scrub 1407.56820658549 tissue N2 14 difference=0.00000000000018
 PASS C# scrub 1407.56820658549 tissue He 14 difference=0.0
 PASS C# scrub 1407.56820658549 tissue N2 15 difference=-0.00000000000031
 PASS C# scrub 1407.56820658549 tissue He 15 difference=0.0
-REFERENCE_CHECKS passed=479 failed=0
+REFERENCE_CHECKS passed=483 failed=0

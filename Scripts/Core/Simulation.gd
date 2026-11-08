@@ -28,7 +28,8 @@ static func capture(frames: Array[Dictionary], tanks: Array[Dictionary], model: 
 		"endM": BathysPhysics.end_m(gas, ambient), "waterTempC": BathysPhysics.water_temp(env, depth),
 		"usedSurfaceL": used, "tissueN2Bar": model.n2.duplicate(), "tissueHeBar": model.he.duplicate()})
 
-static func run(site: BathysSite, plan: Dictionary) -> Dictionary:
+static func run(site: BathysSite, plan: Dictionary, yield_tree: SceneTree = null, cancelled: Callable = Callable()) -> Dictionary:
+	var batch_started: int = Time.get_ticks_usec()
 	var validation: String = BathysPlan.validate(plan)
 	if not validation.is_empty():
 		return {"error": validation, "frames": [], "legs": []}
@@ -56,6 +57,8 @@ static func run(site: BathysSite, plan: Dictionary) -> Dictionary:
 	capture(frames, tanks, model, env, time_s, lat, lon, depth, tank_id, gf, ndl, tts, first_stop, cns, otu, used)
 	var projection_counter: int = 0
 	for item: Variant in plan["waypoints"]:
+		if cancelled.is_valid() and bool(cancelled.call()):
+			return {"cancelled": true}
 		var waypoint: Dictionary = item as Dictionary
 		var kind: String = str(waypoint.get("kind", "travel"))
 		if kind == "switch":
@@ -79,6 +82,11 @@ static func run(site: BathysSite, plan: Dictionary) -> Dictionary:
 			gf = float(switched["currentGf"])
 			projection_counter = 0
 			capture(frames, tanks, model, env, time_s, lat, lon, depth, tank_id, gf, ndl, tts, first_stop, cns, otu, used)
+			if yield_tree != null and Time.get_ticks_usec() - batch_started >= 8000:
+				await yield_tree.process_frame
+				if cancelled.is_valid() and bool(cancelled.call()):
+					return {"cancelled": true}
+				batch_started = Time.get_ticks_usec()
 			continue
 		var target_lat: float = float(waypoint.get("latitudeDeg", lat))
 		var target_lon: float = float(waypoint.get("longitudeDeg", lon))
@@ -150,6 +158,11 @@ static func run(site: BathysSite, plan: Dictionary) -> Dictionary:
 				gf = float(projection["currentGf"])
 				projection_counter = 0
 			capture(frames, tanks, model, env, time_s, lat, lon, depth, tank_id, gf, ndl, tts, first_stop, cns, otu, used)
+			if yield_tree != null and Time.get_ticks_usec() - batch_started >= 8000:
+				await yield_tree.process_frame
+				if cancelled.is_valid() and bool(cancelled.call()):
+					return {"cancelled": true}
+				batch_started = Time.get_ticks_usec()
 	if float(frames[-1]["depthM"]) < 0.01 and float(frames[-1]["ceilingM"]) > 0.01:
 		return {"error": "The route surfaces with a ceiling. Add ascent holds.", "frames": frames, "legs": legs}
 	return {"error": "", "frames": frames, "legs": legs, "durationS": time_s}

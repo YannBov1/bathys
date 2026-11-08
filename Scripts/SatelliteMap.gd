@@ -149,30 +149,25 @@ func _draw() -> void:
 		var b: Vector2 = project(lat, lon)
 		draw_line(a, b, BG, 5.0, true)
 		draw_line(a, b, AMBER, 2.5, true)
+		var leg: PackedFloat64Array = BathysSite.leg(previous_lat, previous_lon, lat, lon)
+		if leg[0] > 3.0 and a.distance_to(b) > 85.0:
+			var mid: Vector2 = (a + b) / 2.0
+			var direction: Vector2 = (b - a).normalized()
+			draw_line(mid - direction * 6, mid + direction * 8, AMBER, 2.5, true)
+			draw_line(mid + direction * 8, mid - direction.rotated(0.65) * 5, AMBER, 2.5, true)
+			draw_line(mid + direction * 8, mid - direction.rotated(-0.65) * 5, AMBER, 2.5, true)
+			label("%03.0f° · %.0f m" % [leg[1], leg[0]], mid + Vector2(5, -9), 11)
 		draw_circle(b, 6.0, BG)
 		draw_circle(b, 4.0, AMBER)
 		previous_lat = lat
 		previous_lon = lon
-	for i: int in site.pois.size():
-		var poi: Dictionary = site.pois[i]
-		var p: Vector2 = project(float(poi.get("latitudeDeg", 0.0)), float(poi.get("longitudeDeg", 0.0)))
-		var marker_color: Color = AMBER if i == 0 else AQUA
-		draw_circle(p, 8.0, BG)
-		draw_circle(p, 5.0, marker_color)
-		var title: String = str(poi.get("name", "Point"))
-		if i > 0:
-			title += " · %.1f m" % float(poi.get("depthM", 0.0))
-		var text_size: Vector2 = ThemeDB.fallback_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
-		var pos: Vector2 = p + Vector2(10.0, -10.0)
-		if pos.x + text_size.x > size.x:
-			pos.x = p.x - text_size.x - 12.0
-		draw_rect(Rect2(pos - Vector2(3.0, 12.0), text_size + Vector2(6.0, 6.0)), Color(0.018, 0.09, 0.13, 0.82))
-		label(title, pos, 12, marker_color if i == 0 else INK)
+	draw_poi_labels()
 	if not is_nan(diver_lat):
 		var diver: Vector2 = project(diver_lat, diver_lon)
 		draw_arc(diver, 10.0, 0.0, TAU, 30, Color("ff6676"), 2.5)
 		draw_circle(diver, 3.0, Color("ff6676"))
-	label("N ↑", Vector2(size.x - 55.0, 27.0), 16, AMBER)
+	label("N", Vector2(size.x - 38.0, 38.0), 12, AMBER)
+	draw_colored_polygon(PackedVector2Array([Vector2(size.x-34,10),Vector2(size.x-40,23),Vector2(size.x-28,23)]),AMBER)
 	var metres_per_pixel: float = cos(deg_to_rad(site.origin_lat)) * 2.0 * PI * 6378137.0 / (256.0 * pow(2.0, zoom))
 	var bar_length: float = 25.0 / metres_per_pixel * map_scale()
 	var anchor: Vector2 = Vector2(16.0, size.y - 27.0)
@@ -180,6 +175,55 @@ func _draw() -> void:
 	draw_line(anchor, anchor + Vector2(bar_length, 0.0), INK, 4.0)
 	label("25 m", anchor + Vector2(bar_length / 2.0 - 13.0, -8.0), 11)
 	label("NavSurf 2015 measured/interpolated bathymetry · © swisstopo SWISSIMAGE" if show_bathymetry else "© swisstopo SWISSIMAGE", Vector2(12.0, size.y - 7.0), 10)
+
+func draw_poi_labels() -> void:
+	var points := PackedVector2Array()
+	for poi: Dictionary in site.pois:
+		points.append(project(float(poi["latitudeDeg"]), float(poi["longitudeDeg"])))
+	var occupied: Array[Rect2] = []
+	var captions: Array[Dictionary] = []
+	var angles: Array[float] = [0, PI, -PI/2, PI/2, -PI/4, -3*PI/4, PI/4, 3*PI/4]
+	var radii: Array[float] = [14,34,56,80,108,140,175]
+	for i: int in site.pois.size():
+		var poi: Dictionary = site.pois[i]
+		var marker: Vector2 = points[i]
+		var title: String = str(poi["name"]) + ("" if i==0 else " · %.1f m" % float(poi["depthM"]))
+		var width: float = ThemeDB.fallback_font.get_string_size(title,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x+9
+		var dimensions := Vector2(width,20)
+		var best := Rect2(marker+Vector2(12,-11),dimensions)
+		var best_score: float = INF
+		for radius: float in radii:
+			for angle: float in angles:
+				var direction := Vector2(cos(angle),sin(angle))
+				var anchor: Vector2 = marker+direction*radius
+				var x: float = anchor.x if direction.x>0.25 else (anchor.x-width if direction.x < -0.25 else anchor.x-width/2)
+				var candidate := Rect2(Vector2(x,anchor.y-10),dimensions)
+				var score: float = radius
+				if candidate.position.x<5 or candidate.position.y<5 or candidate.end.x>size.x-5 or candidate.end.y>size.y-24:
+					score+=100000
+				for used: Rect2 in occupied:
+					if candidate.intersects(used):
+						score+=candidate.intersection(used).get_area()*50
+				for j: int in points.size():
+					if j!=i and candidate.grow(5).has_point(points[j]):
+						score+=30000
+				if score<best_score:
+					best_score=score
+					best=candidate
+		occupied.append(best.grow(3))
+		captions.append({"rect":best,"title":title})
+	for i: int in captions.size():
+		var bounds: Rect2 = captions[i]["rect"] as Rect2
+		var marker: Vector2 = points[i]
+		var nearest := Vector2(clampf(marker.x,bounds.position.x,bounds.end.x),clampf(marker.y,bounds.position.y,bounds.end.y))
+		if marker.distance_to(nearest)>14:
+			draw_line(marker,nearest,BG,3,true)
+			draw_line(marker,nearest,AMBER if i==0 else AQUA,1.2,true)
+		draw_rect(bounds,Color(0.018,0.09,0.13,0.86))
+		label(str(captions[i]["title"]),bounds.position+Vector2(4,14),12,AMBER if i==0 else INK)
+	for i: int in points.size():
+		draw_circle(points[i],9 if i==0 else 7,BG)
+		draw_circle(points[i],6 if i==0 else 4,AMBER if i==0 else AQUA)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -223,3 +267,4 @@ func click_map(point: Vector2) -> void:
 		pick_rejected.emit("No measured or interpolated lakebed at this position.")
 	else:
 		terrain_clicked.emit(geo[0], geo[1], float(sample["depthM"]), bool(sample["isInterpolated"]))
+
