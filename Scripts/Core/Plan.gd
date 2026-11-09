@@ -1,6 +1,55 @@
 class_name BathysPlan
 extends RefCounted
 
+static func default_route_settings() -> Dictionary:
+	return {"sacLPerMin": 18.0, "speedMPerMin": 12.0}
+
+static func route_defaults_for(plan: Dictionary) -> Dictionary:
+	var defaults: Dictionary = default_route_settings()
+	var supplied: Variant = plan.get("routeDefaults", {})
+	if supplied is Dictionary:
+		for key: String in defaults:
+			if supplied.has(key):
+				defaults[key] = supplied[key]
+	return defaults
+
+static func validate_route_defaults(defaults: Dictionary) -> String:
+	for key: String in default_route_settings():
+		var value: Variant = defaults.get(key)
+		if not (value is int or value is float) or not is_finite(float(value)):
+			return "Route defaults must be finite numbers."
+	if float(defaults["sacLPerMin"]) < 1 or float(defaults["sacLPerMin"]) > 100:
+		return "Default SAC must be 1–100 L/min."
+	if float(defaults["speedMPerMin"]) < 1 or float(defaults["speedMPerMin"]) > 60:
+		return "Default swim speed must be 1–60 m/min."
+	return ""
+
+static func default_limits() -> Dictionary:
+	return {"ppO2Min": 0.16, "ppO2WorkingMax": 1.4, "ppO2Max": 1.6,
+		"densityWarning": 5.2, "densityMax": 6.2, "endMax": 30.0}
+
+static func limits_for(plan: Dictionary) -> Dictionary:
+	var limits: Dictionary = default_limits()
+	var supplied: Variant = plan.get("limits", {})
+	if supplied is Dictionary:
+		for key: String in limits:
+			if supplied.has(key):
+				limits[key] = supplied[key]
+	return limits
+
+static func validate_limits(limits: Dictionary) -> String:
+	for key: String in default_limits():
+		var value: Variant = limits.get(key)
+		if not (value is float or value is int) or not is_finite(float(value)):
+			return "Gas limits must be finite numbers."
+	if float(limits["ppO2Min"]) < 0.01 or float(limits["ppO2Max"]) > 3.0 or float(limits["ppO2Min"]) >= float(limits["ppO2WorkingMax"]) or float(limits["ppO2WorkingMax"]) > float(limits["ppO2Max"]):
+		return "ppO₂ limits must satisfy 0.01 ≤ minimum < working maximum ≤ maximum ≤ 3 bar."
+	if float(limits["densityWarning"]) <= 0 or float(limits["densityWarning"]) > float(limits["densityMax"]) or float(limits["densityMax"]) > 20:
+		return "Density warning must be positive and no greater than the maximum (up to 20 g/L)."
+	if float(limits["endMax"]) < 1 or float(limits["endMax"]) > 100:
+		return "Maximum END must be between 1 and 100 m."
+	return ""
+
 static func id() -> String:
 	return "%08x%08x" % [randi(), randi()]
 
@@ -19,6 +68,14 @@ static func gas_switch(tank_id: String, name: String = "Gas switch") -> Dictiona
 	return {"id": id(), "name": name, "poiId": null, "latitudeDeg": 0.0, "longitudeDeg": 0.0,
 		"targetDepthM": 0.0, "kind": "switch", "speedMPerMin": 12.0,
 		"sacLPerMin": 18.0, "holdSeconds": 180.0, "tankId": tank_id}
+
+static func empty(site: BathysSite) -> Dictionary:
+	var plan: Dictionary = example(site)
+	plan["name"] = "Untitled scenario"
+	plan["waypoints"] = []
+	plan["tanks"] = []
+	plan["initialTankId"] = ""
+	return plan
 
 static func example(site: BathysSite) -> Dictionary:
 	var a: Dictionary = site.pois[1]
@@ -128,6 +185,12 @@ static func anchor_holds(plan: Dictionary, site: BathysSite) -> void:
 				depth = float(waypoint.get("targetDepthM", depth))
 
 static func validate(plan: Dictionary, require_route: bool = true) -> String:
+	var defaults_error: String = validate_route_defaults(route_defaults_for(plan))
+	if not defaults_error.is_empty():
+		return defaults_error
+	var limits_error: String = validate_limits(limits_for(plan))
+	if not limits_error.is_empty():
+		return limits_error
 	var env: Dictionary = plan.get("environment", {}) as Dictionary
 	var altitude: float = float(env.get("waterlineAltitudeNf02M", 478.5))
 	if altitude < 0.0 or altitude > 3000.0:
@@ -149,8 +212,8 @@ static func validate(plan: Dictionary, require_route: bool = true) -> String:
 	if descent <= 0.0 or descent > 40.0 or ascent <= 0.0 or ascent > 30.0:
 		return "Check ascent/descent rates."
 	var tanks: Array = plan.get("tanks", []) as Array
-	if tanks.is_empty():
-		return "Add at least one tank."
+	if tanks.is_empty() and require_route:
+		return "Add a tank and choose its gas mix to simulate this route."
 	var ids: Dictionary = {}
 	for entry: Variant in tanks:
 		var tank: Dictionary = entry as Dictionary
@@ -171,7 +234,7 @@ static func validate(plan: Dictionary, require_route: bool = true) -> String:
 		var he: float = float(tank.get("he", 0.0))
 		if o2 <= 0.0 or n2 < 0.0 or he < 0.0 or absf(o2 + n2 + he - 1.0) > 0.0001:
 			return "Tank gas fractions must sum to 100%."
-	if not ids.has(str(plan.get("initialTankId", ""))):
+	if not tanks.is_empty() and not ids.has(str(plan.get("initialTankId", ""))):
 		return "Choose a valid starting gas."
 	var route: Array = plan.get("waypoints", []) as Array
 	if route.size() > 100:

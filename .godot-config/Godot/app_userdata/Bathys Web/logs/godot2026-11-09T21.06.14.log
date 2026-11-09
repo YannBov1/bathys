@@ -1,53 +1,54 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-PASS packaged siPASS calculation yields across rendered frames
-PASS all cooperative simulation frames exactly match synchronous results
-PASS superseded calculation cancels at next batch
-BATHYS_STARTUP_MS=132
+BATHYS_STARTUP_MS=94
+BATHYS_SIM_MS=1303
+UI PASS: simulation initializes in the complete interface
+UI PASS: all seventeen physiology readouts remain available
+UI PASS: five synchronized plots are available
+UI PASS: POI mutation is removed
+UI PASS: hold action updates route
+BATHYS_SIM_MS=1153
+UI PASS: undo restores route
+UI PASS: plot cursor follows scrub: depth
+UI PASS: plot receives simulated frames: depth
+UI PASS: plot cursor follows scrub: tts
+UI PASS: plot receives simulated frames: tts
+UI PASS: plot cursor follows scrub: ndl
+UI PASS: plot receives simulated frames: ndl
+UI PASS: plot cursor follows scrub: cns
+UI PASS: plot receives simulated frames: cns
+UI PASS: plot cursor follows scrub: otu
+UI PASS: plot receives simulated frames: otu
+UI PASS: TTS graph converts seconds to minutes
+UI PASS: NDL is unavailable at surface
+UI PASS: unbounded NDL follows reference chart convention
 BATHYS_TERRAIN_TRIANGLES=878652
-BATHYS_TERRAIN_LOAD_MS=40
-BATHYS_SIM_MS=1791
-PASS map route updates before simulation completes
-PASS waypoint is drawable on the first frame before calculation
-BATHYS_SIM_MS=590
-PASS rapid successive clicks retain both waypoints and only publish latest simulation
-PASS Site controls have no nested panels
-PASS removed Site POI section has no remaining handler
-RESPONSIVENESS failures=0
-ceiling difference=0.0
-PASS controlling compartment
-PASS fast N2 tissue difference=0.0
-PASS slow N2 tissue difference=0.0
-PASS ZH-L16C ceiling difference=0.0
-PASS controlling compartment
-PASS fast N2 tissue difference=0.0
-PASS slow N2 tissue difference=0.0
-PASS ZH-L16C ceiling difference=0.0
-PASS controlling compartment
-PASS example plan validation
-PASS POI edits/deletion and offline addition merge
-PASS POI source rename and independent UI edit
-PASS legacy waterline migration difference=0.0
-PASS empty route remains saveable
-PASS reordered hold inherits depth difference=0.0
-PASS hold follows preceding depth edit difference=0.0
-PASS NDL vs Python planner (existing tolerance) difference=-60.0
-PASS TTS vs Python planner (existing tolerance) difference=2.87313895920911
-PASS example simulation: 
-PASS one-second frames
-PASS clear surface
-PASS gas switch frame
-PASS gas switch zero time difference=0.0
-PASS gas switch zero depth change difference=0.0
-PASS gas switch tissue conservation difference=0.0
-PASS scrub selects switched gas
-PASS C# route duration difference=-0.00000000235445
-PASS C# frame count
-PASS C# switch index
-PASS C# before switch timeS difference=0.00000000078762
-PASS C# before switch latitudeDeg difference=0.0
-PASS C# before switch longitudeDeg difference=0.0
-PASS C# before switch depthM difference=0.0
+BATHYS_TERRAIN_LOAD_MS=21
+UI PASS: 2D switching hides the 3D scene
+UI PASS: 3D switching restores terrain
+UI PASS: dialog editor path is removed
+UI PASS: route and tank inline inputs exist
+UI PASS: inline route input updates plan
+BATHYS_SIM_MS=1081
+UI PASS: simulation preserves route input instance
+UI PASS: simulation preserves tank input instance
+UI PASS: inline pressure updates dial scale
+BATHYS_SIM_MS=1081
+UI PASS: playback preserves tank editor instance
+UI PASS: inline environment input updates plan
+UI PASS: environment readout responds to salinity
+BATHYS_SIM_MS=1099
+UI PASS: simulation preserves environment input instance
+UI PASS: tissues display two arrow symbols per compartment
+BATHYS_SIM_MS=1101
+UI PASS: undo restores inline environment edit
+UI PASS: model summary follows inline gradient factor edit
+BATHYS_SIM_MS=1099
+UI PASS: new switch chooses a different gas from current stage
+UI PASS: empty route resets playback cleanly
+UI PASS: empty route displays start hint
+UI_SMOKE failures=0
+ depthM difference=0.0
 PASS C# before switch ambientBar difference=0.0
 PASS C# before switch ceilingM difference=0.0
 PASS C# before switch leadingGf difference=0.0000000000001

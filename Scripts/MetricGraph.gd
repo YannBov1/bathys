@@ -9,6 +9,8 @@ var metric: String = "depth"
 var current_time: float = 0.0
 
 func _ready() -> void:
+	focus_mode = Control.FOCUS_ALL
+	tooltip_text = "Click or drag to seek. Focus and use Left/Right to move 10 seconds."
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	resized.connect(queue_redraw)
 
@@ -86,6 +88,11 @@ func _draw() -> void:
 	draw_string(font,Vector2(5,plot.end.y),"%.0f m" % maximum if metric=="depth" else "0",HORIZONTAL_ALIGNMENT_LEFT,-1,10,Color("8ba9ae"))
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not frames.is_empty():
+		if event.keycode in [KEY_LEFT, KEY_RIGHT]:
+			seek_requested.emit(clampf(current_time + (-10 if event.keycode == KEY_LEFT else 10), 0, float(frames[-1]["timeS"])))
+			accept_event()
+		return
 	var position: Vector2
 	if event is InputEventMouseButton:
 		var button: InputEventMouseButton = event as InputEventMouseButton

@@ -23,7 +23,7 @@ The Web preset does not package `Tools` or `Tests`. `Data/survey_grid.dat` is ex
 
 Packaged site JSON, satellite imagery, survey grid, bathymetry, and terrain tiles load from `res://`. The grid stores raw measured elevations and separately flagged interpolated small gap values; the rendered mesh uses the same display smoothing as the C# reference. The web app does not parse the full survey CSV or build the terrain and overlay pixel by pixel on launch.
 
-Plans persist in `user://plan.json`. Packaged POIs are read only. **EXPORT** downloads the current plan JSON, and **IMPORT** accepts that same format after browser storage is cleared. **SAVE** and **LOAD** use local `user://` storage.
+Plans persist in `user://plan.json`. Packaged POIs are read only. **SAVE** downloads a plan JSON file and keeps a backup in local `user://` storage. **LOAD** opens a plan file or the saved backup on this device. **EXPORT** downloads the current 2D or 3D map view as a JPG, with source attribution. The gear opens gas-limit settings; these are included in plan files and remembered as defaults for new scenarios on this device.
 
 Offline data preparation, when the source survey changes:
 
@@ -37,7 +37,7 @@ The first command links C# reference source as a **build tool only**. Its output
 
 ## UI
 
-The left column shows cylinder SPGs and gas metrics. The right tabs edit the route and environment, show environment and decompression settings, and display tissues. Ten live physiology cards remain visible above the timeline. Click a POI or surveyed bed to append a route event; use the controls to insert holds and gas switches, reorder or edit events, and undo or redo. The lower timeline seeks or plays the simulation and switches among depth, TTS, NDL, CNS, and OTU plots. The 3D view loads on demand and supports orbit, pan, zoom, and terrain picking.
+The left column shows cylinder SPGs and gas metrics. The right tabs edit the route and environment, show environment and decompression settings, and display tissues. Physiology starts with Depth; the **+** menu adds optional readouts. Value and unit share one row in compact cards. Icon-only controls in the map toolbar collapse or restore the tanks and route panels independently. Settings includes default SAC and swim speed for newly created route events. Click a POI or surveyed bed to inspect it, then choose **Add waypoint**. Always-visible **+** controls between route cards insert holds and gas switches. Route cards can be reordered or edited, with undo and redo. The lower timeline seeks or plays the simulation and switches among depth, TTS, NDL, CNS, and OTU plots. The 3D view loads on demand and supports orbit, pan, zoom, and terrain picking.
 
 See [MIGRATION.md](MIGRATION.md) for the milestone record, numerical comparison, and browser measurements.
 

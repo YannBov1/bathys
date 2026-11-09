@@ -19,11 +19,14 @@ func wait_for_simulation(app: Control) -> void:
 func run() -> void:
 	var app: Control = load("res://Main.tscn").instantiate() as Control
 	root.add_child(app)
+	app.plan = BathysPlan.example(app.site)
+	app.refresh_all()
+	app.request_simulation()
 	await process_frame
 	await process_frame
 	await wait_for_simulation(app)
 	check(app.frames.size() > 1000, "simulation initializes in the complete interface")
-	check(app.metric_values.size() == 10, "all ten live physiology readouts are visible")
+	check(app.metric_values.size() == 17, "all seventeen physiology readouts remain available")
 	check(app.graphs.size() == 5, "five synchronized plots are available")
 	check(not app.has_method("add_poi") and not app.has_method("edit_poi"), "POI mutation is removed")
 	var count: int = (app.plan["waypoints"] as Array).size()
@@ -43,6 +46,7 @@ func run() -> void:
 	var ndl: BathysMetricGraph = app.graphs[2]
 	check(ndl.value_at({"depthM": 0.0, "ndlS": 900.0}) == null, "NDL is unavailable at surface")
 	check(is_equal_approx(float(ndl.value_at({"depthM": 10.0, "ndlS": null})), 99.0), "unbounded NDL follows reference chart convention")
+	app.show_3d()
 	app.set_bathymetry(true)
 	check(app.map.visible and not app.lake.visible, "2D switching hides the 3D scene")
 	app.show_3d()
@@ -89,3 +93,4 @@ func run() -> void:
 	app.queue_free()
 	await process_frame
 	quit(0 if failures == 0 else 1)
+

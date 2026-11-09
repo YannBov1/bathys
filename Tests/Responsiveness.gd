@@ -27,16 +27,21 @@ func run_checks() -> void:
 	check(bool(cancelled.get("cancelled", false)), "superseded calculation cancels at next batch")
 	var app: Control = load("res://Main.tscn").instantiate() as Control
 	root.add_child(app)
+	app.plan = BathysPlan.example(app.site)
+	app.refresh_all()
+	app.request_simulation()
 	while app.simulation_busy:
 		await process_frame
 	app.clear_route()
 	while app.simulation_busy:
 		await process_frame
 	app.on_poi_clicked(site.pois[1])
+	app.add_inspected_waypoint()
 	check(app.map.route.size() == 1 and app.simulation_busy, "map route updates before simulation completes")
 	await process_frame
 	check(app.map.route.size() == 1 and app.frames.is_empty(), "waypoint is drawable on the first frame before calculation")
 	app.on_poi_clicked(site.pois[2])
+	app.add_inspected_waypoint()
 	while app.simulation_busy:
 		await process_frame
 	check(app.legs.size() == 2, "rapid successive clicks retain both waypoints and only publish latest simulation")

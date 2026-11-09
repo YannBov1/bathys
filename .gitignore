@@ -14,3 +14,7 @@ export_credentials.cfg
 .mono/
 data_*/
 mono_crash.*.json
+.codex-attachments/a36312de-4086-4f4b-a826-e04ee20024e9/17aa7668-66b3-49f2-9984-7664bad8a7b5/file_00000000e528820c80679575319feff4.png
+/Screenshots
+Tools/.downloads/Godot_v4.7.2-stable_win64.exe
+Tools/.downloads/Godot_v4.7.2-stable_win64_console.exe
