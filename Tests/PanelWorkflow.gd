@@ -28,7 +28,7 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	check(not app.right_panel.visible and app.view_container.size.x > left_hidden_width, "collapsing both panels gives map full width")
-	check(app.tanks_toggle.is_visible_in_tree() and app.route_toggle.is_visible_in_tree() and app.tanks_toggle.text.is_empty() and app.route_toggle.text.is_empty(), "icon-only restore controls remain accessible")
+	check(app.left_divider.is_visible_in_tree() and app.right_divider.is_visible_in_tree(), "edge resize handles remain accessible")
 	app.toggle_side_panel(true)
 	app.toggle_side_panel(false)
 	await process_frame
@@ -68,7 +68,7 @@ func run() -> void:
 	app.toggle_side_panel(true)
 	app.toggle_side_panel(false)
 	await process_frame
-	check(app.content_box.custom_minimum_size.y < expanded_height and app.tanks_toggle.is_visible_in_tree() and app.route_toggle.is_visible_in_tree(), "narrow layout releases collapsed panel space and retains toggles")
+	check(app.content_box.custom_minimum_size.y < expanded_height and app.left_divider.is_visible_in_tree() and app.right_divider.is_visible_in_tree(), "narrow layout releases collapsed panel space and retains toggles")
 	print("PANEL_WORKFLOW failures=", failures)
 	app.queue_free()
 	await process_frame

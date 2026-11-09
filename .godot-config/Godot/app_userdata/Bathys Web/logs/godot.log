@@ -1,12 +1,13 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-BATHYS_STARTUP_MS=102BBATHYS_SIM_MS=1333
+BATHYS_STARTUP_MS=87
+BATHYS_SIM_MS=1129
 UI PASS: simulation initializes in the complete interface
 UI PASS: all seventeen physiology readouts remain available
 UI PASS: five synchronized plots are available
 UI PASS: POI mutation is removed
 UI PASS: hold action updates route
-BATHYS_SIM_MS=1079
+BATHYS_SIM_MS=1131
 UI PASS: undo restores route
 UI PASS: plot cursor follows scrub: depth
 UI PASS: plot receives simulated frames: depth
@@ -28,21 +29,21 @@ UI PASS: 3D switching restores terrain
 UI PASS: dialog editor path is removed
 UI PASS: route and tank inline inputs exist
 UI PASS: inline route input updates plan
-BATHYS_SIM_MS=1106
+BATHYS_SIM_MS=1121
 UI PASS: simulation preserves route input instance
 UI PASS: simulation preserves tank input instance
 UI PASS: inline pressure updates dial scale
-BATHYS_SIM_MS=1120
+BATHYS_SIM_MS=1158
 UI PASS: playback preserves tank editor instance
 UI PASS: inline environment input updates plan
 UI PASS: environment readout responds to salinity
-BATHYS_SIM_MS=1117
+BATHYS_SIM_MS=1139
 UI PASS: simulation preserves environment input instance
 UI PASS: tissues display two arrow symbols per compartment
-BATHYS_SIM_MS=1124
+BATHYS_SIM_MS=1149
 UI PASS: undo restores inline environment edit
 UI PASS: model summary follows inline gradient factor edit
-BATHYS_SIM_MS=1090
+BATHYS_SIM_MS=1122
 UI PASS: new switch chooses a different gas from current stage
 UI PASS: empty route resets playback cleanly
 UI PASS: empty route displays start hint

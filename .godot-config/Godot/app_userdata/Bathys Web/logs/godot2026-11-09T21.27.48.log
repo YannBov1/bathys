@@ -1,0 +1,123 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=479
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] resize_side_panel (res://Scripts/Main.gd:1738)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1699)
+       [3] _gui_input (res://Scripts/PanelDivider.gd:49)
+       [4] drag_handle (res://Tests/PanelDivider.gd:27)
+       [5] run (res://Tests/PanelDivider.gd:44)
+       [6] layout (res://Tests/PanelDivider.gd:13)
+ERROR: dragging left divider resizes tanks
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://Tests/PanelDivider.gd:8)
+       [1] run (res://Tests/PanelDivider.gd:45)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] resize_side_panel (res://Scripts/Main.gd:1738)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1699)
+       [3] _gui_input (res://Scripts/PanelDivider.gd:49)
+       [4] drag_handle (res://Tests/PanelDivider.gd:27)
+       [5] run (res://Tests/PanelDivider.gd:46)
+       [6] drag_handle (res://Tests/PanelDivider.gd:35)
+       [7] layout (res://Tests/PanelDivider.gd:13)
+DIVIDER PASS: dragging tanks to left edge collapses them and retains handle
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] resize_side_panel (res://Scripts/Main.gd:1738)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1699)
+       [3] _gui_input (res://Scripts/PanelDivider.gd:49)
+       [4] drag_handle (res://Tests/PanelDivider.gd:27)
+       [5] run (res://Tests/PanelDivider.gd:48)
+       [6] drag_handle (res://Tests/PanelDivider.gd:35)
+       [7] layout (res://Tests/PanelDivider.gd:13)
+ERROR: dragging from collapsed left edge restores tanks
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://Tests/PanelDivider.gd:8)
+       [1] run (res://Tests/PanelDivider.gd:49)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] resize_side_panel (res://Scripts/Main.gd:1738)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1699)
+       [3] _gui_input (res://Scripts/PanelDivider.gd:49)
+       [4] drag_handle (res://Tests/PanelDivider.gd:27)
+       [5] run (res://Tests/PanelDivider.gd:50)
+       [6] drag_handle (res://Tests/PanelDivider.gd:35)
+       [7] layout (res://Tests/PanelDivider.gd:13)
+DIVIDER PASS: dragging route divider to right edge collapses it
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] resize_side_panel (res://Scripts/Main.gd:1738)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1699)
+       [3] _gui_input (res://Scripts/PanelDivider.gd:49)
+       [4] drag_handle (res://Tests/PanelDivider.gd:27)
+       [5] run (res://Tests/PanelDivider.gd:52)
+       [6] drag_handle (res://Tests/PanelDivider.gd:35)
+       [7] layout (res://Tests/PanelDivider.gd:13)
+ERROR: dragging from collapsed right edge restores route panel
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://Tests/PanelDivider.gd:8)
+       [1] run (res://Tests/PanelDivider.gd:53)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+DIVIDER PASS: both dividers show horizontal resize cursor
+DIVIDER PASS: release ends drag even after collapse
+ERROR: map toolbar contains only its original four controls
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://Tests/PanelDivider.gd:8)
+       [1] run (res://Tests/PanelDivider.gd:61)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] run (res://Tests/PanelDivider.gd:62)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] run (res://Tests/PanelDivider.gd:63)
+       [2] drag_handle (res://Tests/PanelDivider.gd:35)
+       [3] layout (res://Tests/PanelDivider.gd:13)
+ERROR: stacked panels use vertical resize cursors
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://Tests/PanelDivider.gd:8)
+       [1] run (res://Tests/PanelDivider.gd:65)
+       [2] layout (res://Tests/PanelDivider.gd:13)
+SCRIPT ERROR: Trying to assign an array of type "Array" to a variable of type "Array[Control]".
+   at: adapt_layout (res://Scripts/Main.gd:1327)
+   GDScript backtrace (most recent call first):
+       [0] adapt_layout (res://Scripts/Main.gd:1327)
+       [1] toggle_side_panel (res://Scripts/Main.gd:1690)
+       [2] <anonymous lambda> (res://Scripts/Main.gd:1700)
+       [3] run (res://Tests/PanelDivider.gd:66)
+       [4] layout (res://Tests/PanelDivider.gd:13)
+DIVIDER PASS: stacked layout keeps collapsed handle accessible
+DIVIDER_CHECKS failures=5

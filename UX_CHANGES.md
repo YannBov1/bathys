@@ -28,3 +28,12 @@ Validation: 483 numerical reference checks and the interface smoke suite pass. S
 - Physiology cards place value and unit on a single row. Smaller dismiss controls remove excess header height while retaining labels, units and gas guidance bands. Ordinary cards are about 61 px tall and guidance cards about 92 px, compared with the previous roughly 93 / 124 px layouts. The playback panel's minimum height was reduced to make the saved space available to the map.
 
 Validation: panel tests cover independent collapse/restore, accessible icon controls, narrow layouts, default application, preservation of existing events, plan round trips, invalid inputs and card heights. Settings and interface regression suites pass. Desktop views of expanded/collapsed panels and settings were rendered and inspected.
+
+
+## Draggable panel boundaries
+
+- Removed the tanks and route toggle buttons from the map toolbar. The toolbar once again contains only 3D, 2D Satellite, 2D Bathymetry and Home in their original order.
+- Added slim dividers at the panel boundaries. They show a double-headed resize cursor and highlight on hover or focus. Dragging resizes the adjacent panel; dragging to the left edge collapses tanks, and dragging to the right edge collapses the route panel. The edge handle stays available to drag the panel open again.
+- Double-click or Enter also toggles the adjacent panel; arrow keys allow resizing. In the stacked narrow layout, dividers become horizontal with vertical resize cursors.
+
+Validation: viewport mouse events verify resizing, collapse and restore for both panels, release after collapsing, resize cursors and the four-control toolbar. Existing panel/default tests pass. Expanded and collapsed layouts were rendered and visually inspected.

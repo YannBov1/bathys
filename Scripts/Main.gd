@@ -12,8 +12,14 @@ const PLAN_PATH := "user://plan.json"
 var settings_dialog: ConfirmationDialog
 var settings_inputs: Dictionary = {}
 var settings_route_inputs: Dictionary = {}
-var tanks_toggle: Button
-var route_toggle: Button
+var left_divider: BathysPanelDivider
+var right_divider: BathysPanelDivider
+var tank_panel_width: float = 275
+var route_panel_width: float = 370
+var tank_panel_height: float = 320
+var route_panel_height: float = 400
+var panel_drag_origin: Vector2 = Vector2.ZERO
+var panel_drag_extent: float = 0
 var settings_error: Label
 var metric_cards: Dictionary = {}
 var visible_metrics: Array[String] = ["depthM"]
@@ -225,6 +231,7 @@ func build_ui() -> void:
 	heading.add_child(icon_button("settings", "Settings", open_settings))
 	var content := BoxContainer.new()
 	content_box = content
+	content.add_theme_constant_override("separation", 0)
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(content)
 	var tanks_panel: PanelContainer = BathysUiStyle.panel()
@@ -232,23 +239,21 @@ func build_ui() -> void:
 	tanks_panel.custom_minimum_size.x = 290
 	content.add_child(tanks_panel)
 	tank_list = scroll_column(tanks_panel)
+	left_divider = create_panel_divider(true)
+	content.add_child(left_divider)
 	var center: PanelContainer = BathysUiStyle.panel()
 	center_panel = center
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(center)
 	var center_stack: VBoxContainer = BathysUiStyle.column(center, 8)
-	var view_bar := HFlowContainer.new()
+	var view_bar := HBoxContainer.new()
 	center_stack.add_child(view_bar)
-	tanks_toggle = icon_button("sidebar-left", "Hide tanks", func() -> void: toggle_side_panel(true))
-	tanks_toggle.name = "ToggleTanks"
-	tanks_toggle.toggle_mode = true
-	tanks_toggle.button_pressed = true
-	view_bar.add_child(tanks_toggle)
 	var view_title := make_label("DIVE SITE MODEL", 16)
 	view_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	view_title.visible = false
 	view_bar.add_child(view_title)
 	view_label = make_label("", 11, AQUA)
+	view_label.visible = false
 	view_bar.add_child(view_label)
 	var group := ButtonGroup.new()
 	for mode: String in ["3D", "SATELLITE", "BATHYMETRY"]:
@@ -265,11 +270,6 @@ func build_ui() -> void:
 		view_buttons[mode] = button
 		view_bar.add_child(button)
 	view_bar.add_child(icon_button("home", "Reset camera / map", home_view))
-	route_toggle = icon_button("sidebar-right", "Hide route panel", func() -> void: toggle_side_panel(false))
-	route_toggle.name = "ToggleRoute"
-	route_toggle.toggle_mode = true
-	route_toggle.button_pressed = true
-	view_bar.add_child(route_toggle)
 	var view_frame: PanelContainer = BathysUiStyle.panel(Color("09232d"), 0)
 	view_frame.clip_contents = true
 	view_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -294,6 +294,8 @@ func build_ui() -> void:
 	legend.add_child(north)
 	view_hint = make_label("", 11, BathysUiStyle.MUTED)
 	center_stack.add_child(view_hint)
+	right_divider = create_panel_divider(false)
+	content.add_child(right_divider)
 	var right: PanelContainer = BathysUiStyle.panel(BathysUiStyle.PANEL, 4)
 	right_panel = right
 	right.custom_minimum_size.x = 390
@@ -1323,12 +1325,15 @@ func adapt_layout() -> void:
 		return
 	var narrow: bool = get_viewport_rect().size.x < 1100
 	content_box.vertical = narrow
-	content_box.move_child(center_panel, 0 if narrow else 1)
-
-	left_panel.custom_minimum_size = Vector2(0 if narrow else 275, 320 if narrow else 0)
-	right_panel.custom_minimum_size = Vector2(0 if narrow else 370, 400 if narrow else 0)
+	var ordered: Array = [center_panel, left_divider, left_panel, right_divider, right_panel] if narrow else [left_panel, left_divider, center_panel, right_divider, right_panel]
+	for index: int in ordered.size():
+		content_box.move_child(ordered[index], index)
+	left_divider.horizontal = narrow
+	right_divider.horizontal = narrow
+	left_panel.custom_minimum_size = Vector2(0 if narrow else tank_panel_width, tank_panel_height if narrow else 0)
+	right_panel.custom_minimum_size = Vector2(0 if narrow else route_panel_width, route_panel_height if narrow else 0)
 	center_panel.custom_minimum_size.y = 350
-	content_box.custom_minimum_size.y = (350 + (327 if left_panel.visible else 0) + (407 if right_panel.visible else 0)) if narrow else 390
+	content_box.custom_minimum_size.y = (370 + (tank_panel_height if left_panel.visible else 0) + (route_panel_height if right_panel.visible else 0)) if narrow else 390
 	metric_grid.columns = maxi(1, mini(visible_metrics.size(), int((get_viewport_rect().size.x - 70) / 160)))
 
 func open_metrics_menu() -> void:
@@ -1683,9 +1688,54 @@ func export_map_jpg() -> void:
 func toggle_side_panel(tanks: bool) -> void:
 	var panel: PanelContainer = left_panel if tanks else right_panel
 	panel.visible = not panel.visible
-	var button: Button = tanks_toggle if tanks else route_toggle
-	button.button_pressed = panel.visible
-	button.tooltip_text = ("Hide " if panel.visible else "Show ") + ("tanks" if tanks else "route panel")
+	adapt_layout()
+
+func create_panel_divider(tanks: bool) -> BathysPanelDivider:
+	var divider := BathysPanelDivider.new()
+	divider.name = "TankDivider" if tanks else "RouteDivider"
+	divider.drag_started.connect(func(at: Vector2) -> void:
+		panel_drag_origin = at
+		var panel: PanelContainer = left_panel if tanks else right_panel
+		panel_drag_extent = panel.size.y if panel.visible else 0.0)
+	divider.dragged.connect(func(at: Vector2) -> void: resize_side_panel(tanks, at))
+	divider.toggle_requested.connect(func() -> void: toggle_side_panel(tanks))
+	divider.nudged.connect(func(distance: float) -> void:
+		var at: Vector2 = divider.get_global_rect().get_center()
+		if content_box.vertical:
+			panel_drag_origin = at
+			var panel: PanelContainer = left_panel if tanks else right_panel
+			panel_drag_extent = panel.size.y if panel.visible else 0.0
+			at.y += distance
+		else:
+			at.x += distance
+		resize_side_panel(tanks, at))
+	return divider
+
+func resize_side_panel(tanks: bool, at: Vector2) -> void:
+	var panel: PanelContainer = left_panel if tanks else right_panel
+	var extent: float
+	if content_box.vertical:
+		extent = panel_drag_extent + panel_drag_origin.y - at.y
+	else:
+		var bounds: Rect2 = content_box.get_global_rect()
+		extent = at.x - bounds.position.x if tanks else bounds.end.x - at.x
+	if extent <= 36:
+		panel.hide()
+	elif extent >= 72:
+		panel.show()
+		if content_box.vertical:
+			if tanks:
+				tank_panel_height = clampf(extent, 160, 700)
+			else:
+				route_panel_height = clampf(extent, 180, 800)
+		else:
+			var other: PanelContainer = right_panel if tanks else left_panel
+			var other_width: float = other.size.x if other.visible else 0.0
+			var maximum: float = maxf(275 if tanks else 370, content_box.size.x - other_width - 370)
+			if tanks:
+				tank_panel_width = clampf(extent, 275, maximum)
+			else:
+				route_panel_width = clampf(extent, 370, maximum)
 	adapt_layout()
 
 func load_route_preferences() -> Dictionary:
