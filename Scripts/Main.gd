@@ -9,6 +9,8 @@ const SETTINGS_PATH := "user://settings.json"
 
 const PLAN_PATH := "user://plan.json"
 
+var language_button: Button
+var route_count_label: Label
 var settings_dialog: ConfirmationDialog
 var settings_inputs: Dictionary = {}
 var settings_route_inputs: Dictionary = {}
@@ -94,14 +96,16 @@ func _ready() -> void:
 		push_error("Packaged site data could not be loaded.")
 		return
 	plan = BathysPlan.empty(site)
+	plan["name"] = tr(str(plan["name"]))
 	plan["limits"] = load_limit_preferences()
 	plan["routeDefaults"] = load_route_preferences()
 	saved_state = JSON.stringify(plan)
 	build_ui()
+	I18n.language_changed.connect(_on_language_changed)
 	map.site = site
 	map.set_waterline(float((plan["environment"] as Dictionary)["waterlineAltitudeNf02M"]))
 	refresh_all()
-	status_label.text = "%s · %d measured cells · %d interpolated cells" % [site.name, site.measured_count, site.interpolated_count]
+	status_label.text = tr("%s · %d measured cells · %d interpolated cells") % [site.name, site.measured_count, site.interpolated_count]
 	print("BATHYS_STARTUP_MS=", Time.get_ticks_msec() - started)
 	if OS.has_feature("web"):
 		print("BATHYS_PAGE_READY_MS=", JavaScriptBridge.eval("performance.now()", true))
@@ -217,7 +221,8 @@ func build_ui() -> void:
 	var plan_name := LineEdit.new()
 	plan_name.text = str(plan.get("name", "Untitled scenario"))
 	plan_name.name = "PlanName"
-	plan_name.placeholder_text = "Scenario name"
+	plan_name.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	plan_name.placeholder_text = tr("Scenario name")
 	plan_name.text_changed.connect(func(value: String) -> void: plan["name"] = value; update_saved_state())
 	identity.add_child(plan_name)
 	save_state_label = make_label("New scenario · Load opens plan files", 12, BathysUiStyle.MUTED)
@@ -229,6 +234,10 @@ func build_ui() -> void:
 		button.tooltip_text = str(action[2])
 		heading.add_child(button)
 	heading.add_child(icon_button("settings", "Settings", open_settings))
+	language_button = icon_button("flag-" + I18n.language, "Language: English", show_language_menu)
+	language_button.name = "LanguageSelector"
+	heading.add_child(language_button)
+	update_language_button()
 	var content := BoxContainer.new()
 	content_box = content
 	content.add_theme_constant_override("separation", 0)
@@ -292,7 +301,7 @@ func build_ui() -> void:
 	north.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	north.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	legend.add_child(north)
-	view_hint = make_label("", 11, BathysUiStyle.MUTED)
+	view_hint = BathysUiStyle.wrapped("", 11)
 	center_stack.add_child(view_hint)
 	right_divider = create_panel_divider(false)
 	content.add_child(right_divider)
@@ -310,7 +319,7 @@ func build_ui() -> void:
 	bottom.custom_minimum_size.y = 350
 	root.add_child(bottom)
 	var playback: VBoxContainer = BathysUiStyle.column(bottom, 6)
-	var live_heading := HBoxContainer.new()
+	var live_heading := HFlowContainer.new()
 	feedback_label = BathysUiStyle.wrapped("", 14, AMBER)
 	feedback_label.visible = false
 	playback.add_child(feedback_label)
@@ -357,6 +366,7 @@ func build_ui() -> void:
 			remove.add_theme_stylebox_override(state, BathysUiStyle.box(Color(0, 0, 0, 0), AQUA if state != "normal" else Color(0, 0, 0, 0), 3, 0))
 		metric_title.add_child(remove)
 		var value := make_label("—", 21, AQUA)
+		value.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		var reading := HBoxContainer.new()
 		reading.add_theme_constant_override("separation", 5)
 		stack.add_child(reading)
@@ -408,7 +418,7 @@ func build_ui() -> void:
 	speed_picker.select(1)
 	speed_picker.item_selected.connect(func(index: int) -> void: speed = [0.5, 1.0, 2.0, 4.0, 8.0][index])
 	controls.add_child(speed_picker)
-	var plot_buttons := HBoxContainer.new()
+	var plot_buttons := HFlowContainer.new()
 	playback.add_child(plot_buttons)
 	playback_controls.append(plot_buttons)
 	plot_buttons.add_child(make_label("PLOTS", 11, BathysUiStyle.MUTED))
@@ -532,7 +542,8 @@ func refresh_route() -> void:
 	for item: Variant in route:
 		if (item as Dictionary).get("kind") == "switch":
 			switches += 1
-	history.add_child(make_label("%d waypoints / holds · %d gas switches" % [route.size()-switches, switches], 11, BathysUiStyle.MUTED))
+	route_count_label = make_label(BathysI18n.text("%d waypoints / holds · %d gas switches") % [route.size()-switches, switches], 11, BathysUiStyle.MUTED)
+	history.add_child(route_count_label)
 	if route.is_empty():
 		route_list.add_child(BathysUiStyle.wrapped("Your route is empty. Inspect the map to choose your first destination."))
 	add_insertion_slot(0)
@@ -601,15 +612,15 @@ func update_route_summaries() -> void:
 		if kind == "switch":
 			active = tank_name(str(waypoint.get("tankId", "")))
 			var depth: float = float(legs[index]["startDepthM"]) if index < legs.size() else 0.0
-			summary = "GAS SWITCH · %s at %.1f m · 0 s · position unchanged" % [active, depth]
+			summary = BathysI18n.text("GAS SWITCH · %s at %.1f m · 0 s · position unchanged") % [active, depth]
 		elif index < legs.size():
 			var leg: Dictionary = legs[index]
-			summary = "HOLD · %.1f m · %.1f min" % [float(leg["targetDepthM"]), float(leg["durationS"])/60] if kind == "hold" else "%.0f m · %03.0f° true · %.1f to %.1f m · %.1f min" % [float(leg["distanceM"]), float(leg["bearingTrueDeg"]), float(leg["startDepthM"]), float(leg["targetDepthM"]), float(leg["durationS"])/60]
-			summary += "\n%s · SAC %.0f L/min" % [active, float(waypoint.get("sacLPerMin", 18))]
+			summary = BathysI18n.text("HOLD · %.1f m · %.1f min") % [float(leg["targetDepthM"]), float(leg["durationS"])/60] if kind == "hold" else BathysI18n.text("%.0f m · %03.0f° true · %.1f to %.1f m · %.1f min") % [float(leg["distanceM"]), float(leg["bearingTrueDeg"]), float(leg["startDepthM"]), float(leg["targetDepthM"]), float(leg["durationS"])/60]
+			summary += BathysI18n.text("\n%s · SAC %.0f L/min") % [active, float(waypoint.get("sacLPerMin", 18))]
 			if kind == "travel":
 				summary += " · %.0f m/min" % float(waypoint.get("speedMPerMin", 12))
 		else:
-			summary = "%s · target %.1f m" % [kind.to_upper(), float(waypoint.get("targetDepthM", 0))]
+			summary = BathysI18n.text("%s · target %.1f m") % [tr(kind.to_upper()), float(waypoint.get("targetDepthM", 0))]
 		route_summaries[index].text = summary
 
 func tank_name(tank_id: String) -> String:
@@ -705,7 +716,7 @@ func update_tank_readouts() -> void:
 		var metrics: Label = nodes["metrics"] as Label
 		var total: float = float(tank.get("o2",0)) + float(tank.get("n2",0)) + float(tank.get("he",0))
 		if absf(total-1)>0.0001:
-			metrics.text = "Balance O₂, N₂ and He to 100%."
+			metrics.text = BathysI18n.text("Balance O₂, N₂ and He to 100%.")
 			continue
 		if frame.is_empty():
 			metrics.text = "Plan inputs need attention."
@@ -716,7 +727,7 @@ func update_tank_readouts() -> void:
 		var working_pp: float = float(BathysPlan.limits_for(plan)["ppO2WorkingMax"])
 		var mod_pressure: float = working_pp / maxf(0.001, float(tank.get("o2", 0.21)))
 		var mod_text: String = ">150" if mod_pressure > BathysPhysics.ambient_bar(env, 150) else "%.0f" % BathysPhysics.depth_at_bar(env, mod_pressure)
-		metrics.text = "ppO₂ %.2f · ppN₂ %.2f bar\nMOD%s %s m · density %.1f g/L · END %.0f m%s" % [float(tank.get("o2",0.21))*ambient, float(tank.get("n2",0.79))*ambient, " (%.2f)" % working_pp, mod_text, BathysPhysics.gas_density(tank,ambient,temperature), BathysPhysics.end_m(tank,ambient), " · ACTIVE" if tank["id"]==frame.get("tankId") else ""]
+		metrics.text = BathysI18n.text("ppO₂ %.2f · ppN₂ %.2f bar\nMOD%s %s m · density %.1f g/L · END %.0f m%s") % [float(tank.get("o2",0.21))*ambient, float(tank.get("n2",0.79))*ambient, " (%.2f)" % working_pp, mod_text, BathysPhysics.gas_density(tank,ambient,temperature), BathysPhysics.end_m(tank,ambient), tr(" · ACTIVE") if tank["id"]==frame.get("tankId") else ""]
 	# Keep gas names current without replacing a focused selector.
 	for selector: Node in find_children("*", "OptionButton", true, false):
 		var choice: OptionButton = selector as OptionButton
@@ -746,8 +757,8 @@ func update_site_readout() -> void:
 		return
 	var env: Dictionary = plan["environment"] as Dictionary
 	if is_instance_valid(model_readout):
-		model_readout.text = "ZH-L16C · GF %.0f / %.0f\nAscent %.1f m/min · descent %.1f m/min" % [float(plan["gfLow"])*100,float(plan["gfHigh"])*100,float(plan["ascentMPerMin"]),float(plan["descentMPerMin"])]
-	site_readout.text = "Surface pressure  %.5f bar absolute\nDensity at 0 / 20 m  %.1f / %.1f kg/m³\nMetres per bar at 0 / 20 m  %.2f / %.2f" % [BathysPhysics.surface_bar(env), BathysPhysics.water_density(env,0), BathysPhysics.water_density(env,20), 100000/(BathysPhysics.water_density(env,0)*BathysPhysics.G), 100000/(BathysPhysics.water_density(env,20)*BathysPhysics.G)]
+		model_readout.text = BathysI18n.text("ZH-L16C · GF %.0f / %.0f\nAscent %.1f m/min · descent %.1f m/min") % [float(plan["gfLow"])*100,float(plan["gfHigh"])*100,float(plan["ascentMPerMin"]),float(plan["descentMPerMin"])]
+	site_readout.text = BathysI18n.text("Surface pressure  %.5f bar absolute\nDensity at 0 / 20 m  %.1f / %.1f kg/m³\nMetres per bar at 0 / 20 m  %.2f / %.2f") % [BathysPhysics.surface_bar(env), BathysPhysics.water_density(env,0), BathysPhysics.water_density(env,20), 100000/(BathysPhysics.water_density(env,0)*BathysPhysics.G), 100000/(BathysPhysics.water_density(env,20)*BathysPhysics.G)]
 
 func remove_tank(index: int) -> void:
 	var tanks: Array = plan["tanks"] as Array
@@ -949,11 +960,11 @@ func recompute(cooperative: bool = false, revision: int = -1) -> void:
 		play_button.text = "PLAY"
 		play_button.icon = load("res://Assets/Icons/play.svg")
 		status_label.text = "Simulation needs attention"
-		feedback_label.text = str(result["error"]) + " Edit the route or tank settings, then the simulation will update."
+		feedback_label.text = tr(str(result["error"])) + tr(" Edit the route or tank settings, then the simulation will update.")
 		feedback_label.visible = true
 		selected_event = int(result.get("eventIndex", -1))
 		if selected_event >= 0:
-			feedback_label.text = "Event %d · " % (selected_event + 1) + feedback_label.text
+			feedback_label.text = BathysI18n.text("Event %d · ") % (selected_event + 1) + feedback_label.text
 			var route: Array = plan["waypoints"]
 			expanded_routes[str(route[selected_event]["id"])] = true
 		refresh_route()
@@ -1053,7 +1064,7 @@ func on_terrain_clicked(lat: float, lon: float, depth: float, interpolated: bool
 
 func add_hold() -> void:
 	snapshot()
-	var event: Dictionary = BathysPlan.hold()
+	var event: Dictionary = BathysPlan.hold(tr("Hold"))
 	apply_route_defaults(event)
 	(plan["waypoints"] as Array).append(event)
 	changed()
@@ -1069,7 +1080,7 @@ func add_switch() -> void:
 		var tank: Dictionary = entry as Dictionary
 		if str(tank["id"]) != active:
 			snapshot()
-			(plan["waypoints"] as Array).append(BathysPlan.gas_switch(str(tank["id"]), "Switch to " + str(tank["name"])))
+			(plan["waypoints"] as Array).append(BathysPlan.gas_switch(str(tank["id"]), tr("Switch to ") + str(tank["name"])))
 			changed()
 			return
 	status_label.text = "Add a second tank before placing a gas switch."
@@ -1101,11 +1112,12 @@ func inline_number(grid: GridContainer, key: String, caption: String, target: Di
 	var input := SpinBox.new()
 	input.name = key
 	var help: Dictionary = {"sacLPerMin": "Surface air consumption: gas used per minute at surface pressure.", "gfLow": "Gradient factor used for deeper decompression stops. Low must not exceed High.", "gfHigh": "Gradient factor approaching the surface. High must be at least Low.", "waterlineAltitudeNf02M": "Illustrative lake elevation in the NF02 datum; affects depth and atmospheric pressure.", "reserveGaugeBar": "Simulation stops if this tank would fall below its reserve.", "targetDepthM": "Depth below the selected waterline, independent of lakebed depth."}
-	input.tooltip_text = str(help.get(key, caption.capitalize() + " (" + suffix + ")"))
+	input.tooltip_text = str(help.get(key, tr(caption).capitalize() + " (" + tr(suffix) + ")"))
 	input.min_value = minimum
 	input.max_value = maximum
 	input.step = step
-	input.suffix = suffix
+	input.set_meta("source_suffix", suffix)
+	input.suffix = tr(suffix)
 	input.value = float(target.get(key, minimum / factor)) * factor
 	input.select_all_on_focus = true
 	input.custom_minimum_size = Vector2(90, 30)
@@ -1125,6 +1137,7 @@ func inline_grid(parent: Node) -> GridContainer:
 func inline_name(parent: Node, target: Dictionary, tank: bool = false) -> LineEdit:
 	var input := LineEdit.new()
 	input.name = "name"
+	input.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	input.text = str(target.get("name", ""))
 	input.custom_minimum_size = Vector2(65, 28)
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1137,7 +1150,7 @@ func inline_name(parent: Node, target: Dictionary, tank: bool = false) -> LineEd
 			for item: Variant in plan["waypoints"]:
 				var waypoint: Dictionary = item as Dictionary
 				if waypoint.get("kind") == "switch" and waypoint.get("tankId") == target.get("id"):
-					waypoint["name"] = "Switch to " + input.text
+					waypoint["name"] = tr("Switch to ") + input.text
 	input.text_submitted.connect(func(_value: String) -> void: commit.call())
 	input.focus_exited.connect(commit)
 	return input
@@ -1186,6 +1199,7 @@ func apply_inline_changes(cooperative: bool = false) -> void:
 
 func gas_selector(parent: Node, target: Dictionary, key: String) -> OptionButton:
 	var choice := OptionButton.new()
+	choice.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	choice.name = key
 	for item: Variant in plan["tanks"]:
@@ -1198,7 +1212,7 @@ func gas_selector(parent: Node, target: Dictionary, key: String) -> OptionButton
 	choice.item_selected.connect(func(index: int) -> void:
 		commit_inline(target, key, choice.get_item_metadata(index))
 		if target.get("kind") == "switch":
-			target["name"] = "Switch to " + tank_name(str(target[key])))
+			target["name"] = tr("Switch to ") + tank_name(str(target[key])))
 	return choice
 
 func add_tank() -> void:
@@ -1206,7 +1220,7 @@ func add_tank() -> void:
 	var tank_id: String = BathysPlan.id()
 	if (plan["tanks"] as Array).is_empty():
 		plan["initialTankId"] = tank_id
-	(plan["tanks"] as Array).append({"id": tank_id, "name": "New tank", "volumeL": 12.0,
+	(plan["tanks"] as Array).append({"id": tank_id, "name": tr("New tank"), "volumeL": 12.0,
 		"startGaugeBar": 200.0, "reserveGaugeBar": 50.0, "o2": 0.21, "n2": 0.79, "he": 0.0})
 	expanded_tanks[tank_id] = true
 	changed()
@@ -1237,7 +1251,7 @@ func accept_plan(text: String, from_device: bool = false) -> void:
 	var loaded: Dictionary = BathysPlan.from_json(text, site)
 	var error: String = BathysPlan.validate(loaded, false)
 	if not error.is_empty():
-		status_label.text = "Plan import failed: " + error
+		status_label.text = tr("Plan import failed: ") + tr(error)
 		return
 	snapshot()
 	plan = loaded
@@ -1266,7 +1280,7 @@ func export_plan() -> void:
 		var chooser := FileDialog.new()
 		chooser.access = FileDialog.ACCESS_FILESYSTEM
 		chooser.file_mode = FileDialog.FILE_MODE_SAVE_FILE
-		chooser.filters = PackedStringArray(["*.json ; JSON plans"])
+		chooser.filters = PackedStringArray([tr("*.json ; JSON plans")])
 		chooser.current_file = str(plan.get("name", "bathys-plan")).validate_filename() + ".json"
 		add_child(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
@@ -1291,7 +1305,7 @@ func import_plan() -> void:
 		var chooser := FileDialog.new()
 		chooser.access = FileDialog.ACCESS_FILESYSTEM
 		chooser.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-		chooser.filters = PackedStringArray(["*.json ; JSON plans"])
+		chooser.filters = PackedStringArray([tr("*.json ; JSON plans")])
 		add_child(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
 			accept_plan(FileAccess.get_file_as_string(path))
@@ -1334,7 +1348,10 @@ func adapt_layout() -> void:
 	right_panel.custom_minimum_size = Vector2(0 if narrow else route_panel_width, route_panel_height if narrow else 0)
 	center_panel.custom_minimum_size.y = 350
 	content_box.custom_minimum_size.y = (370 + (tank_panel_height if left_panel.visible else 0) + (route_panel_height if right_panel.visible else 0)) if narrow else 390
-	metric_grid.columns = maxi(1, mini(visible_metrics.size(), int((get_viewport_rect().size.x - 70) / 160)))
+	var minimum_card_width: float = 160
+	for key: String in visible_metrics:
+		minimum_card_width = maxf(minimum_card_width, (metric_cards[key] as Control).get_combined_minimum_size().x)
+	metric_grid.columns = maxi(1, mini(visible_metrics.size(), int((get_viewport_rect().size.x - 70) / minimum_card_width)))
 
 func open_metrics_menu() -> void:
 	metrics_menu.clear()
@@ -1379,8 +1396,8 @@ func inspect_location(location: Dictionary, interpolated: bool) -> void:
 	var body := VBoxContainer.new()
 	body.custom_minimum_size.x = 265
 	inspection.add_child(body)
-	body.add_child(make_label(str(location.get("name", "Lakebed")), 18, AQUA))
-	body.add_child(make_label(("Reference depth %.1f m" if location.has("id") else "Lakebed depth %.1f m") % float(location.get("depthM", 0)), 16))
+	body.add_child(make_label(tr(str(location.get("name", "Lakebed"))), 18, AQUA))
+	body.add_child(make_label((BathysI18n.text("Reference depth %.1f m") if location.has("id") else BathysI18n.text("Lakebed depth %.1f m")) % float(location.get("depthM", 0)), 16))
 	body.add_child(make_label("%.6f° N  ·  %.6f° E" % [float(location["latitudeDeg"]), float(location["longitudeDeg"])], 12))
 	body.add_child(make_button("Add waypoint", add_inspected_waypoint))
 	inspection.reset_size()
@@ -1437,12 +1454,12 @@ func insert_event(index: int, switch: bool) -> void:
 				active = str(route[i]["tankId"])
 		for tank: Dictionary in plan["tanks"]:
 			if str(tank["id"]) != active:
-				event = BathysPlan.gas_switch(str(tank["id"]), "Switch to " + str(tank["name"]))
+				event = BathysPlan.gas_switch(str(tank["id"]), tr("Switch to ") + str(tank["name"]))
 				break
 		if event.is_empty():
 			return
 	else:
-		event = BathysPlan.hold()
+		event = BathysPlan.hold(tr("Hold"))
 		apply_route_defaults(event)
 	snapshot()
 	route.insert(clampi(index, 0, route.size()), event)
@@ -1455,9 +1472,10 @@ func add_inspected_waypoint() -> void:
 	snapshot()
 	var waypoint: Dictionary = BathysPlan.waypoint_at_poi(inspection_location)
 	apply_route_defaults(waypoint)
+	waypoint["name"] = tr(str(waypoint["name"]))
 	if not inspection_location.has("id"):
 		waypoint["poiId"] = null
-		waypoint["name"] = "Interpolated waypoint" if inspection_interpolated else "Survey waypoint"
+		waypoint["name"] = tr("Interpolated waypoint") if inspection_interpolated else tr("Survey waypoint")
 	(plan["waypoints"] as Array).append(waypoint)
 	dismiss_inspection()
 	changed(true)
@@ -1465,6 +1483,7 @@ func add_inspected_waypoint() -> void:
 func new_plan() -> void:
 	snapshot()
 	plan = BathysPlan.empty(site)
+	plan["name"] = tr(str(plan["name"]))
 	plan["limits"] = load_limit_preferences()
 	plan["routeDefaults"] = load_route_preferences()
 	playback_time = 0
@@ -1669,7 +1688,7 @@ func export_map_jpg() -> void:
 		var chooser := FileDialog.new()
 		chooser.access = FileDialog.ACCESS_FILESYSTEM
 		chooser.file_mode = FileDialog.FILE_MODE_SAVE_FILE
-		chooser.filters = PackedStringArray(["*.jpg ; JPEG map view"])
+		chooser.filters = PackedStringArray([tr("*.jpg ; JPEG map view")])
 		chooser.current_file = filename
 		add_child(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
@@ -1751,3 +1770,47 @@ func apply_route_defaults(event: Dictionary) -> void:
 	var defaults: Dictionary = BathysPlan.route_defaults_for(plan)
 	event["sacLPerMin"] = float(defaults["sacLPerMin"])
 	event["speedMPerMin"] = float(defaults["speedMPerMin"])
+
+func update_language_button() -> void:
+	language_button.icon = load("res://Assets/Icons/flag-" + I18n.language + ".svg")
+	language_button.tooltip_text = "Language: French" if I18n.language == "fr" else "Language: English"
+
+func show_language_menu() -> void:
+	var menu := PopupMenu.new()
+	add_child(menu)
+	for index: int in 2:
+		var code: String = "en" if index == 0 else "fr"
+		menu.add_icon_check_item(load("res://Assets/Icons/flag-" + code + ".svg"), "English" if index == 0 else "Français", index)
+		menu.set_item_checked(index, I18n.language == code)
+	menu.id_pressed.connect(func(index: int) -> void: I18n.set_language("en" if index == 0 else "fr"))
+	menu.popup_hide.connect(func() -> void: menu.queue_free())
+	menu.position = Vector2i(language_button.get_global_rect().position + Vector2(0, language_button.size.y))
+	menu.popup()
+
+func _on_language_changed() -> void:
+	update_language_button()
+	(find_child("PlanName", true, false) as LineEdit).placeholder_text = tr("Scenario name")
+	for input: Node in find_children("*", "SpinBox", true, false):
+		if input.has_meta("source_suffix"):
+			(input as SpinBox).suffix = tr(str(input.get_meta("source_suffix")))
+	call_deferred("adapt_layout")
+	update_saved_state()
+	update_route_summaries()
+	var route: Array = plan.get("waypoints", [])
+	var switches: int = route.filter(func(item: Variant) -> bool: return item.get("kind") == "switch").size()
+	route_count_label.text = tr("%d waypoints / holds · %d gas switches") % [route.size() - switches, switches]
+	update_site_readout()
+	update_tank_readouts()
+	refresh_tissues()
+	refresh_vitals()
+	if feedback_label.visible and not simulation_busy:
+		request_simulation()
+	elif simulation_busy:
+		status_label.text = "Updating simulation…"
+	elif frames.is_empty():
+		status_label.text = "Route empty · inspect the map to begin"
+	else:
+		status_label.text = "Simulation up to date"
+	map.queue_redraw()
+	for chart: BathysMetricGraph in graphs:
+		chart.queue_redraw()

@@ -33,7 +33,7 @@ func _draw() -> void:
 		"otu": ["PULMONARY O₂ EXPOSURE", "OTU", "82e1c3", 10.0]
 	}[metric]
 	var color := Color(str(info[2]))
-	draw_string(font, Vector2(11,18), str(info[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("a8c5c8"))
+	draw_string(font, Vector2(11,18), tr(str(info[0])), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("a8c5c8"))
 	if frames.size() < 2:
 		return
 	var plot := Rect2(43,28,maxf(10,size.x-62),maxf(10,size.y-50))
@@ -73,7 +73,7 @@ func _draw() -> void:
 			if str(leg["kind"])=="switch":
 				var x: float = plot.position.x+event_time/duration*plot.size.x
 				draw_line(Vector2(x,plot.position.y),Vector2(x,plot.end.y),Color(1,0.62,0.38,0.72),1.5)
-				draw_string(font,Vector2(x+4,plot.position.y+12),"GAS",HORIZONTAL_ALIGNMENT_LEFT,-1,10,Color("ffb276"))
+				draw_string(font,Vector2(x+4,plot.position.y+12),tr("GAS"),HORIZONTAL_ALIGNMENT_LEFT,-1,10,Color("ffb276"))
 			event_time+=float(leg["durationS"])
 	var cursor: float = plot.position.x+clampf(current_time/duration,0,1)*plot.size.x
 	draw_line(Vector2(cursor,plot.position.y),Vector2(cursor,plot.end.y),Color("e8f4f1"),1.5)
@@ -106,3 +106,7 @@ func _gui_input(event: InputEvent) -> void:
 	if not frames.is_empty():
 		seek_requested.emit(clampf((position.x-43)/maxf(10,size.x-62),0,1)*float(frames[-1]["timeS"]))
 		accept_event()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		queue_redraw()

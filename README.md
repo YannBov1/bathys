@@ -44,3 +44,8 @@ See [MIGRATION.md](MIGRATION.md) for the milestone record, numerical comparison,
 
 
 
+
+
+## Languages
+
+English is the default. Use the flag in the header to select **English** or **Français**. The app remembers the chosen language on this device. Language changes preserve the current plan and playback; user-entered names are kept as written. French translations are maintained in `Data/i18n/fr.json`, with local SVG flag assets. Translation templates retain the English format placeholders.

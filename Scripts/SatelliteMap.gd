@@ -174,7 +174,7 @@ func _draw() -> void:
 	draw_line(anchor, anchor + Vector2(bar_length, 0.0), BG, 7.0)
 	draw_line(anchor, anchor + Vector2(bar_length, 0.0), INK, 4.0)
 	label("25 m", anchor + Vector2(bar_length / 2.0 - 13.0, -8.0), 11)
-	label("NavSurf 2015 measured/interpolated bathymetry · © swisstopo SWISSIMAGE" if show_bathymetry else "© swisstopo SWISSIMAGE", Vector2(12.0, size.y - 7.0), 10)
+	label(tr("NavSurf 2015 measured/interpolated bathymetry · © swisstopo SWISSIMAGE") if show_bathymetry else "© swisstopo SWISSIMAGE", Vector2(12.0, size.y - 7.0), 10)
 
 func draw_poi_labels() -> void:
 	var points := PackedVector2Array()
@@ -187,7 +187,7 @@ func draw_poi_labels() -> void:
 	for i: int in site.pois.size():
 		var poi: Dictionary = site.pois[i]
 		var marker: Vector2 = points[i]
-		var title: String = str(poi["name"]) + ("" if i==0 else " · %.1f m" % float(poi["depthM"]))
+		var title: String = tr(str(poi["name"])) + ("" if i==0 else " · %.1f m" % float(poi["depthM"]))
 		var width: float = ThemeDB.fallback_font.get_string_size(title,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x+9
 		var dimensions := Vector2(width,20)
 		var best := Rect2(marker+Vector2(12,-11),dimensions)
@@ -268,3 +268,7 @@ func click_map(point: Vector2) -> void:
 	else:
 		terrain_clicked.emit(geo[0], geo[1], float(sample["depthM"]), bool(sample["isInterpolated"]))
 
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		queue_redraw()

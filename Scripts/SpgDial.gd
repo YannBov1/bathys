@@ -48,4 +48,4 @@ func _draw() -> void:
 	var font: Font = ThemeDB.fallback_font
 	var caption: String = "%.0f" % gauge_bar
 	draw_string(font, center + Vector2(-31, 25), caption, HORIZONTAL_ALIGNMENT_CENTER, 62, 15, Color("71e5d9"))
-	draw_string(font, center + Vector2(-31, 35), "bar g", HORIZONTAL_ALIGNMENT_CENTER, 62, 9, Color("91b6b9"))
+	draw_string(font, center + Vector2(-31, 35), tr("bar g"), HORIZONTAL_ALIGNMENT_CENTER, 62, 9, Color("91b6b9"))

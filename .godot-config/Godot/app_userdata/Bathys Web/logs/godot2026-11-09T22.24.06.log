@@ -1,6 +1,6 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-BATHYS_STARTUP_MS=89
+BATHYS_STARTUP_MS=97
 DIVIDER PASS: dragging left divider resizes tanks
 DIVIDER PASS: dragging tanks to left edge collapses them and retains handle
 DIVIDER PASS: dragging from collapsed left edge restores tanks

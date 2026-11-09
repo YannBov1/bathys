@@ -37,3 +37,14 @@ Validation: panel tests cover independent collapse/restore, accessible icon cont
 - Double-click or Enter also toggles the adjacent panel; arrow keys allow resizing. In the stacked narrow layout, dividers become horizontal with vertical resize cursors.
 
 Validation: viewport mouse events verify resizing, collapse and restore for both panels, release after collapsing, resize cursors and the four-control toolbar. Existing panel/default tests pass. Expanded and collapsed layouts were rendered and visually inspected.
+
+
+## English and French
+
+- Added a flag-only selector in the header. The UK flag represents English; the French flag represents French. Its menu lists **English** and **Français**, marks the active choice, and changes the interface immediately.
+- English is the initial default regardless of operating-system language. An explicit selection is remembered on the device in a separate language preference file; language preferences are independent of saved plans and gas settings.
+- Added a French catalog for interface labels, settings, menus, tooltips, map POIs, chart titles, status text, educational notices and validation messages. Formatted messages are translated before inserting numerical values. Flag assets and translations are packaged locally for offline use.
+- Switching preserves route/tank names and other stored content, simulation frames, playback, zoom and panel visibility. Newly generated names use the selected language. Charts and map labels update without reloading the app.
+- Adjusted wrapping and metric-card column counts for longer French text. Metric units remain consistent; pressure-field suffixes translate with the interface.
+
+Validation: language tests cover English as the initial default, both flags, native language names and active menu state, switching in both directions, translated formatted errors, preservation of plan data/playback/zoom, and narrow-layout fit. French desktop, settings, inspection, menu and narrow screenshots were rendered and inspected.

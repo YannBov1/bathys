@@ -71,7 +71,7 @@ static func run(site: BathysSite, plan: Dictionary, yield_tree: SceneTree = null
 			var ambient: float = BathysPhysics.ambient_bar(env, depth)
 			var pp: float = float(next_spec.get("o2", 0.21)) * ambient
 			if pp < minimum_pp or pp > maximum_pp:
-				return {"error": "%s: ppO₂ %.2f bar at %.1f m is outside %.2f–%.2f." % [waypoint.get("name", "Gas switch"), pp, depth, minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
+				return {"error": BathysI18n.text("%s: ppO₂ %.2f bar at %.1f m is outside %.2f–%.2f.") % [waypoint.get("name", "Gas switch"), pp, depth, minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
 			if float(next_tank["absoluteBar"]) <= maxf(ambient, float(next_spec.get("reserveGaugeBar", 0.0)) + surface):
 				return {"error": "Switched tank cannot deliver gas above its reserve.", "frames": frames, "legs": legs, "eventIndex": event_index}
 			tank_id = str(waypoint["tankId"])
@@ -116,7 +116,7 @@ static func run(site: BathysSite, plan: Dictionary, yield_tree: SceneTree = null
 		var gas: Dictionary = tank["spec"] as Dictionary
 		var start_pp: float = float(gas.get("o2", 0.21)) * BathysPhysics.ambient_bar(env, depth)
 		if start_pp < minimum_pp or start_pp > maximum_pp:
-			return {"error": "Active gas ppO₂ is outside %.2f–%.2f bar." % [minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
+			return {"error": BathysI18n.text("Active gas ppO₂ is outside %.2f–%.2f bar.") % [minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
 		var steps: int = ceili(duration)
 		for k: int in range(1, steps + 1):
 			var elapsed: float = minf(duration, k)
@@ -133,13 +133,13 @@ static func run(site: BathysSite, plan: Dictionary, yield_tree: SceneTree = null
 			var new_ambient: float = BathysPhysics.ambient_bar(env, new_depth)
 			var pp: float = float(gas.get("o2", 0.21)) * new_ambient
 			if pp < minimum_pp or pp > maximum_pp:
-				return {"error": "%s: ppO₂ %.2f bar at %.1f m is outside %.2f–%.2f." % [waypoint.get("name", "Waypoint"), pp, new_depth, minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
+				return {"error": BathysI18n.text("%s: ppO₂ %.2f bar at %.1f m is outside %.2f–%.2f.") % [waypoint.get("name", "Waypoint"), pp, new_depth, minimum_pp, maximum_pp], "frames": frames, "legs": legs, "eventIndex": event_index}
 			var surface_l: float = float(waypoint.get("sacLPerMin", 18.0)) * (old_ambient + new_ambient) / (2.0 * surface) * dt / 60.0
 			if maxf(depth, new_depth) > 0.001:
 				var absolute: float = BathysPhysics.consume_tank(gas, float(tank["absoluteBar"]), surface_l,
 					new_ambient, surface, float(env.get("surfaceTempC", 18.0)))
 				if is_nan(absolute):
-					return {"error": "%s falls below its reserve." % str(gas.get("name", "Tank")), "frames": frames, "legs": legs, "eventIndex": event_index}
+					return {"error": BathysI18n.text("%s falls below its reserve.") % str(gas.get("name", "Tank")), "frames": frames, "legs": legs, "eventIndex": event_index}
 				tank["absoluteBar"] = absolute
 				used += surface_l
 			model.advance(new_ambient, dt, gas)

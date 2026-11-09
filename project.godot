@@ -20,6 +20,14 @@ boot_splash/fullsize=false
 boot_splash/use_filter=true
 boot_splash/bg_color=Color(0.02745, 0.1098, 0.16078, 1)
 
+[autoload]
+
+I18n="*res://Scripts/I18n.gd"
+
+[internationalization]
+
+locale/fallback="en"
+
 [display]
 
 window/size/viewport_width=1600
