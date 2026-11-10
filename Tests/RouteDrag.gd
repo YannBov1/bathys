@@ -15,8 +15,8 @@ func settle(app: Control) -> void:
 	while app.simulation_busy:
 		await process_frame
 	await layout()
-func begin_drag(handle: Control) -> void:
-	var start: Vector2 = handle.get_global_rect().get_center()
+func begin_drag(surface: Control, from: Vector2 = Vector2.INF) -> void:
+	var start: Vector2 = surface.get_global_rect().get_center() if from == Vector2.INF else from
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.position = start
@@ -65,9 +65,9 @@ func run() -> void:
 	await settle(app)
 	var original: Array = ids(app)
 	var history_size: int = app.undo_stack.size()
-	var handle: Control = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	await begin_drag(handle)
-	check(root.gui_is_dragging() and app.route_drag_id == original[0], "drag starts from the small handle")
+	var surface: Control = app.route_list.get_node("Route_0")
+	await begin_drag(surface)
+	check(root.gui_is_dragging() and app.route_drag_id == original[0], "drag starts from the non-editable card body")
 	var destination: Vector2 = app.route_drop_slots[-1].get_global_rect().get_center()
 	await move_drag(destination)
 	check(app.route_drop_slots[-1].highlighted, "drop indicator marks end boundary")
@@ -82,8 +82,8 @@ func run() -> void:
 	app.undo()
 	await settle(app)
 	check(ids(app) == original, "undo restores complete event order")
-	handle = app.route_list.get_node("Route_3").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_3")
+	await begin_drag(surface)
 	destination = app.route_drop_slots[0].get_global_rect().get_center()
 	await move_drag(destination)
 	await release_drag(destination)
@@ -91,15 +91,15 @@ func run() -> void:
 	check(ids(app) == [original[3], original[0], original[1], original[2]], "drag can move upward to the first boundary")
 	var before: Array = ids(app)
 	history_size = app.undo_stack.size()
-	handle = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_0")
+	await begin_drag(surface)
 	destination = app.map.get_global_rect().get_center()
 	await move_drag(destination)
 	await release_drag(destination)
 	await settle(app)
 	check(ids(app) == before and app.undo_stack.size() == history_size and app.route_drag_id.is_empty(), "dropping outside route cancels without changing plan or history")
-	handle = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_0")
+	await begin_drag(surface)
 	destination = app.route_drop_slots[1].get_global_rect().get_center()
 	await move_drag(destination)
 	await release_drag(destination)
@@ -109,8 +109,8 @@ func run() -> void:
 	app.expanded_routes[original[0]] = true
 	app.refresh_route()
 	await layout()
-	handle = app.route_list.get_node("Route_3").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_3")
+	await begin_drag(surface)
 	var target_field: Control = app.route_list.get_node("Route_0").find_child("name", true, false)
 	destination = target_field.get_global_rect().get_center()
 	await move_drag(destination)
@@ -121,23 +121,23 @@ func run() -> void:
 	check(expanded_card.find_child("InlineEditor", true, false).visible, "expanded editors stay open by event ID after a move")
 	before = ids(app)
 	history_size = app.undo_stack.size()
-	handle = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_0")
+	await begin_drag(surface)
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true
 	Input.parse_input_event(escape)
 	await layout()
 	check(not root.gui_is_dragging() and app.route_drag_id.is_empty() and ids(app) == before and app.undo_stack.size() == history_size, "Escape cancels without modifying the route")
-	handle = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	handle.grab_focus()
+	surface = app.route_list.get_node("Route_0")
+	surface.grab_focus()
 	var key := InputEventKey.new()
 	key.keycode = KEY_DOWN
 	key.alt_pressed = true
 	key.pressed = true
 	Input.parse_input_event(key)
 	await settle(app)
-	check(ids(app)[1] == before[0], "focused handle supports Alt+Down without arrow buttons")
+	check(ids(app)[1] == before[0], "focused card supports Alt+Down without arrow buttons")
 	key = InputEventKey.new()
 	key.keycode = KEY_UP
 	key.alt_pressed = true
@@ -153,8 +153,8 @@ func run() -> void:
 	var scroll: ScrollContainer = app.route_list.get_parent()
 	scroll.scroll_vertical = 0
 	await layout()
-	handle = app.route_list.get_node("Route_0").find_child("DragHandle", true, false)
-	await begin_drag(handle)
+	surface = app.route_list.get_node("Route_0")
+	await begin_drag(surface)
 	destination = scroll.get_global_rect().end - Vector2(30, 6)
 	await move_drag(destination)
 	for index: int in 30:

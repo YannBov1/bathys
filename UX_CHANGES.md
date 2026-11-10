@@ -75,3 +75,24 @@ Validation: editor checks cover tools/checkmark state, pending numeric input, in
 - Alt+Up/Down on a focused handle provides keyboard reordering without adding buttons. The handle tooltip is available in English and French.
 
 Validation: full Godot input tests cover drag start, indicators, moving upward/downward, end boundaries, undo, hold anchoring, cancelling, no-op drops, drops over fields, retained editor state, foreign payload rejection and long-route scrolling. These checks pass in the rendered application as well as headless execution.
+
+
+## Drag from the card body
+
+- Removed the drag handle. Event cards can now be dragged from their padding, icons, summaries, collapsed names and other non-editable regions, including labels in open editors.
+- Editable text fields, numeric inputs, selectors and buttons retain their native behavior. Selecting or dragging text, using spin arrows or interacting with buttons does not reorder the route. Collapsed names act as drag surfaces; opening the editor makes them ordinary text inputs again.
+- Drop previews, insertion lines, automatic scrolling, cancellation, undo and keyboard reordering are preserved. Dropping a route event over a field remains supported without replacing that field's normal text-drop behavior.
+
+Validation: card input checks exercise each drag surface, native text drag/drop, numeric gestures and arrows, editor buttons, selectors and cancellation. Route drag tests cover reordering, undo, anchoring, editor state, edge scrolling and keyboard focus.
+
+
+## Learning workspace
+
+- Added a single icon-only header switch with a folded map on one side and an open book on the other. The active half is highlighted, with translated tooltips and ordinary keyboard activation. The current dive workspace remains the default.
+- Added a dedicated learning view with Boyle’s law and Snell’s law in its left navigation. Each lesson combines a live diagram, slider, linked values, formula, a short diving connection, explicit model assumptions and a source link. The diagrams support direct manipulation as well as the sliders so learners can discover the relationships visually.
+- Boyle’s lesson keeps the same gas particles, scales a flexible bubble by volume, and links it to a pressure–volume curve. Depth presets make familiar pressure ratios easy to compare. Absolute pressure and the simplified sea-level assumption are explicit to prevent confusion with the lake scenario.
+- Snell’s lesson follows a ray through a flat air/water boundary, marks the normal and measured angles, supports both directions, and shows total internal reflection above the critical angle. A shortcut brings the experiment to the critical-angle boundary; learners can cross it with the slider.
+- Entering learning pauses playback. The existing scenario, map state, collapsed panels, current time and history are retained. Scenario file actions are hidden in learning to keep the header relevant, while the language selector stays available. Lesson choices and values survive switching views/languages.
+- All new explanations, controls and diagram labels are translated into French. Narrow layouts stack navigation and, for Boyle’s lesson, the two diagrams; phone readouts stack to stay readable.
+
+Validation: input-driven checks cover the header switch, navigation, direct diagram input, keyboard slider adjustment, pressure/volume examples, refraction in both directions, critical angle, total internal reflection, French localization, narrow layouts and preservation of scenario/view state. Rendered screenshots cover both lessons and French phone layouts.

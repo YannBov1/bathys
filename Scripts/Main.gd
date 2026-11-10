@@ -9,6 +9,13 @@ const SETTINGS_PATH := "user://settings.json"
 
 const PLAN_PATH := "user://plan.json"
 
+var workspace_switch: BathysWorkspaceSwitch
+var learning_view: BathysLearningView
+var learning_mode: bool = false
+var planning_header_controls: Array[Control] = []
+var planning_footer: Label
+var page_scroll: ScrollContainer
+var workspace_scroll: Array[int] = [0, 0]
 var language_button: Button
 var route_count_label: Label
 var settings_dialog: ConfirmationDialog
@@ -86,6 +93,7 @@ var route_summaries: Array[Label] = []
 var route_drop_slots: Array[BathysRouteDropSlot] = []
 var route_drag_id: String = ""
 var route_drag_position: Vector2 = Vector2.ZERO
+var route_drop_surfaces: Array[Control] = []
 var route_drop_boundary: int = -1
 var route_refresh_pending: bool = false
 var site_readout: Label
@@ -153,6 +161,8 @@ func report_web_memory(context: String) -> void:
 		print("BATHYS_WASM_MEMORY_", context, "_MB=", float(bytes) / 1048576.0)
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if learning_mode:
+		return
 	if event is InputEventKey and (event as InputEventKey).pressed and (event as InputEventKey).ctrl_pressed:
 		var key: InputEventKey = event as InputEventKey
 		if key.keycode == KEY_Z and not key.shift_pressed:
@@ -193,7 +203,7 @@ func build_ui() -> void:
 	backdrop.color = BG
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
-	var page_scroll := ScrollContainer.new()
+	page_scroll = ScrollContainer.new()
 	page_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(page_scroll)
@@ -218,6 +228,9 @@ func build_ui() -> void:
 	heading.add_child(logo)
 	heading.add_child(make_label("BATHYS", 24))
 	heading.add_child(make_label("/  LAC DES ÎLES", 14, AQUA))
+	workspace_switch = BathysWorkspaceSwitch.new()
+	heading.add_child(workspace_switch)
+	workspace_switch.toggled.connect(set_learning_mode)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(spacer)
@@ -225,6 +238,7 @@ func build_ui() -> void:
 	identity.custom_minimum_size.x = 260
 	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(identity)
+	planning_header_controls.append(identity)
 	var plan_name := LineEdit.new()
 	plan_name.text = str(plan.get("name", "Untitled scenario"))
 	plan_name.name = "PlanName"
@@ -240,7 +254,10 @@ func build_ui() -> void:
 		button.icon = load("res://Assets/Icons/" + str(action[0]) + ".svg")
 		button.tooltip_text = str(action[2])
 		heading.add_child(button)
-	heading.add_child(icon_button("settings", "Settings", open_settings))
+		planning_header_controls.append(button)
+	var settings_button: Button = icon_button("settings", "Settings", open_settings)
+	heading.add_child(settings_button)
+	planning_header_controls.append(settings_button)
 	language_button = icon_button("flag-" + I18n.language, "Language: English", show_language_menu)
 	language_button.name = "LanguageSelector"
 	heading.add_child(language_button)
@@ -454,10 +471,40 @@ func build_ui() -> void:
 	var warning := make_label("EDUCATIONAL SOFTWARE ONLY · Do not use for real dive decisions. Survey datum and water level require confirmation. © swisstopo SWISSIMAGE", 11, AMBER)
 	warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(warning)
+	planning_footer = warning
+	learning_view = BathysLearningView.new()
+	learning_view.hide()
+	root.add_child(learning_view)
 	set_bathymetry(false)
 	set_playback_available(false)
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("window.addEventListener('beforeunload', function(e) { if(window.bathysHasChanges) { e.preventDefault(); e.returnValue = ''; } });", true)
+
+func set_learning_mode(enabled: bool) -> void:
+	if learning_mode == enabled:
+		return
+	workspace_scroll[1 if learning_mode else 0] = page_scroll.scroll_vertical
+	learning_mode = enabled
+	workspace_switch.set_pressed_no_signal(enabled)
+	workspace_switch.update_hint()
+	workspace_switch.queue_redraw()
+	if enabled:
+		dismiss_inspection()
+		playing = false
+		play_button.text = "PLAY"
+	content_box.visible = not enabled
+	bottom_panel.visible = not enabled
+	planning_footer.visible = not enabled
+	for control: Control in planning_header_controls:
+		control.visible = not enabled
+	learning_view.visible = enabled
+	if lake != null:
+		lake.viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if view_3d and not enabled else SubViewport.UPDATE_DISABLED
+	call_deferred("restore_workspace_scroll")
+
+func restore_workspace_scroll() -> void:
+	page_scroll.scroll_vertical = workspace_scroll[1 if learning_mode else 0]
+	learning_view.adapt_layout()
 
 func scroll_column(parent: Node, title: String = "") -> VBoxContainer:
 	var scroll := ScrollContainer.new()
@@ -562,7 +609,8 @@ func refresh_route() -> void:
 	for index: int in route.size():
 		var waypoint: Dictionary = route[index] as Dictionary
 		var kind: String = str(waypoint.get("kind", "travel"))
-		var card: PanelContainer = BathysUiStyle.panel(Color("123d47") if kind == "switch" else BathysUiStyle.CARD, 7)
+		var card := BathysRouteEventCard.new()
+		card.add_theme_stylebox_override("panel", BathysUiStyle.box(Color("123d47") if kind == "switch" else BathysUiStyle.CARD, BathysUiStyle.EDGE, 10, 7))
 		if index == selected_event:
 			card.add_theme_stylebox_override("panel", BathysUiStyle.box(Color("44323a"), AMBER))
 		card.name = "Route_" + str(index)
@@ -586,25 +634,24 @@ func refresh_route() -> void:
 		details.visible = bool(expanded_routes.get(waypoint_id, false))
 		var name_input: LineEdit = inline_name(header, waypoint)
 		name_input.editable = details.visible
-		details.visibility_changed.connect(func() -> void: name_input.editable = details.visible)
+		details.visibility_changed.connect(func() -> void:
+			name_input.editable = details.visible
+			bind_route_card_drop_targets(card))
 		header.add_child(editor_toggle(details, expanded_routes, waypoint_id, waypoint, false, name_input))
-		var handle := BathysRouteDragHandle.new()
-		handle.name = "DragHandle"
-		handle.event_id = waypoint_id
-		handle.owner_id = get_instance_id()
-		handle.event_name = str(waypoint.get("name", ""))
-		handle.event_icon = event_icon.texture
-		handle.source_card = card
-		handle.started.connect(func(id: String) -> void:
+		card.event_id = waypoint_id
+		card.owner_id = get_instance_id()
+		card.event_name = str(waypoint.get("name", ""))
+		card.event_icon = event_icon.texture
+		card.started.connect(func(id: String) -> void:
 			route_drag_id = id
-			route_drag_position = handle.get_global_rect().get_center())
-		handle.finished.connect(func() -> void: call_deferred("finish_route_drag"))
-		handle.keyboard_move.connect(func(id: String, direction: int) -> void:
+			route_drag_position = card.get_global_rect().get_center()
+			show_route_drop_surfaces())
+		card.finished.connect(func() -> void: call_deferred("finish_route_drag"))
+		card.keyboard_move.connect(func(id: String, direction: int) -> void:
 			var source: int = route_index_by_id(id)
 			if source >= 0:
 				move_route(source, direction)
-				call_deferred("focus_route_handle", id))
-		header.add_child(handle)
+				call_deferred("focus_route_card", id))
 		header.add_child(icon_button("trash", "Remove event", func() -> void: remove_route(index)))
 		var summary: Label = BathysUiStyle.wrapped("", 11)
 		row.add_child(summary)
@@ -1939,9 +1986,9 @@ func highlight_route_drop(boundary: int) -> void:
 	for index: int in route_drop_slots.size():
 		route_drop_slots[index].set_highlight(index == boundary)
 
-func bind_route_drop_target(control: Control) -> void:
+func bind_route_drop_target(control: Control, drag_source: Callable = Callable()) -> void:
 	control.set_drag_forwarding(
-		func(_at: Vector2) -> Variant: return null,
+		drag_source,
 		func(_at: Vector2, data: Variant) -> bool:
 			if not valid_route_drag(data) or not (route_list.get_parent() as Control).get_global_rect().has_point(route_drag_position):
 				return false
@@ -1984,26 +2031,60 @@ func update_route_drag(delta: float) -> void:
 
 func finish_route_drag() -> void:
 	route_drag_id = ""
+	for surface: Control in route_drop_surfaces:
+		if is_instance_valid(surface):
+			surface.queue_free()
+	route_drop_surfaces.clear()
 	highlight_route_drop(-1)
 	if route_refresh_pending:
 		route_refresh_pending = false
 		refresh_route()
 
-func bind_route_card_drop_targets(card: Control) -> void:
-	# Buttons and fields stop mouse propagation, so forward their route drops too.
+func bind_route_card_drop_targets(card: BathysRouteEventCard) -> void:
 	for child: Node in card.find_children("*", "Control", true, false):
-		if child is Control and not child is BathysRouteDragHandle:
-			bind_route_drop_target(child)
+		if not child is Control:
+			continue
+		var control: Control = child
+		if card.is_interactive_control(control):
+			# Preserve native text selection, text drops, numeric gestures and buttons.
+			control.mouse_filter = Control.MOUSE_FILTER_STOP
+			control.set_drag_forwarding(Callable(), Callable(), Callable())
+		else:
+			if control is LineEdit:
+				control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				control.focus_mode = Control.FOCUS_NONE
+			else:
+				control.mouse_filter = Control.MOUSE_FILTER_PASS
+			control.mouse_default_cursor_shape = Control.CURSOR_DRAG
+			bind_route_drop_target(control, func(at: Vector2) -> Variant:
+				return card._get_drag_data(card.get_global_transform().affine_inverse() * (control.get_global_transform() * at)))
+		if control is LineEdit and control.editable:
+			control.focus_mode = Control.FOCUS_ALL
+			control.mouse_default_cursor_shape = Control.CURSOR_IBEAM
 
-func focus_route_handle(event_id: String) -> void:
+func focus_route_card(event_id: String) -> void:
 	var index: int = route_index_by_id(event_id)
 	var card := route_list.get_node_or_null("Route_" + str(index)) as Control
 	if card != null:
-		var handle := card.find_child("DragHandle", true, false) as Control
-		if handle != null:
-			handle.grab_focus()
-			(route_list.get_parent() as ScrollContainer).ensure_control_visible(handle)
+		card.grab_focus()
+		(route_list.get_parent() as ScrollContainer).ensure_control_visible(card)
 
 func _input(event: InputEvent) -> void:
 	if not route_drag_id.is_empty() and (event is InputEventMouseMotion or event is InputEventMouseButton):
 		route_drag_position = event.global_position
+
+func show_route_drop_surfaces() -> void:
+	# Only during a route drag, transparent surfaces accept drops over fields too.
+	# Ordinary text drags continue to use the native input controls unchanged.
+	for index: int in (plan.get("waypoints", []) as Array).size():
+		var card := route_list.get_node_or_null("Route_" + str(index)) as Control
+		if card == null:
+			continue
+		var surface := Control.new()
+		surface.name = "RouteDropSurface"
+		surface.z_index = 1
+		surface.mouse_filter = Control.MOUSE_FILTER_STOP
+		surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		card.add_child(surface)
+		bind_route_drop_target(surface)
+		route_drop_surfaces.append(surface)

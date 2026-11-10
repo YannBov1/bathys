@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgn32x03vpodv"
-path="res://.godot/imported/drag-handle.svg-78df664d5be0f35677fdecc1e2c2bb3b.ctex"
+uid="uid://uxlao5kxyvkr"
+path="res://.godot/imported/law-boyle.svg-815b6e42b0b4e2cc3df870bcfeb21706.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Icons/drag-handle.svg"
-dest_files=["res://.godot/imported/drag-handle.svg-78df664d5be0f35677fdecc1e2c2bb3b.ctex"]
+source_file="res://Assets/Icons/law-boyle.svg"
+dest_files=["res://.godot/imported/law-boyle.svg-815b6e42b0b4e2cc3df870bcfeb21706.ctex"]
 
 [params]
 
