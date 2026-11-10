@@ -1,0 +1,50 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=115
+BATHYS_SIM_MS=1430
+UI PASS: simulation initializes in the complete interface
+UI PASS: all seventeen physiology readouts remain available
+UI PASS: five synchronized plots are available
+UI PASS: POI mutation iBATHYS_SIM_MS=1426
+EDITOR PASS: invalid tank BATHYS_SIM_MS=1506
+UI PASS: undo restores route
+UI PASS: plot cursor follows scrub: depth
+UI PASS: plot BATHYS_SIM_MS=1305
+EDITOR PASS: holds use the same edit/validate flow
+EDITOR PASS: gas selector starts collapsed
+EDITOR PASS: gas switch exposes selector through tools icon
+EDITOR PASS: gas selection and generated name validate together
+EDITOR PASS: editor tooltips are available in French
+BATHYS_FPS_2D_AVG=101.0
+BATHYS_SIM_MS=1164
+EDITOR_CHECKS failures=0
+ed frames: otu
+UI PASS: TTS graph converts seconds to minutes
+UI PASS: NDL is unavailable at surface
+UI PASS: unbounded NDL follows reference chart convention
+BATHYS_TERRAIN_TRIANGLES=878652
+BATHYS_TERRAIN_LOAD_MS=21
+UI PASS: 2D switching hides the 3D scene
+UI PASSDRAG PASS: long routes scroll automatically near the edge
+DRAG_CHECKS failures=0
+oute and tank inline inputs exist
+UI PASS: inline route input updates plan
+BATHYS_SIM_MS=1332
+UI PASS: simulation preserves route input instance
+UI PASS: simulation preserves tank input instance
+UI PASS: inline pressure updates dial scale
+BATHYS_SIM_MS=1152
+UI PASS: playback preserves tank editor instance
+UI PASS: inline environment input updates plan
+UI PASS: environment readout responds to salinity
+BATHYS_SIM_MS=1091
+UI PASS: simulation preserves environment input instance
+UI PASS: tissues display two arrow symbols per compartment
+BATHYS_SIM_MS=1124
+UI PASS: undo restores inline environment edit
+UI PASS: model summary follows inline gradient factor edit
+BATHYS_SIM_MS=1121
+UI PASS: new switch chooses a different gas from current stage
+UI PASS: empty route resets playback cleanly
+UI PASS: empty route displays start hint
+UI_SMOKE failures=0

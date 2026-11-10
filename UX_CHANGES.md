@@ -48,3 +48,30 @@ Validation: viewport mouse events verify resizing, collapse and restore for both
 - Adjusted wrapping and metric-card column counts for longer French text. Metric units remain consistent; pressure-field suffixes translate with the interface.
 
 Validation: language tests cover English as the initial default, both flags, native language names and active menu state, switching in both directions, translated formatted errors, preservation of plan data/playback/zoom, and narrow-layout fit. French desktop, settings, inspection, menu and narrow screenshots were rendered and inspected.
+
+
+## Edit and validate actions
+
+- Replaced Edit text buttons with crossed-tools icons. Opening a tank, waypoint or hold changes the action to a highlighted checkmark with a **Validate changes** tooltip. Closing returns it to the tools icon. The gas switch selector now uses this same pattern.
+- The checkmark commits text still being typed and validates the edited item. Invalid inputs keep the editor open with an inline error. Valid inputs close it and update the simulation. Live previews remain available while editing; validating is separate from saving the plan file.
+- Card names are editable while their controls are open and remain readable when collapsed. Editor state survives rebuilds through the existing per-item expansion state. Replaced the Remove tank text action with a trash icon.
+- Action tooltips and the gas-selection validation message are available in English and French.
+
+Validation: editor checks cover tools/checkmark state, pending numeric input, invalid and corrected tanks, holds, gas selection and generated names, and French tooltips. Open and closed states were rendered and visually reviewed.
+
+
+## Route event icons
+
+- Replaced route-card numbers with a swimming diver for travel waypoints, a clock for holds and two cylinders with an arrow for gas switches. Each icon has an English/French tooltip.
+- Removed the HOLD and GAS SWITCH prefixes from summaries. Gas switches now show only the selected gas and depth; the zero-duration and unchanged-position text is gone. Holds retain depth and duration, and waypoints retain navigation details.
+- Validation feedback identifies the affected event by name, since card numbers are no longer displayed.
+
+
+## Drag route events
+
+- Replaced the two arrow buttons on every route card with one compact six-dot handle. Drag the handle to move the event before or after another card. A preview identifies the dragged event and a turquoise insertion line marks the destination.
+- The route panel scrolls automatically near its top/bottom edges while dragging. Dropping outside the route or pressing Escape cancels the move. Dropping next to the original position leaves history untouched.
+- Reordering uses stable event IDs, creates one undo step, preserves open editors, updates the map and simulation, and reanchors holds to their new preceding position. Cards stay mounted during an active drag so recalculation cannot interrupt it.
+- Alt+Up/Down on a focused handle provides keyboard reordering without adding buttons. The handle tooltip is available in English and French.
+
+Validation: full Godot input tests cover drag start, indicators, moving upward/downward, end boundaries, undo, hold anchoring, cancelling, no-op drops, drops over fields, retained editor state, foreign payload rejection and long-route scrolling. These checks pass in the rendered application as well as headless execution.

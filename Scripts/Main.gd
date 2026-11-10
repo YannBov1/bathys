@@ -83,6 +83,11 @@ var expanded_routes: Dictionary = {}
 var expanded_tanks: Dictionary = {}
 var tank_readouts: Array[Dictionary] = []
 var route_summaries: Array[Label] = []
+var route_drop_slots: Array[BathysRouteDropSlot] = []
+var route_drag_id: String = ""
+var route_drag_position: Vector2 = Vector2.ZERO
+var route_drop_boundary: int = -1
+var route_refresh_pending: bool = false
 var site_readout: Label
 var model_readout: Label
 var sim_debounce: float = -1.0
@@ -114,6 +119,8 @@ func _ready() -> void:
 	call_deferred("adapt_layout")
 
 func _process(delta: float) -> void:
+	if not route_drag_id.is_empty():
+		update_route_drag(delta)
 	if sim_debounce >= 0.0:
 		sim_debounce -= delta
 		if sim_debounce < 0.0:
@@ -312,6 +319,7 @@ func build_ui() -> void:
 	var tabs := TabContainer.new()
 	right.add_child(tabs)
 	route_list = scroll_column(tabs, "ROUTE")
+	bind_route_drop_target(route_list)
 	site_list = scroll_column(tabs, "SITE")
 	tissue_list = scroll_column(tabs, "TISSUES")
 	var bottom: PanelContainer = BathysUiStyle.panel(BG, 9)
@@ -528,6 +536,10 @@ func refresh_all() -> void:
 	refresh_vitals()
 
 func refresh_route() -> void:
+	if not route_drag_id.is_empty():
+		route_refresh_pending = true
+		return
+	route_drop_slots.clear()
 	route_list.add_theme_constant_override("separation", 0)
 	clear_children(route_list)
 	route_summaries.clear()
@@ -554,36 +566,56 @@ func refresh_route() -> void:
 		if index == selected_event:
 			card.add_theme_stylebox_override("panel", BathysUiStyle.box(Color("44323a"), AMBER))
 		card.name = "Route_" + str(index)
+		bind_route_drop_target(card)
 		route_list.add_child(card)
 		var row: VBoxContainer = BathysUiStyle.column(card, 5)
 		var header := HBoxContainer.new()
 		row.add_child(header)
-		header.add_child(make_label("%02d" % (index + 1), 15, AQUA if kind == "switch" else AMBER))
+		var event_icon := TextureRect.new()
+		event_icon.name = "EventTypeIcon"
+		var icon_name: String = {"travel": "event-swim", "hold": "event-clock", "switch": "event-gas-switch"}.get(kind, "event-swim")
+		event_icon.texture = load("res://Assets/Icons/" + icon_name + ".svg")
+		event_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		event_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		event_icon.custom_minimum_size = Vector2(28, 28)
+		event_icon.tooltip_text = {"travel": "Waypoint", "hold": "Hold", "switch": "Gas switch"}.get(kind, "Waypoint")
+		header.add_child(event_icon)
 		var details := VBoxContainer.new()
 		var waypoint_id: String = str(waypoint.get("id", index))
 		details.name = "InlineEditor"
 		details.visible = bool(expanded_routes.get(waypoint_id, false))
-		if kind == "switch":
-			gas_selector(header, waypoint, "tankId")
-		else:
-			inline_name(header, waypoint)
-			var edit := make_button("EDIT", func() -> void:
-				details.visible = not details.visible
-				expanded_routes[waypoint_id] = details.visible)
-			edit.tooltip_text = "Expand waypoint settings"
-			edit.add_theme_font_size_override("font_size", 11)
-			header.add_child(edit)
-		header.add_child(icon_button("up", "Move event earlier", func() -> void: move_route(index, -1)))
-		header.add_child(icon_button("down", "Move event later", func() -> void: move_route(index, 1)))
+		var name_input: LineEdit = inline_name(header, waypoint)
+		name_input.editable = details.visible
+		details.visibility_changed.connect(func() -> void: name_input.editable = details.visible)
+		header.add_child(editor_toggle(details, expanded_routes, waypoint_id, waypoint, false, name_input))
+		var handle := BathysRouteDragHandle.new()
+		handle.name = "DragHandle"
+		handle.event_id = waypoint_id
+		handle.owner_id = get_instance_id()
+		handle.event_name = str(waypoint.get("name", ""))
+		handle.event_icon = event_icon.texture
+		handle.source_card = card
+		handle.started.connect(func(id: String) -> void:
+			route_drag_id = id
+			route_drag_position = handle.get_global_rect().get_center())
+		handle.finished.connect(func() -> void: call_deferred("finish_route_drag"))
+		handle.keyboard_move.connect(func(id: String, direction: int) -> void:
+			var source: int = route_index_by_id(id)
+			if source >= 0:
+				move_route(source, direction)
+				call_deferred("focus_route_handle", id))
+		header.add_child(handle)
 		header.add_child(icon_button("trash", "Remove event", func() -> void: remove_route(index)))
 		var summary: Label = BathysUiStyle.wrapped("", 11)
 		row.add_child(summary)
 		route_summaries.append(summary)
 		add_insertion_slot(index + 1)
-		if kind == "switch":
-			details.free()
-			continue
 		row.add_child(details)
+		if kind == "switch":
+			details.add_child(make_label("GAS", 10, BathysUiStyle.MUTED))
+			gas_selector(details, waypoint, "tankId")
+			bind_route_card_drop_targets(card)
+			continue
 		var grid: GridContainer = inline_grid(details)
 		if kind == "travel":
 			inline_number(grid, "targetDepthM", "TARGET DEPTH", waypoint, 0, 100, 0.1, "m")
@@ -600,6 +632,7 @@ func refresh_route() -> void:
 			var coordinates: GridContainer = inline_grid(position)
 			inline_number(coordinates, "latitudeDeg", "LATITUDE N", waypoint, -90, 90, 0.00000001, "°")
 			inline_number(coordinates, "longitudeDeg", "LONGITUDE E", waypoint, -180, 180, 0.00000001, "°")
+		bind_route_card_drop_targets(card)
 	update_route_summaries()
 
 func update_route_summaries() -> void:
@@ -612,15 +645,15 @@ func update_route_summaries() -> void:
 		if kind == "switch":
 			active = tank_name(str(waypoint.get("tankId", "")))
 			var depth: float = float(legs[index]["startDepthM"]) if index < legs.size() else 0.0
-			summary = BathysI18n.text("GAS SWITCH · %s at %.1f m · 0 s · position unchanged") % [active, depth]
+			summary = BathysI18n.text("%s at %.1f m") % [active, depth]
 		elif index < legs.size():
 			var leg: Dictionary = legs[index]
-			summary = BathysI18n.text("HOLD · %.1f m · %.1f min") % [float(leg["targetDepthM"]), float(leg["durationS"])/60] if kind == "hold" else BathysI18n.text("%.0f m · %03.0f° true · %.1f to %.1f m · %.1f min") % [float(leg["distanceM"]), float(leg["bearingTrueDeg"]), float(leg["startDepthM"]), float(leg["targetDepthM"]), float(leg["durationS"])/60]
+			summary = BathysI18n.text("%.1f m · %.1f min") % [float(leg["targetDepthM"]), float(leg["durationS"])/60] if kind == "hold" else BathysI18n.text("%.0f m · %03.0f° true · %.1f to %.1f m · %.1f min") % [float(leg["distanceM"]), float(leg["bearingTrueDeg"]), float(leg["startDepthM"]), float(leg["targetDepthM"]), float(leg["durationS"])/60]
 			summary += BathysI18n.text("\n%s · SAC %.0f L/min") % [active, float(waypoint.get("sacLPerMin", 18))]
 			if kind == "travel":
 				summary += " · %.0f m/min" % float(waypoint.get("speedMPerMin", 12))
 		else:
-			summary = BathysI18n.text("%s · target %.1f m") % [tr(kind.to_upper()), float(waypoint.get("targetDepthM", 0))]
+			summary = BathysI18n.text("Target depth %.1f m") % float(waypoint.get("targetDepthM", 0))
 		route_summaries[index].text = summary
 
 func tank_name(tank_id: String) -> String:
@@ -668,15 +701,15 @@ func refresh_tanks() -> void:
 		glyph.oxygen_percent = float(tank.get("o2", 0.21))*100
 		header.add_child(glyph)
 		var title: VBoxContainer = BathysUiStyle.column(header, 3)
-		inline_name(title, tank, true)
+		var name_input: LineEdit = inline_name(title, tank, true)
 		var mix: Label = make_label("", 10, AQUA)
 		title.add_child(mix)
 		var details := VBoxContainer.new()
 		details.name = "InlineEditor"
 		details.visible = bool(expanded_tanks.get(tank_id, false))
-		title.add_child(make_button("EDIT", func() -> void:
-			details.visible = not details.visible
-			expanded_tanks[tank_id] = details.visible))
+		name_input.editable = details.visible
+		details.visibility_changed.connect(func() -> void: name_input.editable = details.visible)
+		title.add_child(editor_toggle(details, expanded_tanks, tank_id, tank, true, name_input))
 		var dial := BathysSpgDial.new()
 		header.add_child(dial)
 		var metrics: Label = BathysUiStyle.wrapped("", 10)
@@ -691,7 +724,9 @@ func refresh_tanks() -> void:
 		nitrogen.editable = false
 		inline_number(grid, "he", "He", tank, 0, 100, 1, "%", 100)
 		details.add_child(BathysUiStyle.wrapped("Set oxygen and helium; nitrogen fills the remaining percentage automatically.", 10))
-		details.add_child(make_button("REMOVE TANK", func() -> void: remove_tank(index)))
+		var remove := icon_button("trash", "Remove tank", func() -> void: remove_tank(index))
+		remove.size_flags_horizontal = Control.SIZE_SHRINK_END
+		details.add_child(remove)
 		tank_readouts.append({"mix":mix, "glyph":glyph, "dial":dial, "metrics":metrics})
 	update_tank_readouts()
 
@@ -964,8 +999,8 @@ func recompute(cooperative: bool = false, revision: int = -1) -> void:
 		feedback_label.visible = true
 		selected_event = int(result.get("eventIndex", -1))
 		if selected_event >= 0:
-			feedback_label.text = BathysI18n.text("Event %d · ") % (selected_event + 1) + feedback_label.text
 			var route: Array = plan["waypoints"]
+			feedback_label.text = tr("Event: %s · ") % str(route[selected_event].get("name", tr("Waypoint"))) + feedback_label.text
 			expanded_routes[str(route[selected_event]["id"])] = true
 		refresh_route()
 		metric_label.text = "Simulation unavailable"
@@ -1138,6 +1173,7 @@ func inline_name(parent: Node, target: Dictionary, tank: bool = false) -> LineEd
 	var input := LineEdit.new()
 	input.name = "name"
 	input.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	input.add_theme_color_override("font_uneditable_color", INK)
 	input.text = str(target.get("name", ""))
 	input.custom_minimum_size = Vector2(65, 28)
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1151,6 +1187,7 @@ func inline_name(parent: Node, target: Dictionary, tank: bool = false) -> LineEd
 				var waypoint: Dictionary = item as Dictionary
 				if waypoint.get("kind") == "switch" and waypoint.get("tankId") == target.get("id"):
 					waypoint["name"] = tr("Switch to ") + input.text
+	input.set_meta("commit_edit", commit)
 	input.text_submitted.connect(func(_value: String) -> void: commit.call())
 	input.focus_exited.connect(commit)
 	return input
@@ -1212,7 +1249,10 @@ func gas_selector(parent: Node, target: Dictionary, key: String) -> OptionButton
 	choice.item_selected.connect(func(index: int) -> void:
 		commit_inline(target, key, choice.get_item_metadata(index))
 		if target.get("kind") == "switch":
-			target["name"] = tr("Switch to ") + tank_name(str(target[key])))
+			target["name"] = tr("Switch to ") + tank_name(str(target[key]))
+			var input := parent.get_parent().find_child("name", true, false) as LineEdit
+			if input != null:
+				input.text = str(target["name"]))
 	return choice
 
 func add_tank() -> void:
@@ -1418,7 +1458,9 @@ func dismiss_inspection() -> void:
 		inspection_overlay.hide()
 
 func add_insertion_slot(index: int) -> void:
-	var slot := CenterContainer.new()
+	var slot := BathysRouteDropSlot.new()
+	route_drop_slots.append(slot)
+	bind_route_drop_target(slot)
 	slot.name = "Insertion_" + str(index)
 	slot.custom_minimum_size.y = 12
 	route_list.add_child(slot)
@@ -1431,6 +1473,7 @@ func add_insertion_slot(index: int) -> void:
 		button.add_theme_stylebox_override(state, BathysUiStyle.box(Color(0, 0, 0, 0), AQUA if state != "normal" else Color(0, 0, 0, 0), 3, 0))
 	button.custom_minimum_size = Vector2(32, 12)
 	slot.add_child(button)
+	bind_route_drop_target(button)
 
 func insertion_menu(index: int) -> void:
 	var menu := PopupMenu.new()
@@ -1814,3 +1857,153 @@ func _on_language_changed() -> void:
 	map.queue_redraw()
 	for chart: BathysMetricGraph in graphs:
 		chart.queue_redraw()
+
+func editor_toggle(details: Control, expanded: Dictionary, item_id: String, target: Dictionary,
+		tank: bool, name_input: LineEdit) -> Button:
+	var button := Button.new()
+	button.name = "EditorToggle"
+	button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	button.custom_minimum_size = Vector2(34, 31)
+	button.focus_mode = Control.FOCUS_ALL
+	button.toggle_mode = true
+	var edit_hint: String = "Edit tank" if tank else {"travel": "Edit waypoint", "hold": "Edit hold", "switch": "Edit gas switch"}.get(str(target.get("kind", "travel")), "Edit waypoint")
+	var update_state: Callable = func() -> void:
+		button.set_pressed_no_signal(details.visible)
+		button.icon = load("res://Assets/Icons/check.svg" if details.visible else "res://Assets/Icons/tools.svg")
+		button.tooltip_text = "Validate changes" if details.visible else edit_hint
+	button.pressed.connect(func() -> void:
+		if details.visible:
+			# Commit text still focused in an input before validating the edited item.
+			(name_input.get_meta("commit_edit") as Callable).call()
+			for input: Node in details.find_children("*", "SpinBox", true, false):
+				(input as SpinBox).apply()
+			var error: String = validate_editor_target(target, tank)
+			var error_label := details.get_node_or_null("EditorError") as Label
+			if not error.is_empty():
+				if error_label == null:
+					error_label = BathysUiStyle.wrapped("", 12, RED)
+					error_label.name = "EditorError"
+					details.add_child(error_label)
+				error_label.text = error
+				error_label.show()
+				status_label.text = error
+				update_state.call()
+				return
+			if error_label != null:
+				error_label.hide()
+			if sim_debounce >= 0:
+				apply_inline_changes(true)
+			details.hide()
+		else:
+			details.show()
+		expanded[item_id] = details.visible
+		update_state.call())
+	update_state.call()
+	return button
+
+func validate_editor_target(target: Dictionary, tank: bool) -> String:
+	# Validate this item independently of unfinished settings in other cards.
+	if not tank and target.get("kind") == "switch":
+		for item: Dictionary in plan.get("tanks", []):
+			if item.get("id") == target.get("tankId"):
+				return ""
+		return "Choose a valid gas for this switch."
+	var draft: Dictionary = BathysPlan.empty(site)
+	if tank:
+		draft["tanks"] = [target.duplicate(true)]
+		draft["initialTankId"] = str(target.get("id", ""))
+	else:
+		draft["waypoints"] = [target.duplicate(true)]
+	return BathysPlan.validate(draft, false)
+
+func route_index_by_id(event_id: String) -> int:
+	var route: Array = plan.get("waypoints", [])
+	for index: int in route.size():
+		if str(route[index].get("id", "")) == event_id:
+			return index
+	return -1
+
+func valid_route_drag(data: Variant) -> bool:
+	return data is Dictionary and data.get("type") == "bathys_route_event" and data.get("owner") == get_instance_id() and route_index_by_id(str(data.get("id", ""))) >= 0
+
+func route_boundary_at(at: Vector2) -> int:
+	var route: Array = plan.get("waypoints", [])
+	for index: int in route.size():
+		var card := route_list.get_node_or_null("Route_" + str(index)) as Control
+		if card != null and at.y < card.get_global_rect().get_center().y:
+			return index
+	return route.size()
+
+func highlight_route_drop(boundary: int) -> void:
+	route_drop_boundary = boundary
+	for index: int in route_drop_slots.size():
+		route_drop_slots[index].set_highlight(index == boundary)
+
+func bind_route_drop_target(control: Control) -> void:
+	control.set_drag_forwarding(
+		func(_at: Vector2) -> Variant: return null,
+		func(_at: Vector2, data: Variant) -> bool:
+			if not valid_route_drag(data) or not (route_list.get_parent() as Control).get_global_rect().has_point(route_drag_position):
+				return false
+			highlight_route_drop(route_boundary_at(route_drag_position))
+			return true,
+		func(_at: Vector2, data: Variant) -> void:
+			if valid_route_drag(data):
+				reorder_route(str(data["id"]), route_boundary_at(route_drag_position)))
+
+func reorder_route(event_id: String, boundary: int) -> void:
+	var source: int = route_index_by_id(event_id)
+	if source < 0:
+		return
+	var route: Array = plan["waypoints"]
+	var destination: int = clampi(boundary, 0, route.size())
+	if destination > source:
+		destination -= 1
+	if destination == source:
+		return
+	snapshot()
+	var event: Variant = route.pop_at(source)
+	route.insert(destination, event)
+	changed(true)
+
+func update_route_drag(delta: float) -> void:
+	var scroll := route_list.get_parent() as ScrollContainer
+	var bounds: Rect2 = scroll.get_global_rect()
+	var mouse: Vector2 = route_drag_position
+	if not bounds.has_point(mouse):
+		highlight_route_drop(-1)
+		return
+	var direction: float = 0
+	if mouse.y < bounds.position.y + 36:
+		direction = -1
+	elif mouse.y > bounds.end.y - 36:
+		direction = 1
+	if direction != 0:
+		scroll.scroll_vertical += roundi(direction * 420 * delta)
+	highlight_route_drop(route_boundary_at(mouse))
+
+func finish_route_drag() -> void:
+	route_drag_id = ""
+	highlight_route_drop(-1)
+	if route_refresh_pending:
+		route_refresh_pending = false
+		refresh_route()
+
+func bind_route_card_drop_targets(card: Control) -> void:
+	# Buttons and fields stop mouse propagation, so forward their route drops too.
+	for child: Node in card.find_children("*", "Control", true, false):
+		if child is Control and not child is BathysRouteDragHandle:
+			bind_route_drop_target(child)
+
+func focus_route_handle(event_id: String) -> void:
+	var index: int = route_index_by_id(event_id)
+	var card := route_list.get_node_or_null("Route_" + str(index)) as Control
+	if card != null:
+		var handle := card.find_child("DragHandle", true, false) as Control
+		if handle != null:
+			handle.grab_focus()
+			(route_list.get_parent() as ScrollContainer).ensure_control_visible(handle)
+
+func _input(event: InputEvent) -> void:
+	if not route_drag_id.is_empty() and (event is InputEventMouseMotion or event is InputEventMouseButton):
+		route_drag_position = event.global_position

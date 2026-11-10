@@ -264,5 +264,19 @@
   "TRAVEL": "DÉPLACEMENT",
   "HOLD": "ARRÊT",
   "SWITCH": "CHANGEMENT DE GAZ",
-  "%s · %d measured cells · %d interpolated cells": "%s · %d cellules mesurées · %d cellules interpolées"
+  "%s · %d measured cells · %d interpolated cells": "%s · %d cellules mesurées · %d cellules interpolées",
+  "Edit tank": "Modifier la bouteille",
+  "Edit waypoint": "Modifier l’étape",
+  "Edit hold": "Modifier l’arrêt",
+  "Edit gas switch": "Modifier le changement de gaz",
+  "Validate changes": "Valider les modifications",
+  "Remove tank": "Supprimer la bouteille",
+  "Choose a valid gas for this switch.": "Choisissez un gaz valide pour ce changement.",
+  "Waypoint": "Étape de déplacement",
+  "%s at %.1f m": "%s à %.1f m",
+  "%.1f m · %.1f min": "%.1f m · %.1f min",
+  "Target depth %.1f m": "Profondeur cible %.1f m",
+  "Event: %s · ": "Étape : %s · ",
+  "Drag to reorder · Alt+Up/Down": "Glisser pour réordonner · Alt+Haut/Bas",
+  "Route event": "Étape du parcours"
 }

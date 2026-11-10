@@ -65,6 +65,8 @@ func run() -> void:
 	root.size = Vector2i(390, 844)
 	app.adapt_layout()
 	await capture("res://Screenshots/language-narrow-fr.png")
+	await process_frame
+	await process_frame
 	check(app.content_box.size.x <= 390, "French controls fit the narrow layout")
 	root.size = Vector2i(1280, 1000)
 	app.adapt_layout()
