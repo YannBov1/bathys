@@ -1,54 +1,38 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-BATHYS_STARTUP_MS=100
-BATHYS_SIM_MS=1196
-UI PASS: simulation initializes in the complete interface
-UI PASS: all seventeen physiology readouts remain available
-UI PASS: five synchronized plots are available
-UI PASS: POI mutation is removed
-UI PASS: hold action updates route
-BATHYS_SIM_MS=1140
-UI PASS: undo restores route
-UI PASS: plot cursor follows scrub: depth
-UI PASS: plot receives simulated frames: depth
-UI PASS: plot cursor follows scrub: tts
-UI PASS: plot receives simulated frames: tts
-UI PASS: plot cursor follows scrub: ndl
-UI PASS: plot receives simulated frames: ndl
-UI PASS: plot cursor follows scrub: cns
-UI PASS: plot receives simulated frames: cns
-UI PASS: plot cursor follows scrub: otu
-UI PASS: plot receives simulated frames: otu
-UI PASS: TTS graph converts seconds to minutes
-UI PASS: NDL is unavailable at surface
-UI PASS: unbounded NDL follows reference chart convention
-BATHYS_TERRAIN_TRIANGLES=878652
-BATHYS_TERRAIN_LOAD_MS=26
-UI PASS: 2D switching hides the 3D scene
-UI PASS: 3D switching restores terrain
-UI PASS: dialog editor path is removed
-UI PASS: route and tank inline inputs exist
-UI PASS: inline route input updates plan
-BATHYS_SIM_MS=1092
-UI PASS: simulation preserves route input instance
-UI PASS: simulation preserves tank input instance
-UI PASS: inline pressure updates dial scale
-BATHYS_SIM_MS=1066
-UI PASS: playback preserves tank editor instance
-UI PASS: inline environment input updates plan
-UI PASS: environment readout responds to salinity
-BATHYS_SIM_MS=1075
-UI PASS: simulation preserves environment input instance
-UI PASS: tissues display two arrow symbols per compartment
-BATHYS_SIM_MS=1092
-UI PASS: undo restores inline environment edit
-UI PASS: model summary follows inline gradient factor edit
-BATHYS_SIM_MS=1069
-UI PASS: new switch chooses a different gas from current stage
-UI PASS: empty route resets playback cleanly
-UI PASS: empty route displays start hint
-UI_SMOKE failures=0
-depthM difference=0.0
+BATHYS_STARTUP_MS=110
+LEARNING PASS: dive workspace is the default
+LEARNING PASS: header switch has icons and a descriptive tooltip
+BATHYS_SIM_MS=218
+LEARNING PASS: switch opens a dedicated learning workspace
+LEARNING PASS: entering a lesson pauses simulation
+LEARNING PASS: learning header keeps language selection and hides scenario actions
+LEARNING PASS: left navigation includes all five lessons
+LEARNING PASS: surface reference is one litre at one bar absolute
+LEARNING PASS: ten metres doubles pressure and halves volume
+LEARNING PASS: thirty metres gives a quarter of the surface volume
+LEARNING PASS: direct interaction in the water updates the depth slider
+LEARNING PASS: lesson slider supports keyboard adjustment
+LEARNING PASS: topic button selects optics controls
+LEARNING PASS: air to water at thirty degrees refracts to about twenty-two degrees
+LEARNING PASS: air-to-water ray is transmitted
+LEARNING PASS: dragging the incident side updates the ray angle
+LEARNING PASS: water-to-air ray bends away from the normal
+LEARNING PASS: critical angle follows the chosen refractive indices
+LEARNING PASS: above the critical angle the diagram shows total internal reflection
+LEARNING PASS: lesson headings and live explanations translate into French
+LEARNING PASS: language switch preserves experiment settings
+LEARNING PASS: returning to a lesson restores experiment state and numeric styling
+LEARNING PASS: narrow layout stacks navigation and the pressure-volume graph
+LEARNING PASS: French learning view fits a narrow window
+LEARNING PASS: French angle controls and readouts fit a phone width
+LEARNING PASS: switch returns to the dive workspace
+LEARNING PASS: learning experiments do not modify the plan or undo history
+LEARNING PASS: returning preserves time, map zoom and collapsed panels
+LEARNING PASS: experiments survive workspace switching
+ce=0.0
+PASS C# before switch longitudeDeg difference=0.0
+PASS C# before switch depthM difference=0.0
 PASS C# before switch ambientBar difference=0.0
 PASS C# before switch ceilingM difference=0.0
 PASS C# before switch leadingGf difference=0.0000000000001

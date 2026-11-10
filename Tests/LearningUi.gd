@@ -63,7 +63,7 @@ func run() -> void:
 	var paused_time: float = app.playback_time
 	check(not app.find_child("PlanName", true, false).is_visible_in_tree() and app.language_button.is_visible_in_tree(), "learning header keeps language selection and hides scenario actions")
 	var view: BathysLearningView = app.learning_view
-	check(view.topic_buttons.size() == 2 and view.lesson == "boyle", "left navigation starts with Boyle and Snell")
+	check(view.topic_buttons.size() == 5 and view.lesson == "boyle", "left navigation includes all five lessons")
 	view.slider.value = 0
 	check(view.readout_values[0].text == "1.00 bar" and view.readout_values[1].text == "1.00 L", "surface reference is one litre at one bar absolute")
 	view.slider.value = 10
