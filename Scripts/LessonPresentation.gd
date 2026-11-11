@@ -6,15 +6,9 @@ var body: VBoxContainer
 var toolbar: HBoxContainer
 var hint: Label
 var chart_button: Button
-var parameter_button: Button
 var note_button: Button
 var instruments: HFlowContainer
 var range_dock: CenterContainer
-var palette: VBoxContainer
-var palette_buttons: HFlowContainer
-var palette_stage: CenterContainer
-var palette_inputs: Dictionary = {}
-var active_parameter: String = ""
 var actions: HFlowContainer
 var outcome: BoxContainer
 var outcome_title: Label
@@ -42,7 +36,6 @@ func setup(view, parent: VBoxContainer) -> void:
 	toolbar.add_child(hint)
 	chart_button = toggle("res://Assets/Icons/lesson-chart.svg", "Show linked chart")
 	chart_button.set_pressed_no_signal(true)
-	parameter_button = toggle("res://Assets/Icons/settings.svg", "Precise values")
 	note_button = toggle("res://Assets/Icons/lesson-info.svg", "Explanation, equations and model limits")
 	instruments = HFlowContainer.new()
 	instruments.alignment = FlowContainer.ALIGNMENT_CENTER
@@ -51,13 +44,6 @@ func setup(view, parent: VBoxContainer) -> void:
 	body.add_child(instruments)
 	range_dock = CenterContainer.new()
 	body.add_child(range_dock)
-	palette = VBoxContainer.new()
-	body.add_child(palette)
-	palette_buttons = HFlowContainer.new()
-	palette_buttons.alignment = FlowContainer.ALIGNMENT_CENTER
-	palette.add_child(palette_buttons)
-	palette_stage = CenterContainer.new()
-	palette.add_child(palette_stage)
 	actions = HFlowContainer.new()
 	actions.add_theme_constant_override("h_separation", 6)
 	body.add_child(actions)
@@ -75,9 +61,11 @@ func setup(view, parent: VBoxContainer) -> void:
 	var short_stages: Dictionary = {"1 · Load tissues": "Loading", "2 · Explore ascent": "Ascent", "1 · Displacement": "Displacement", "2 · Gas at depth": "At depth", "Lungs · blood parcel": "Lungs", "Tissues · storage & release": "Tissues", "Colour & light": "Colour", "Water & scattering": "Water optics", "Why two coefficients?": "Image model", "Boundary & rays": "Refraction", "Mask & apparent size": "Mask"}
 	for owner in [host.buhlmann_view, host.buoyancy_view, host.exchange_view, host.optics_view]:
 		for button: Button in owner.stage_buttons:
+			if button.text.is_empty(): continue
 			button.tooltip_text = button.text
 			button.text = short_stages.get(button.text, button.text)
 	for button: Button in host.snell_buttons:
+		if button.text.is_empty(): continue
 		button.tooltip_text = button.text
 		button.text = short_stages.get(button.text, button.text)
 	sync()
@@ -93,11 +81,11 @@ func toggle(icon_path: String, description: String) -> Button:
 	return button
 
 func expand_all() -> void:
-	for button: Button in [chart_button, parameter_button, note_button]: button.button_pressed = true
+	for button: Button in [chart_button, note_button]: button.button_pressed = true
 	sync()
 
 func compact_all() -> void:
-	for button: Button in [chart_button, parameter_button, note_button]: button.button_pressed = false
+	for button: Button in [chart_button, note_button]: button.button_pressed = false
 	sync()
 
 func _process(_delta: float) -> void:
@@ -148,26 +136,6 @@ func mixture(o2: HSlider, he: HSlider) -> void:
 	instruments.add_child(tank)
 	widgets["mixture"] = tank
 
-func visual_parameter(key: String, input: HSlider, shape: String, caption: String, unit: String, icon_path: String) -> void:
-	if widgets.has(key): return
-	palette_inputs[key] = [input, shape, caption, unit]
-	var button := Button.new()
-	button.icon = load("res://Assets/Icons/" + icon_path + ".svg")
-	button.custom_minimum_size = Vector2(36, 34)
-	button.expand_icon = true
-	button.toggle_mode = true
-	button.tooltip_text = caption
-	palette_buttons.add_child(button)
-	button.toggled.connect(func(selected: bool) -> void:
-		clear_children(palette_stage)
-		active_parameter = key if selected else ""
-		for other: Button in palette_buttons.get_children():
-			if other != button: other.set_pressed_no_signal(false)
-		if selected:
-			var widget := BathysLessonInstrument.new()
-			widget.bind(input, shape, caption, unit)
-			palette_stage.add_child(widget))
-
 func extra_parameters(inputs: Dictionary, keys: Array) -> void:
 	var styles: Dictionary = {
 		"temperature": ["temperature", "Temperature", "°C", "lesson-thermometer"],
@@ -188,7 +156,6 @@ func extra_parameters(inputs: Dictionary, keys: Array) -> void:
 		"capacity": ["amount", "Gas storage", "×", "cylinder"],
 		"power": ["light", "Torch strength", "×", "lesson-torch"],
 		"exposure": ["light", "Exposure", "EV", "lesson-eye"],
-		"baseline": ["length", "Torch offset", "m", "lesson-torch"],
 		"probe": ["wave", "Wavelength", "nm", "law-colour"],
 		"g": ["flow", "Forward bias", "", "law-colour"],
 		"diffuse": ["light", "Diffuse light", "", "law-colour"],
@@ -198,7 +165,7 @@ func extra_parameters(inputs: Dictionary, keys: Array) -> void:
 		if not inputs.has(key): continue
 		var style: Array = styles.get(key, ["gauge", key.capitalize(), "", "settings"])
 		if key == "thickness" and host.lesson == "snell": style = ["length", "Window thickness", "mm", "lesson-ruler"]
-		visual_parameter(key, inputs[key], style[0], style[1], style[2], style[3])
+		if not widgets.has(key): instrument(key, inputs[key], style[0], style[1], style[2])
 
 func picker(source: OptionButton) -> void:
 	var copy := OptionButton.new()
@@ -239,10 +206,6 @@ func sync() -> void:
 	clear_children(instruments)
 	clear_children(range_dock)
 	clear_children(actions)
-	clear_children(palette_buttons)
-	clear_children(palette_stage)
-	palette_inputs.clear()
-	active_parameter = ""
 	widgets.clear()
 	mirrors.clear()
 	control_nodes.clear()
@@ -378,7 +341,7 @@ func sync() -> void:
 				hint.text = "Drag the target through the water"
 				graph_available = false
 				action(view.torch_switch, "Torch")
-				extra_parameters(view.inputs, ["exposure", "power", "baseline"])
+				extra_parameters(view.inputs, ["exposure", "power"])
 			1:
 				hint.text = "Touch a wavelength"
 				instrument("g", view.inputs["g"], "gauge", "Forward bias", "")
@@ -401,9 +364,9 @@ func sync() -> void:
 	active_owner = owner
 	if range_dock.get_parent() != owner: range_dock.reparent(owner)
 	owner.move_child(range_dock, diagram.get_index())
-	for node: Control in [actions, instruments, palette, outcome]:
+	for node: Control in [actions, instruments, outcome]:
 		if node.get_parent() != owner: node.reparent(owner)
-		owner.move_child(node, diagram.get_index() + 1 + [actions, instruments, palette, outcome].find(node))
+		owner.move_child(node, diagram.get_index() + 1 + [actions, instruments, outcome].find(node))
 	chart_button.tooltip_text = "Show linked chart"
 	if key == "snell" and host.snell_mask: chart_button.tooltip_text = "Show ray paths"
 	elif key == "density": chart_button.tooltip_text = "Compare water columns"
@@ -418,7 +381,7 @@ func apply_visibility() -> void:
 	chart_button.visible = graph_available
 	if host.lesson == "colour" and host.optics_view.stage == 0:
 		var view: BathysOpticsLesson = host.optics_view
-		var compare: bool = view.size.x < 660 and not parameter_button.button_pressed and not note_button.button_pressed
+		var compare: bool = view.size.x < 660 and not note_button.button_pressed
 		view.preview_box.get_child(0).visible = not compare
 		view.compare_handle.visible = compare
 		view.preview_materials[1].set_shader_parameter("compare_split", view.compare_handle.split if compare else -1.0)
@@ -427,9 +390,9 @@ func apply_visibility() -> void:
 	if host.lesson == "colour" and host.optics_view.stage == 1 and widgets.has("g"):
 		(widgets["g"] as Control).visible = true
 		hint.text = "Turn the forward-bias dial" if chart_button.button_pressed else "Touch a wavelength"
-	for node: Control in control_nodes: node.visible = parameter_button.button_pressed
+	for node: Control in control_nodes: node.hide()
 	for node: Control in note_nodes: node.visible = note_button.button_pressed
-	if host.lesson == "charles" and not parameter_button.button_pressed:
+	if host.lesson == "charles":
 		if instruments.get_parent() != diagram: instruments.reparent(diagram)
 		var area: Rect2 = (diagram as BathysThermalDiagram).section(0)
 		instruments.position = Vector2(minf(area.size.x - 100, area.size.x * 0.42 + 95), 100)
@@ -439,19 +402,12 @@ func apply_visibility() -> void:
 		active_owner.move_child(instruments, diagram.get_index() + 2)
 	var any_instrument: bool = false
 	for child: Control in instruments.get_children(): any_instrument = any_instrument or child.visible
-	instruments.visible = not parameter_button.button_pressed and any_instrument
-	actions.visible = not parameter_button.button_pressed and actions.get_child_count() > 0
-	range_dock.visible = not parameter_button.button_pressed and range_dock.get_child_count() > 0
-	palette.visible = not parameter_button.button_pressed and palette_buttons.get_child_count() > 0
+	instruments.visible = any_instrument
+	actions.visible = actions.get_child_count() > 0
+	range_dock.visible = range_dock.get_child_count() > 0
 	if host.lesson == "colour" and host.optics_view.stage == 0:
-		for index: int in palette_buttons.get_child_count():
-			var button: Button = palette_buttons.get_child(index)
-			var key: String = palette_inputs.keys()[index]
-			button.visible = key == "exposure" or bool(host.optics_view.params["torch"])
-			if not button.visible and active_parameter == key:
-				button.set_pressed_no_signal(false)
-				clear_children(palette_stage)
-				active_parameter = ""
+		for key: String in ["power"]:
+			(widgets[key] as Control).visible = bool(host.optics_view.params["torch"])
 	outcome.vertical = active_owner.size.x < 500
 	outcome.visible = not note_button.button_pressed and is_instance_valid(output_source)
 	if diagram.comparison_visible != chart_button.button_pressed:

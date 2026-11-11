@@ -510,7 +510,7 @@ func update_science_values() -> void:
 			for index: int in 4:
 				readout_titles[index].text = ["Total pressure", "Oxygen · ppO₂", "Nitrogen · ppN₂", "Helium · ppHe"][index]
 				readout_values[index].text = "%.2f bar" % float(pressures[["total", "o2", "n2", "he"][index]])
-			formula_label.text = "pᵢ = Fᵢ × P  ·  P = Σpᵢ"
+			formula_label.text = "pᵢ = Fᵢ × P\n\nP = Σpᵢ"
 			insight_label.text = tr("Oxygen stays at %.1f%% of the mixture, but at %.1f m its partial pressure is %.2f bar.") % [oxygen_percent, dalton_depth, pressures["o2"]]
 			relevance_label.text = "A percentage alone does not describe gas exposure: depth matters too. Compare air and nitrox at the same depth. Nitrogen fills the fraction left after oxygen and helium."
 			assumptions_label.text = "Model: ideal, dry O₂/N₂/He mixture; percentages always total 100%. Uses 1 bar at the surface plus 1 bar per 10 m. These are ambient partial pressures, not cylinder pressure or humidified lung gas."
@@ -543,7 +543,7 @@ func update_science_values() -> void:
 			readout_values[0].text = "%.2f" % float(properties["density"])
 			readout_values[1].text = "%.3f m" % float(properties["metres_per_bar"])
 			readout_values[2].text = "%.3f" % float(properties["pressure_at_10m"])
-			formula_label.text = "Δp = ρgh  ·  h₁bar = 100000 / (ρg)"
+			formula_label.text = "Δp = ρgh\n\nh₁bar = 100000 / (ρg)"
 			insight_label.text = "Adding salt increases density and reduces metres per bar. Fresh water is densest near 4°C: cooling it below that makes it slightly less dense."
 			relevance_label.text = "One bar is not exactly 10 m in every body of water. The dashed line compares fresh water at 20°C, on the same depth scale. The curve shows temperature effects at your selected salinity."
 			assumptions_label.text = "Model: app’s EOS-80 surface-density approximation, salinity approximately g/kg; uniform water, no compression or layering. Uses g = 9.80665 m/s² and 1 bar = 100000 Pa. Pressure increments exclude atmospheric pressure."

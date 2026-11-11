@@ -73,7 +73,6 @@ func _draw() -> void:
 	var labels: Array[String] = ["O₂", "N₂", "He"]
 	draw_rect(Rect2(size.x / 2 - 6, 9, 12, 8), ink)
 	draw_style_box(BathysUiStyle.box(Color("123b48"), ink, 9, 0), Rect2(left, 19, width, 125))
-	draw_string(ThemeDB.fallback_font, Vector2(size.x / 2 - 14, 35), "100%", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink)
 	var y: float = TOP
 	for i: int in 3:
 		var height: float = fractions[i] * HEIGHT / 100

@@ -10,14 +10,13 @@ func run() -> void:
 	var ui: BathysLessonPresentation = view.presentation
 	check(ui.chart_button.button_pressed, "linked charts start enabled")
 	await settle(app)
-	ui.parameter_button.button_pressed = false
 	ui.note_button.button_pressed = false
 	app.set_learning_mode(true)
 	var before: String = JSON.stringify(app.plan)
 	for topic: Array in view.TOPICS:
 		view.select_lesson(topic[0])
 		await layout()
-		check(visible_sliders(view) == 0 and not ui.parameter_button.button_pressed, "visual controls work without precise drawer: " + topic[0])
+		check(visible_sliders(view) == 0 and ui.toolbar.get_child_count() == 3, "visual controls work without precise drawer: " + topic[0])
 		await capture("res://Screenshots/instruments-" + topic[0] + "-en.png")
 	view.select_lesson("henry")
 	await layout()
@@ -56,14 +55,16 @@ func run() -> void:
 	view.optics_view.set_stage(0)
 	view.optics_view.torch_switch.button_pressed = true
 	await layout()
-	check(ui.palette_inputs.has("exposure") and ui.palette_inputs.has("power") and ui.palette_inputs.has("baseline"), "lighting variables have visual instruments")
-	for i: int in ui.palette_buttons.get_child_count():
-		var button: Button = ui.palette_buttons.get_child(i)
-		await click(button.get_global_rect().get_center())
-		check(ui.palette_stage.get_child_count() == 1, "icon palette shows one instrument at a time")
-		var widget: BathysLessonInstrument = ui.palette_stage.get_child(0)
+	check(ui.widgets.has("exposure") and ui.widgets.has("power") and not ui.widgets.has("baseline"), "lighting instruments start visible and offset uses the diagram")
+	for name: String in ["exposure", "power"]:
+		var widget: BathysLessonInstrument = ui.widgets[name]
+		view.lesson_scroll.ensure_control_visible(widget)
+		await layout()
+		check(widget.is_visible_in_tree(), "lighting instrument needs no toggle")
 		await click(widget.global_position + Vector2(widget.size.x - 38, 55))
 		near(widget.source.value, widget.source.max_value, 0.001, "visual lighting rail reaches the full parameter range")
+	view.lesson_scroll.ensure_control_visible(view.optics_view.plots)
+	await layout()
 	await capture("res://Screenshots/instruments-torch-en.png")
 	view.select_lesson("buoyancy")
 	var buoy: BathysBuoyancyLesson = view.buoyancy_view
@@ -103,10 +104,8 @@ func run() -> void:
 	view.select_lesson("snell")
 	view.set_snell_stage(true)
 	await layout()
-	for button: Button in ui.palette_buttons.get_children():
-		button.button_pressed = true
-		await layout()
-		check(view.get_combined_minimum_size().x <= 390, "French visual mask instrument fits a phone")
+	for name: String in ["height", "gap", "thickness", "glass_index"]:
+		check(ui.widgets[name].is_visible_in_tree() and view.get_combined_minimum_size().x <= 390, "French mask instruments are visible and fit a phone")
 	await capture("res://Screenshots/instruments-mask-fr-phone.png")
 	check(JSON.stringify(app.plan) == before and app.undo_stack.is_empty(), "visual instrument edits leave the dive plan and history untouched")
 	localization.set_language("en", false)

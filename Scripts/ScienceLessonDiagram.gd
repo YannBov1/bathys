@@ -17,6 +17,10 @@ var half_times: float = 1.0
 var temperature_c: float = 20.0
 var salinity: float = 35.0
 
+func _ready() -> void:
+	super._ready()
+	focus_mode = FOCUS_ALL
+
 func adapt() -> void:
 	if lesson in ["boyle", "snell"]:
 		super.adapt()
@@ -26,6 +30,14 @@ func adapt() -> void:
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
+		var amount: float = (1 if event.keycode in [KEY_RIGHT, KEY_DOWN] else -1) * (1 if event.shift_pressed else 0.1)
+		if lesson == "boyle": depth_changed.emit(clampf(depth_m + amount, 0, 40))
+		elif lesson == "snell": angle_changed.emit(clampf(angle_deg + amount, 0, 89))
+		else: return
+		accept_event()
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed: grab_focus()
 	if lesson == "dalton" and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		gas_drag = -1
 		if event.pressed:

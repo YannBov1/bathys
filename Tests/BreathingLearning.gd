@@ -62,7 +62,7 @@ func run() -> void:
 	(lesson.inputs["depth"] as HSlider).value = 4
 	(lesson.inputs["time"] as HSlider).value = 150
 	check(lesson.numbers[1].text == "100.0%" and lesson.numbers[1].get_theme_font_size("font_size") == 20, "valid CNS counter and styling return after out-of-range exposure")
-	lesson.inputs["time"].grab_focus()
+	await focus_visual(view, lesson.inputs["time"])
 	var key := InputEventKey.new()
 	key.pressed = true
 	key.keycode = KEY_RIGHT
@@ -84,7 +84,7 @@ func run() -> void:
 	near(float(lesson.result["end_m"]), 33.0379746835, 1e-8, "nitrogen-only assumption changes nitrox equivalent depth")
 	lesson.convention.select(0)
 	lesson.convention.item_selected.emit(0)
-	await click((lesson.preset_rows["narcosis"] as Control).get_child(2).get_global_rect().get_center())
+	(lesson.preset_rows["narcosis"] as Control).get_child(2).pressed.emit()
 	near(float(lesson.result["end_m"]), 17.5, 1e-10, "trimix 18/45 at forty metres has END 17.5 under the selected convention")
 	await capture("res://Screenshots/learning-narcosis-en.png")
 	(lesson.inputs["helium"] as HSlider).value = 100

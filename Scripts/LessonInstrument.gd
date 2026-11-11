@@ -16,6 +16,7 @@ func bind(input: HSlider, shape: String, title: String, suffix: String) -> void:
 	caption = title
 	unit = suffix
 	custom_minimum_size = Vector2(230, 96) if kind in ["distance", "length", "light", "wave", "flow"] else Vector2(94, 148)
+	if kind in ["distance", "length", "light", "wave", "flow"]: size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	mouse_default_cursor_shape = Control.CURSOR_VSIZE if kind in ["temperature", "depth", "amount", "salt"] else (Control.CURSOR_HSIZE if kind in ["distance", "length", "light", "wave", "flow"] else Control.CURSOR_POINTING_HAND)

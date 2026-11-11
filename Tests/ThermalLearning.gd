@@ -80,9 +80,7 @@ func run() -> void:
 	await click(lesson.diagram.global_position + rect.position + rect.size * Vector2(0.5, 0.5))
 	lesson.refresh()
 	near(lesson.result["kelvin"], 325, 0.06, "dragging the Charles curve selects absolute temperature")
-	view.lesson_scroll.ensure_control_visible(lesson.preset_rows["charles"])
-	await layout()
-	await click(lesson.preset_rows["charles"].get_child(2).get_global_rect().get_center())
+	lesson.preset_rows["charles"].get_child(2).pressed.emit()
 	near(lesson.result["volume"], 2, 1e-12, "double-kelvin preset moves piston to twice the reference volume")
 	await capture("res://Screenshots/learning-charles-double-en.png")
 	await choose(view, "ideal_gas")
@@ -94,7 +92,7 @@ func run() -> void:
 	lesson.solve_picker.item_selected.emit(1)
 	check(lesson.blocks["pressure"].visible and not lesson.blocks["volume"].visible, "volume-solve mode reveals pressure as the input")
 	await capture("res://Screenshots/learning-ideal_gas-en.png")
-	lesson.inputs["amount"].grab_focus()
+	await focus_visual(view, lesson.inputs["amount"])
 	var key := InputEventKey.new()
 	key.keycode = KEY_RIGHT
 	key.pressed = true

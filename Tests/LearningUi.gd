@@ -32,6 +32,15 @@ func click(at: Vector2) -> void:
 		Input.parse_input_event(event)
 		await layout()
 
+func focus_visual(view: BathysLearningView, source: HSlider) -> void:
+	for widget: Control in view.presentation.widgets.values():
+		if widget is BathysLessonInstrument and widget.source == source:
+			view.lesson_scroll.ensure_control_visible(widget)
+			await layout()
+			widget.grab_focus()
+			return
+	check(false, "source has a visible keyboard instrument")
+
 func capture(path: String) -> void:
 	await layout()
 	if "--visual" not in OS.get_cmdline_user_args(): return
@@ -76,13 +85,13 @@ func run() -> void:
 	var scene: Rect2 = view.diagram.bubble_rect()
 	await click(view.diagram.global_position + Vector2(scene.size.x * 0.3, 96 + (scene.size.y - 150) * 0.5))
 	check(is_equal_approx(view.depth_m, 20), "direct interaction in the water updates the depth slider")
-	view.slider.grab_focus()
+	view.diagram.grab_focus()
 	var key := InputEventKey.new()
 	key.keycode = KEY_RIGHT
 	key.pressed = true
 	Input.parse_input_event(key)
 	await layout()
-	check(view.depth_m > 20, "lesson slider supports keyboard adjustment")
+	check(view.depth_m > 20, "direct scene supports keyboard adjustment")
 	key.pressed = false
 	Input.parse_input_event(key)
 	await click((view.topic_buttons["snell"] as Button).get_global_rect().get_center())

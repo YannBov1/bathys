@@ -168,7 +168,7 @@ func refresh() -> void:
 			numbers[1].text = "%.1f%%" % float(result["cns"]) if bool(result["cns_valid"]) else tr("Outside table")
 			if not bool(result["cns_valid"]): numbers[1].add_theme_font_size_override("font_size", 14)
 			numbers[2].text = "%.1f" % float(result["otu"])
-			formula.text = "ppO₂ = F O₂ × P · 1 OTU = 1 min at 1 ata O₂"
+			formula.text = "ppO₂ = F O₂ × P\n\n1 OTU = 1 min at 1 ata O₂"
 			insight.text = "Oxygen affects the brain and lungs differently. CNS and OTU are separate exposure indexes, not probabilities of a seizure or lung injury."
 			explanation.text = "CNS toxicity can cause convulsions; prolonged oxygen exposure can affect the lungs. A CNS reading of 100% is a table exposure allocation, not a symptom threshold. Responses vary, and zero clock accrual does not mean a gas is suitable to breathe."
 			assumptions.text = "Model: constant depth and dry O₂ fraction, 1 bar + depth/10. Uses the app’s historical NOAA-style CNS table in bar, only through 1.6 bar; no extrapolation above it. OTU uses oxygen pressure in ata. Single exposure, no recovery or prior loading. These indexes do not predict individual tolerance."
@@ -192,7 +192,7 @@ func refresh() -> void:
 			numbers[0].text = "%.2f g/L" % float(result["density"])
 			numbers[1].text = "%.2f×" % float(result["ratio"])
 			numbers[2].text = "%.1f bar" % float(result["ambient"])
-			formula.text = "Density = mass / volume · ideal trend: ρ ∝ P × molar mass / T (kelvin)"
+			formula.text = "Density = mass / volume\n\nideal trend: ρ ∝ P × molar mass / T (kelvin)"
 			insight.text = "One litre contains more gas mass at greater pressure. Helium lowers mixture density; cooling the gas raises it. Denser gas can increase breathing effort and hinder CO₂ elimination."
 			explanation.text = "Compare equal one-litre volumes and the density curves. The 5.2 and 6.2 g/L lines are published planning references from breathing/CO₂ studies, not a prediction of breathing effort or a guarantee of safety. Equipment, flow and workload also matter."
 			assumptions.text = "Model: app’s Peng–Robinson real-gas calculation for dry O₂/N₂/He, uniform gas temperature in °C, 1 bar + depth/10. Air comparison uses the same pressure and temperature. Dot sizes/counts are schematic; they illustrate molecular mass and compression. Density references are fixed teaching values, independent of scenario settings."

@@ -133,7 +133,11 @@ func add_slider(parent: Node, key: String, caption: String, minimum: float, maxi
 	slider.custom_minimum_size.y = 23
 	slider.tooltip_text = caption
 	slider.name = "Buoyancy_" + key
-	slider.value_changed.connect(func(number: float) -> void: stop_settling(); parameters()[key] = number; refresh())
+	slider.value_changed.connect(func(number: float) -> void:
+		stop_settling()
+		parameters()[key] = number
+		refresh()
+		if key in ["mass", "volume"] and not at_depth: settle_body())
 	block.add_child(slider)
 	inputs[key] = slider
 	if key == "immersion":
@@ -190,7 +194,7 @@ func refresh() -> void:
 	numbers[3].text = "%+.1f" % (0.0 if absf(float(result["net_force"])) < 0.05 else float(result["net_force"]))
 	var tendency: String = "Balanced forces" if absf(float(result["net_force"])) < 0.05 else ("Tends to rise" if float(result["net_force"]) > 0 else "Tends to sink")
 	insight.text = tr("%s · displaced water density: %.1f kg/m³") % [tr(tendency), density]
-	formula.text = "Fᵦ = ρwater × g × Vdisplaced · W = m × g"
+	formula.text = "Fᵦ = ρwater × g × Vdisplaced\n\nW = m × g"
 	if at_depth:
 		explanation.text = "The rigid body keeps its volume, but the same trapped gas shrinks as pressure rises. Descend and buoyancy decreases; ascend and it increases. Balance at one depth, then drag the diver without changing mass or adding gas."
 		assumptions.text = "Teaching body, fully submerged: fixed rigid volume plus a flexible gas space at constant temperature; gas mass is neglected. Vgas = Vsurface / Pabsolute (surface = 1 bar). Pressure uses the selected uniform water density. No venting, inflation, suit compression, motion or real weighting advice."

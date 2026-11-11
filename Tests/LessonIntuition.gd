@@ -44,7 +44,7 @@ func run() -> void:
 	root.add_child(app)
 	var view: BathysLearningView = app.learning_view
 	var ui: BathysLessonPresentation = view.presentation
-	check(not ui.note_button.button_pressed and not ui.parameter_button.button_pressed and ui.chart_button.button_pressed, "fresh lessons enable linked charts while keeping text and precise controls optional")
+	check(not ui.note_button.button_pressed and ui.chart_button.button_pressed and ui.toolbar.get_child_count() == 3, "fresh lessons enable linked charts with no precise-values button")
 	await settle(app)
 	app.set_learning_mode(true)
 	var before: String = JSON.stringify(app.plan)
@@ -137,8 +137,8 @@ func run() -> void:
 	view.select_lesson("colour")
 	await layout()
 	var optics: BathysOpticsLesson = view.optics_view
-	var target := Vector2(85 + 3.0 / 15 * (optics.plots.size.x - 145), 62 + 10.0 / 30 * (optics.plots.size.y - 112))
-	var destination := Vector2(85 + 7.0 / 15 * (optics.plots.size.x - 145), 62 + 20.0 / 30 * (optics.plots.size.y - 112))
+	var target := Vector2(85 + 3.0 / 15 * (optics.plots.size.x - 145), 62 + 10.0 / 30 * optics.plots.depth_span())
+	var destination := Vector2(85 + 7.0 / 15 * (optics.plots.size.x - 145), 62 + 20.0 / 30 * optics.plots.depth_span())
 	await drag(optics.plots.global_position + target, optics.plots.global_position + destination)
 	optics.flush_update()
 	near(optics.params["depth"], 20, 0.11, "underwater colour target changes depth without a slider")
@@ -171,13 +171,10 @@ func run() -> void:
 	var rail_start: Vector2 = mask.diagram.global_position + Vector2(75 + (mask.params["distance"] - 0.5) / 2.5 * (mask.diagram.size.x - 115), 94)
 	await drag(rail_start, mask.diagram.global_position + Vector2(75 + (2.0 - 0.5) / 2.5 * (mask.diagram.size.x - 115), 94))
 	near(mask.params["distance"], 2, 0.011, "mask comparison has a directly draggable target")
-	ui.parameter_button.button_pressed = true
-	await layout()
-	check(visible_sliders(view) == 5 and not ui.instruments.is_visible_in_tree(), "precise settings remain available without duplicate instruments")
+	check(ui.widgets["thickness"].is_visible_in_tree() and ui.widgets["glass_index"].is_visible_in_tree() and visible_sliders(view) == 0, "all mask geometry is available as visual instruments")
 	mask.inputs["thickness"].value = 8
-	ui.parameter_button.button_pressed = false
 	await layout()
-	near(mask.params["thickness"], 8, 1e-12, "closing precise settings keeps the experiment state")
+	near(mask.params["thickness"], 8, 1e-12, "visual control bindings retain geometry")
 	localization.set_language("fr", false)
 	await layout()
 	root.size = Vector2i(390, 900)
@@ -196,10 +193,10 @@ func run() -> void:
 	near(compare.split, split_before, 1e-10, "vertical scroll intent does not move the colour divider")
 	await drag(compare.global_position + Vector2(compare.size.x * split_before, compare.size.y / 2), compare.global_position + Vector2(compare.size.x * 0.8, compare.size.y / 2))
 	near(compare.split, 0.8, 0.01, "colour comparison divider is directly draggable")
-	ui.parameter_button.button_pressed = true
+	ui.note_button.button_pressed = true
 	await layout()
 	check(not compare.visible and view.optics_view.preview_box.get_child(0).visible, "expanded colour view restores both original reference panes")
-	ui.parameter_button.button_pressed = false
+	ui.note_button.button_pressed = false
 	await capture("res://Screenshots/intuition-colour-compare-fr-phone.png")
 	view.select_lesson("charles")
 	await layout()

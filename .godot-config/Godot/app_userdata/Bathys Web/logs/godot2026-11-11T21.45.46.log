@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=155
+DIVIDER PASS: dragging left divider resizes tanks
+DIVIDER PASS: dragging tanks to left edge collapses them and retains handle
+DIVIDER PASS: dragging from collapsed left edge restores tanks
+DIVIDER PASS: dragging route divider to right edge collapses it
+DIVIDER PASS: dragging from collapsed right edge restores route panel
+DIVIDER PASS: both dividers show horizontal resize cursor
+DIVIDER PASS: release ends drag even after collapse
+DIVIDER PASS: map toolbar contains only its original four controls
+DIVIDER PASS: stacked panels use vertical resize cursors
+DIVIDER PASS: stacked layout keeps collapsed handle accessible
+DIVIDER_CHECKS failures=0

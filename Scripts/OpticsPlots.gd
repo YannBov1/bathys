@@ -2,6 +2,11 @@ class_name BathysOpticsPlots
 extends BathysLessonDiagram
 
 signal probe_changed(value: float)
+signal baseline_changed(value: float)
+var torch_drag: bool = false
+var torch_selected: bool = false
+var torch_pick_offset: float = 0.0
+
 signal range_changed(value: float)
 var stage: int = 0
 var probe_touched: bool = false
@@ -12,10 +17,14 @@ var curves: Array[Vector3] = []
 const VIOLET := Color("b5a3f3")
 const RED := Color("f18e87")
 
+func _ready() -> void:
+	super._ready()
+	focus_mode = FOCUS_ALL
+
 func adapt() -> void:
-	custom_minimum_size.y = (250 if comparison_visible else 200) if stage == 0 else (600 if comparison_visible and size.x < 660 else 350)
+	custom_minimum_size.y = (330 if bool(params.get("torch", false)) else (250 if comparison_visible else 200)) if stage == 0 else (600 if comparison_visible and size.x < 660 else 350)
 	mouse_default_cursor_shape = Control.CURSOR_DRAG
-	tooltip_text = "Drag the target to change depth and distance" if stage == 0 else "Drag the spectral plot to select a wavelength" if stage == 1 else "Drag the model plot to change viewing distance"
+	tooltip_text = "Drag the fish for depth and distance; drag the torch vertically for its offset" if stage == 0 else "Drag the spectral plot to select a wavelength" if stage == 1 else "Drag the model plot to change viewing distance"
 	queue_redraw()
 
 func _draw() -> void:
@@ -39,10 +48,43 @@ func plot(index: int) -> Rect2:
 	var area: Rect2 = panel(index)
 	return Rect2(area.position + Vector2(47, 51), area.size - Vector2(72, 111))
 
+func depth_span() -> float:
+	return size.y - (200 if bool(params.get("torch", false)) else 112)
+
+func torch_position() -> Vector2:
+	var y: float = 62 + float(params.get("depth", 10)) / 30 * depth_span()
+	# A screen-space rail stays underwater and leaves the full physical offset editable.
+	return Vector2(42, maxf(67, y) + 24 + float(params.get("baseline", 0.5)) * 32)
+
+func _gui_input(event: InputEvent) -> void:
+	if stage == 0 and event is InputEventKey and event.pressed:
+		if event.keycode == KEY_T and bool(params.get("torch", false)): torch_selected = not torch_selected
+		elif event.keycode in [KEY_UP, KEY_DOWN] and torch_selected and bool(params.get("torch", false)):
+			baseline_changed.emit(clampf(float(params["baseline"]) + (-0.05 if event.keycode == KEY_UP else 0.05), 0, 1.5))
+		elif event.keycode in [KEY_UP, KEY_DOWN]: depth_changed.emit(clampf(float(params["depth"]) + (-0.1 if event.keycode == KEY_UP else 0.1), 0, 30))
+		elif event.keycode in [KEY_LEFT, KEY_RIGHT]: range_changed.emit(clampf(float(params["range"]) + (-0.1 if event.keycode == KEY_LEFT else 0.1), 0.2, 15))
+		else: return
+		accept_event()
+		queue_redraw()
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			torch_drag = stage == 0 and bool(params.get("torch", false)) and event.position.distance_to(torch_position()) < 40
+			torch_selected = torch_drag
+			grab_focus()
+			if torch_drag: torch_pick_offset = event.position.y - torch_position().y
+		super._gui_input(event)
+		if not event.pressed: torch_drag = false
+	else: super._gui_input(event)
+
 func manipulate(at: Vector2) -> void:
 	if stage == 0:
+		if torch_drag:
+			var y: float = 62 + float(params["depth"]) / 30 * depth_span()
+			baseline_changed.emit(clampf((at.y - torch_pick_offset - maxf(67, y) - 24) / 32, 0, 1.5))
+			return
 		range_changed.emit(clampf((at.x - 85) / maxf(1, size.x - 145) * 15, 0.2, 15))
-		depth_changed.emit(clampf((at.y - 62) / (size.y - 112) * 30, 0, 30))
+		depth_changed.emit(clampf((at.y - 62) / depth_span() * 30, 0, 30))
 		return
 	if not plot(0).grow(10).has_point(at): return
 	var p: Rect2 = plot(0)
@@ -66,7 +108,7 @@ func axes(rect: Rect2, xmin: float, xmax: float, ymin: float, ymax: float, unit:
 func geometry() -> void:
 	draw_rect(Rect2(1, 40, size.x - 2, size.y - 41), Color("0b3747"))
 	draw_line(Vector2(1, 40), Vector2(size.x - 1, 40), AQUA, 2)
-	var y: float = 62 + float(params["depth"]) / 30 * (size.y - 112)
+	var y: float = 62 + float(params["depth"]) / 30 * depth_span()
 	var camera := Vector2(42, y)
 	var target := Vector2(85 + float(params["range"]) / 15 * (size.x - 145), y)
 	draw_texture_rect(preload("res://Assets/Icons/lesson-eye.svg"), Rect2(camera - Vector2(19, 15), Vector2(38, 30)), false)
@@ -76,11 +118,15 @@ func geometry() -> void:
 	words(Vector2(16, 25), tr("Depth: %.1f m") % float(params["depth"]), AMBER, 12)
 	words(Vector2(maxf(100, size.x - 155), 25), tr("View: %.1f m") % float(params["range"]), AQUA, 12)
 	for depth: int in [0, 15, 30]:
-		var level: float = 62 + depth / 30.0 * (size.y - 112)
+		var level: float = 62 + depth / 30.0 * depth_span()
 		words(Vector2(size.x - 38, level + 4), "%d m" % depth, MUTED, 10)
 	arrow(Vector2(target.x, 43), target - Vector2(0, 22), AMBER)
 	if bool(params["torch"]):
-		var lamp: Vector2 = camera - Vector2(0, 22 + float(params["baseline"]) * 24)
+		var lamp: Vector2 = torch_position()
+		draw_dashed_line(camera + Vector2(0, 14), lamp - Vector2(0, 13), MUTED, 1, 3)
+		grip(lamp + Vector2(24, 0), true)
+		if torch_selected and has_focus(): draw_arc(lamp, 20, 0, TAU, 32, AMBER, 1.5, true)
+		words(lamp + Vector2(35, 4), "%.2f m" % float(params["baseline"]), AMBER, 10)
 		draw_texture_rect(preload("res://Assets/Icons/lesson-torch.svg"), Rect2(lamp - Vector2(16, 12), Vector2(32, 24)), false)
 		arrow(lamp + Vector2(7, 0), target - Vector2(13, 3), AMBER)
 

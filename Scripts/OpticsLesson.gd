@@ -90,6 +90,7 @@ func _ready() -> void:
 	plots.engine = engine
 	plots.probe_changed.connect(func(value: float) -> void: (inputs["probe"] as HSlider).value = value)
 	plots.depth_changed.connect(func(value: float) -> void: (inputs["depth"] as HSlider).value = value)
+	plots.baseline_changed.connect(func(value: float) -> void: (inputs["baseline"] as HSlider).value = value)
 	plots.range_changed.connect(func(value: float) -> void: (inputs["range"] as HSlider).value = value)
 	add_child(plots)
 	legend = HFlowContainer.new()
@@ -297,7 +298,7 @@ func update_text() -> void:
 			titles[i].text = ["Absorption a · m⁻¹", "Scattering b · m⁻¹", "Beam attenuation c · m⁻¹", "Downwelling Kd · m⁻¹"][i]
 			numbers[i].text = "%.3f" % [a, b, a + b, profile["kd"][index]][i]
 		phase_info.text = tr("HG backward hemisphere: %.2f%% · accepted halo cone: %.2f%% · reduced scattering b′: %.3f m⁻¹") % [float(result["back_fraction"]) * 100, float(result["cone_fraction"]) * 100, b * (1 - float(params["g"]))]
-		formula.text = "c = a + b · b′ = b(1 − g) · Kd is not c or b′"
+		formula.text = "c = a + b\n\nb′ = b(1 − g)\n\nKd is not c or b′"
 		status.text = "Absorption removes light; scattering redirects it. Kd describes diffuse daylight loss with depth. The phase function describes scattering directions, which a and b alone do not determine. HG g = 0 is isotropic; larger g favours forward scattering."
 		explanation.text = "The six marine presets use measured-data-derived a and b spectra; the source models between measured bands. Kd comes from the historical Jerlov class table. HG g, diffuse-light share and the halo cone are separate teaching assumptions, not measured properties of these presets or this lake."
 	else:
@@ -305,7 +306,7 @@ func update_text() -> void:
 		for i: int in 3:
 			titles[i].text = ["White target · effective βD", "Red target · effective βD", "Backscatter · effective βB"][i]
 			numbers[i].text = "%.4f m⁻¹" % float(coefficients[["white", "red", "back"][i]])
-		formula.text = "D = J exp(−βD r) · B = B∞[1 − exp(−βB r)]"
+		formula.text = "D = J exp(−βD r)\n\nB = B∞[1 − exp(−βB r)]"
 		status.text = "Broadband direct and backscatter coefficients are different. The direct coefficient also changes with target reflectance and range; it is not one fixed RGB constant for a water class."
 		explanation.text = "These diagnostics integrate 61 wavelengths before fitting effective coefficients to linear CIE Y. They compare white and red targets in ambient light only. The spectrum weights of direct light and veiling light differ, as in the revised underwater image model; these are not calibrated camera RGB fits."
 	assumptions.text = "Model: uniform water, horizontal viewing, D65 daylight, 400–700 nm at 5 nm, CIE 1931 observer, synthetic Lambertian targets and fixed sRGB exposure. The torch uses single scattering and chosen beam geometry; the forward halo is an energy-bounded Gaussian surrogate, not a measured PSF. No full multiple-scattering RTE, fluorescence, camera noise or visual adaptation."

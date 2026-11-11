@@ -10,6 +10,7 @@ var gf_low: float = 30.0
 var gf_high: float = 85.0
 var selected: int = 0
 var state: Dictionary = {}
+var profile: BathysBuhlmannProfile
 var diagram: BathysBuhlmannDiagram
 var stage_buttons: Array[Button] = []
 var compartment_picker: OptionButton
@@ -53,6 +54,9 @@ func _ready() -> void:
 	for i: int in 16: compartment_picker.add_item("")
 	summary_label = BathysUiStyle.wrapped("", 12)
 	add_child(summary_label)
+	profile = BathysBuhlmannProfile.new()
+	profile.parameter_changed.connect(func(key: String, value: float) -> void: (inputs[key] as HSlider).value = value)
+	add_child(profile)
 	diagram = BathysBuhlmannDiagram.new()
 	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	diagram.compartment_selected.connect(select_compartment)
@@ -168,6 +172,12 @@ func refresh() -> void:
 	for i: int in 16:
 		compartment_picker.set_item_text(i, tr("%d · N₂ t½ %.1f min") % [i + 1, BathysTissue.N_HALF[i]])
 	compartment_picker.select(selected)
+	profile.exposure_depth = exposure_depth
+	profile.exposure_minutes = exposure_minutes
+	profile.preview_depth = preview_depth
+	profile.wait_minutes = wait_minutes
+	profile.ascent = ascent
+	profile.queue_redraw()
 	diagram.state = state
 	diagram.selected = selected
 	diagram.exposure_depth = exposure_depth
@@ -185,7 +195,7 @@ func refresh() -> void:
 		readout_values[0].text = "%.1f min" % BathysTissue.N_HALF[selected]
 		readout_values[1].text = "%.3f bar" % model.n2[selected]
 		readout_values[2].text = "%.1f%%" % ((1 - pow(0.5, exposure_minutes / BathysTissue.N_HALF[selected])) * 100) if exposure_depth > 0 else "—"
-		formula.text = "One half-time: 50% · two: 75% · three: 87.5% of the pressure gap"
+		formula.text = "One half-time: 50%\n\ntwo: 75%\n\nthree: 87.5% of the pressure gap"
 		status_label.text = "Fast compartments respond quickly; slow ones keep loading for much longer. Half-time describes closing half the remaining pressure gap, not reaching full saturation."
 		explanation.text = "These are 16 mathematical compartments, not 16 organs. The amber line is inspired nitrogen pressure; each bar follows its own half-time. Next, explore ascent with this same gas loading."
 		assumptions.text = "Model: app’s ZH-L16C nitrogen half-times and coefficients; air (79% N₂), water vapour 0.0627 bar, 1 bar at the surface, +1 bar/10 m. Instantaneous depth steps omit travel gas exchange. Independent of your scenario."

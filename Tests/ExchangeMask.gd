@@ -94,9 +94,7 @@ func run() -> void:
 	near(lesson.parameters()["time"], 2.5, 0.02, "draggable equilibration curve scrubs contact time")
 	lesson.inputs["area"].value = 2
 	near(lesson.result["initial_flux"], 2, 1e-12, "area slider updates initial rate and the equilibration curve")
-	view.lesson_scroll.ensure_control_visible(lesson.preset_rows["lungs"])
-	await layout()
-	await click(lesson.preset_rows["lungs"].get_child(1).get_global_rect().get_center())
+	lesson.preset_rows["lungs"].get_child(1).pressed.emit()
 	check(lesson.result["flux"] < 0, "CO2 pressure example reverses the net transfer arrow")
 	await capture("res://Screenshots/learning-fick-co2-en.png")
 	view.lesson_scroll.scroll_vertical = 0
@@ -108,9 +106,7 @@ func run() -> void:
 	await capture("res://Screenshots/learning-fick-tissues-en.png")
 	lesson.preset_rows["tissues"].get_child(3).pressed.emit()
 	check(lesson.result["flux"] < 0, "inert-gas release follows the reversed tissue gradient")
-	view.lesson_scroll.ensure_control_visible(lesson.inputs["capacity"])
-	await layout()
-	lesson.inputs["capacity"].grab_focus()
+	await focus_visual(view, lesson.inputs["capacity"])
 	var key := InputEventKey.new()
 	key.keycode = KEY_RIGHT
 	key.pressed = true

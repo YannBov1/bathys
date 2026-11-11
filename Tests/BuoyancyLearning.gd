@@ -31,7 +31,7 @@ func run() -> void:
 	await create_timer(1.0).timeout
 	near(lesson.result["net_force"], 0, 1e-6, "released floating body settles to equal buoyancy and weight")
 	await capture("res://Screenshots/learning-buoyancy-displacement-en.png")
-	await click(lesson.floating_button.get_global_rect().get_center())
+	lesson.floating_button.pressed.emit()
 	near(lesson.result["net_force"], 0, 1e-8, "floating equilibrium matches displaced-water weight to the body")
 	check(lesson.parameters()["immersion"] < 100 and lesson.insight.text.begins_with("Balanced"), "floating body balances with partial immersion")
 	await capture("res://Screenshots/learning-buoyancy-float-en.png")
@@ -40,9 +40,9 @@ func run() -> void:
 	(lesson.inputs["mass"] as HSlider).value = 75
 	(lesson.inputs["immersion"] as HSlider).value = 100
 	var fresh_force: float = lesson.result["buoyant_force"]
-	await click(lesson.water_buttons[1].get_global_rect().get_center())
+	lesson.water_buttons[1].pressed.emit()
 	check(float(lesson.result["buoyant_force"]) > fresh_force, "sea water increases buoyancy at unchanged volume")
-	lesson.inputs["volume"].grab_focus()
+	await focus_visual(view, lesson.inputs["volume"])
 	var key := InputEventKey.new()
 	key.keycode = KEY_RIGHT
 	key.pressed = true
@@ -61,7 +61,7 @@ func run() -> void:
 	var rigid_surface: Dictionary = BathysLearningModels.buoyancy_at_depth(78, 75, 0, 0, 1000)
 	var rigid_deep: Dictionary = BathysLearningModels.buoyancy_at_depth(78, 75, 0, 40, 1000)
 	near(rigid_surface["buoyant_force"], rigid_deep["buoyant_force"], 1e-10, "depth alone does not change buoyancy of a fully submerged rigid body")
-	await click(lesson.balance_button.get_global_rect().get_center())
+	lesson.balance_button.pressed.emit()
 	near(lesson.result["net_force"], 0, 1e-8, "depth balance sets the teaching mass to displaced-water mass")
 	(lesson.inputs["depth"] as HSlider).value = 20
 	check(float(lesson.result["net_force"]) < 0, "descending from balance produces less buoyancy with unchanged trapped gas")

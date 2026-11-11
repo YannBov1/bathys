@@ -244,7 +244,7 @@ func update_text() -> void:
 			numbers[0].text = "%.3f L" % float(result["volume"])
 			numbers[1].text = "%.2f K" % float(result["kelvin"])
 			numbers[2].text = "%.3f×" % float(result["ratio"])
-			formula.text = "V₁ / T₁ = V₂ / T₂ · T(K) = T(°C) + 273.15"
+			formula.text = "V₁ / T₁ = V₂ / T₂\n\nT(K) = T(°C) + 273.15"
 			insight.text = "Warm the same gas at fixed pressure: the piston rises. Cooling shrinks its volume. Particle count stays the same; temperature changes molecular motion."
 			explanation.text = "20°C to 40°C is only 293.15 K to 313.15 K, so volume grows by about 6.8%. Doubling kelvin doubles volume. The origin belongs to the ideal mathematical extrapolation, not an achievable zero-volume gas."
 			assumptions.text = "Model: fixed gas amount, frictionless piston, constant 1 bar absolute, ideal equilibrium states. Starts with 1 L at 20°C. Dashed extension is outside the experiment range; real gases condense before reaching absolute zero. Arrows are schematic, with speed scaling as √T."
@@ -255,7 +255,7 @@ func update_text() -> void:
 			numbers[0].text = "%.3f bar" % float(result["pressure"])
 			numbers[1].text = "%.3f L" % float(result["volume"])
 			numbers[2].text = "%.3f mol" % float(result["moles"])
-			formula.text = "PV = nRT · %.2f J = %.2f J" % [result["pv"], result["nrt"]]
+			formula.text = tr("PV = nRT\n\nPressure × volume: PV = %.2f J\n\nGas amount × R × temperature: nRT = %.2f J") % [result["pv"], result["nrt"]]
 			insight.text = "Pressure, volume, temperature and gas amount are linked. In a rigid vessel, adding gas or heating raises pressure. At fixed pressure, the volume must grow instead."
 			explanation.text = "Choose which variable responds. Then vary one input while holding the others steady. The curve keeps n and either V or P fixed. A mole counts gas particles; it is not a fixed volume. Always use absolute pressure and kelvin."
 			assumptions.text = "Model: ideal dry gas, uniform equilibrium temperature, no finite molecular volume or attraction. R = 8.314462618 J/(mol·K); 1 bar·L = 100 J. This is an equation of state, not a heating-rate or high-pressure cylinder prediction."
@@ -266,7 +266,7 @@ func update_text() -> void:
 			numbers[0].text = "%.4f" % float(result["z"])
 			numbers[1].text = "%.2f mol" % float(result["moles_12l"])
 			numbers[2].text = "%.2f mol" % float(result["ideal_moles_12l"])
-			formula.text = "Z = PV / nRT · n real = n ideal / Z"
+			formula.text = "Z = PV / nRT\n\nn real = n ideal / Z"
 			insight.text = "Real molecules attract each other and occupy space. Z = 1 is ideal behaviour. Z below or above 1 means a smaller or larger molar volume at the same pressure and temperature."
 			explanation.text = "The paired vessels contain the same mole. The 12 L readouts ask a different question: how much gas fits in the same rigid volume? At Z > 1, the ideal calculation overestimates that amount. Compare gases, pressure and temperature; Z is not the bulk compressibility κT."
 			assumptions.text = "Model: Peng–Robinson, same dry O₂/N₂/He constants and zero-interaction mixing as the planner. Air is 21% O₂ / 79% N₂. 253.15–353.15 K, 0.1–300 bar absolute, single phase. Cubic EOS predictions are approximations, particularly for helium; no phase equilibrium or cylinder-rating calculation."
@@ -279,7 +279,7 @@ func update_text() -> void:
 			numbers[0].text = "%.1f°C" % (float(result["tout"]) - 273.15)
 			numbers[1].text = "%+.2f K" % float(result["delta"])
 			numbers[2].text = "%.1f" % float(result["work"]) if int(p["process"]) == 2 else "%+.3f" % float(result["mu"])
-			formula.text = "T₂ / T₁ = (P₂ / P₁)^((γ − 1) / γ) · ideal, reversible" if int(p["process"]) == 2 else "h₁ = h₂ · μJT = (∂T / ∂P)h · positive μ + pressure drop → cooling"
+			formula.text = "T₂ / T₁ = (P₂ / P₁)^((γ − 1) / γ)\n\nideal, reversible" if int(p["process"]) == 2 else "h₁ = h₂\n\nμJT = (∂T / ∂P)h\n\npositive μ + pressure drop → cooling"
 			insight.text = "A pressure drop does not always cool a gas. A real-gas throttle can cool or warm it; an ideal-gas throttle keeps the same temperature. Expansion doing work is a different process."
 			explanation.text = "Try nitrogen, then helium: at these inlet temperatures their throttling trends differ. The real-gas curve solves constant enthalpy; the inlet μJT is only a local slope, not a constant to multiply across the whole pressure drop. The work comparison is an ideal reversible expander, not a throttle."
 			assumptions.text = "Model: insulated steady flow, negligible inlet/outlet kinetic and potential energy changes. Real throttle uses Peng–Robinson enthalpy departure plus constant ideal Cp (7R/2 for air/N₂, 5R/2 for He). Ideal work comparison has constant γ and omits phase change. No water/metal heat exchange, cylinder blowdown, flow-rate or regulator-icing prediction."

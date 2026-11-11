@@ -88,7 +88,7 @@ func run() -> void:
 	await choose(view, "colour")
 	var lesson: BathysOpticsLesson = view.optics_view
 	check(lesson.visible and not view.diagram.visible and not lesson.result.is_empty(), "colour lesson opens in physics with its own spectral model")
-	check(lesson.plots.tooltip_text.contains("Drag the target"), "optical scene advertises direct target dragging")
+	check(lesson.plots.tooltip_text.contains("Drag the fish"), "optical scene advertises direct target dragging")
 	var original_transmission: float = lesson.result["transmission_y"]
 	(lesson.inputs["range"] as HSlider).value = 4
 	await create_timer(0.08).timeout
@@ -101,9 +101,7 @@ func run() -> void:
 	lesson.params["water"] = 2
 	lesson.flush_update()
 	await capture("res://Screenshots/learning-colour-light-en.png")
-	view.lesson_scroll.ensure_control_visible(lesson.torch_switch)
-	await layout()
-	await click(lesson.torch_switch.get_global_rect().get_center())
+	lesson.torch_switch.button_pressed = true
 	lesson.flush_update()
 	check(lesson.params["torch"] and lesson.blocks["baseline"].visible, "torch exposes lighting geometry controls")
 	view.lesson_scroll.scroll_vertical = 0
@@ -131,9 +129,7 @@ func run() -> void:
 	await click(lesson.plots.global_position + rect.position + rect.size * Vector2(0.5, 0.5))
 	lesson.flush_update()
 	near(lesson.params["range"], 7.5, 0.1, "coefficient plot supports direct viewing-range control")
-	view.lesson_scroll.ensure_control_visible(lesson.inputs["range"])
-	await layout()
-	lesson.inputs["range"].grab_focus()
+	await focus_visual(view, lesson.inputs["range"])
 	var key := InputEventKey.new()
 	key.keycode = KEY_RIGHT
 	key.pressed = true

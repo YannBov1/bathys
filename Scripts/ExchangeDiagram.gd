@@ -2,11 +2,13 @@ class_name BathysExchangeDiagram
 extends BathysThermalDiagram
 
 var barrier_drag: String = ""
+var barrier_start := Vector2.ZERO
+var barrier_values := Vector2.ZERO
 var tissues: bool = false
 
 func adapt() -> void:
 	custom_minimum_size.y = (720 if size.x < 660 else 390) if comparison_visible else 300
-	tooltip_text = "Drag the curve to change contact time"
+	tooltip_text = "Drag membrane edges for area and thickness; scrub the curve for time."
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
@@ -14,16 +16,20 @@ func _gui_input(event: InputEvent) -> void:
 		barrier_drag = ""
 		var mid: float = section(0).size.x / 2
 		var width: float = 12 + 14 * float(params.get("thickness", 1))
-		var area_y: float = 177 + 65 * float(params.get("area", 1)) / 2
-		if event.position.distance_to(Vector2(mid, area_y)) < 21: barrier_drag = "area"
-		elif absf(event.position.x - (mid + width / 2)) < 23 and absf(event.position.y - 177) < 45: barrier_drag = "thickness"
+		var area_y: float = 193 + 65 * float(params.get("area", 1)) / 2
+		var distance_area: float = event.position.distance_to(Vector2(mid, area_y))
+		var distance_width: float = event.position.distance_to(Vector2(mid + width / 2, 177))
+		if minf(distance_area, distance_width) < 23:
+			barrier_drag = "area" if distance_area <= distance_width else "thickness"
+			barrier_start = event.position
+			barrier_values = Vector2(params["area"], params["thickness"])
 	super._gui_input(event)
 	if event is InputEventMouseButton and not event.pressed: barrier_drag = ""
 
 func manipulate(at: Vector2) -> void:
 	if not barrier_drag.is_empty():
-		if barrier_drag == "area": parameter_changed.emit("area", clampf((at.y - 177) * 2 / 65, 0.2, 2))
-		else: parameter_changed.emit("thickness", clampf(((at.x - section(0).size.x / 2) * 2 - 12) / 14, 0.25, 4))
+		if barrier_drag == "area": parameter_changed.emit("area", clampf(barrier_values.x + (at.y - barrier_start.y) * 2 / 65, 0.2, 2))
+		else: parameter_changed.emit("thickness", clampf(barrier_values.y + (at.x - barrier_start.x) * 2 / 14, 0.25, 4))
 		return
 	if not comparison_visible: return
 	var rect: Rect2 = plot_rect()
@@ -41,8 +47,10 @@ func membrane() -> void:
 	wrapped_words(Vector2(16, 25), "Blood ↔ tissue" if tissues else "Alveolus ↔ blood parcel", area.size.x - 32, INK, 13)
 	var mid: float = area.size.x / 2
 	var barrier_width: float = 12 + 14 * float(params["thickness"])
-	var left: Rect2 = Rect2(18, 105, mid - barrier_width / 2 - 24, 145)
-	var right: Rect2 = Rect2(mid + barrier_width / 2 + 6, 105, mid - barrier_width / 2 - 24, 145)
+	var active_height: float = 130 * float(params["area"]) / 2
+	var top: float = 177 - active_height / 2
+	var left: Rect2 = Rect2(18, top, mid - barrier_width / 2 - 24, active_height)
+	var right: Rect2 = Rect2(mid + barrier_width / 2 + 6, top, mid - barrier_width / 2 - 24, active_height)
 	for i: int in 2:
 		var rect: Rect2 = left if i == 0 else right
 		var pressure: float = params["source"] if i == 0 else result["receiver"]
@@ -51,28 +59,27 @@ func membrane() -> void:
 		var label: String = ("Blood" if tissues else "Alveolus") if i == 0 else ("Tissue" if tissues else "Blood parcel")
 		wrapped_words(Vector2(rect.position.x + 5, 79), label, rect.size.x - 10, INK, 12)
 		words(Vector2(rect.position.x + 5, 98), "%.1f mmHg" % pressure, AQUA if i == 0 else VIOLET, 12)
-		for j: int in 14:
-			var pos: Vector2 = rect.position + Vector2(9, 13) + (rect.size - Vector2(18, 26)) * Vector2(fposmod(j * 0.618, 1), fposmod(j * 0.414, 1))
+		for j: int in maxi(2, roundi(14 * float(params["area"]) / 2)):
+			var pos: Vector2 = rect.position + Vector2(6, 4) + (rect.size - Vector2(12, 8)) * Vector2(fposmod(j * 0.618, 1), fposmod(j * 0.414, 1))
 			draw_circle(pos, 2, AQUA if i == 0 else VIOLET)
 			var motion: Vector2 = Vector2.from_angle(j * 2.399) * 6
 			draw_line(pos, pos + motion, MUTED, 1)
-	var active_height: float = 130 * float(params["area"]) / 2
 	var active := Rect2(mid - barrier_width / 2, 177 - active_height / 2, barrier_width, active_height)
-	draw_rect(Rect2(mid - barrier_width / 2, 105, barrier_width, 145), Color("284653"))
 	draw_rect(active, Color("357c7a"))
 	grip(Vector2(mid + barrier_width / 2, 177))
-	grip(Vector2(mid, active.end.y), true)
+	draw_line(Vector2(mid, active.end.y), Vector2(mid, active.end.y + 10), AQUA, 1)
+	grip(Vector2(mid, active.end.y + 16), true)
 	for i: int in 5:
-		var y: float = 111 + i * 32
+		var y: float = top + active_height * (i + 0.2) / 5
 		arrow(Vector2(mid - barrier_width / 2 - 9, y), Vector2(mid + barrier_width / 2 + 9, y), Color(AQUA, 0.3), 1)
-		arrow(Vector2(mid + barrier_width / 2 + 9, y + 8), Vector2(mid - barrier_width / 2 - 9, y + 8), Color(VIOLET, 0.3), 1)
+		arrow(Vector2(mid + barrier_width / 2 + 9, y + active_height / 20), Vector2(mid - barrier_width / 2 - 9, y + active_height / 20), Color(VIOLET, 0.3), 1)
 	var gradient: float = result["gradient"]
 	if absf(gradient) > 1e-8:
 		var start := Vector2(mid - barrier_width / 2 - 30, 278)
 		var end := Vector2(mid + barrier_width / 2 + 30, 278)
 		arrow(start if gradient > 0 else end, end if gradient > 0 else start, AQUA if gradient > 0 else VIOLET, 2 + 4 * absf(float(result["flux"])) / (1 + absf(float(result["flux"]))))
 	wrapped_words(Vector2(18, 307), "Equal pressures: zero net transfer; random motion continues." if absf(gradient) < 1e-8 else "Net transfer follows partial pressure, not total pressure. Dots are schematic.", area.size.x - 36)
-	if comparison_visible: wrapped_words(Vector2(18, 342), "Green patch: exchange area. Barrier width: thickness.", area.size.x - 36, MUTED, 10)
+	if comparison_visible: wrapped_words(Vector2(18, 342), "Membrane height: exchange area. Width: thickness.", area.size.x - 36, MUTED, 10)
 
 func uptake_plot() -> void:
 	var area: Rect2 = section(1)

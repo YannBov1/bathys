@@ -1,64 +1,65 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 OpenGL API 3.3.0 NVIDIA 571.96 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 2050
 
-BATHYS_STARTUP_MS=156
-LEARNING PASS: linked charts start enabled
-LEARNING PASS: visual controls work without precise drawer: boyle
-LEARNING PASS: visual controls work without precise drawer: snell
-LEARNING PASS: visual controls work without precise drawer: dalton
-LEARNING PASS: visual controls work without precise drawer: henry
-LEARNING PASS: visual controls work without precise drawer: density
-LEARNING PASS: visual controls work without precise drawer: gas_density
-LEARNING PASS: visual controls work without precise drawer: oxygen
-LEARNING PASS: visual controls work without precise drawer: narcosis
-LEARNING PASS: visual controls work without precise drawer: buhlmann
-LEARNING PASS: visual controls work without precise drawer: buoyancy
-LEARNING PASS: visual controls work without precise drawer: colour
-LEARNING PASS: visual controls work without precise drawer: charles
-LEARNING PASS: visual controls work without precise drawer: ideal_gas
-LEARNING PASS: visual controls work without precise drawer: real_gas
-LEARNING PASS: visual controls work without precise drawer: joule_thomson
-LEARNING PASS: visual controls work without precise drawer: fick
-LEARNING PASS: clock hand uses a whole dial instead of a pressure-gauge sweep (1.3)
-BATHYS_FPS_2D_AVG=50.0
-LEARNING PASS: tank upper divider directly changes O₂ (30.0)
-LEARNING PASS: tank lower divider directly changes He (50.0)
-LEARNING PASS: mixture separators cannot create negative nitrogen or exceed 100%
-LEARNING PASS: opposite-side handle remains usable when nitrogen is zero (40.0)
-LEARNING PASS: keyboard edits the last selected tank separator
-LEARNING PASS: distance ruler precedes the image-model plots
-LEARNING PASS: horizontal eye-to-fish ruler changes range with precise controls hidden (11.3)
-LEARNING PASS: lighting variables have visual instruments
-LEARNING PASS: icon palette shows one instrument at a time
-LEARNING PASS: visual lighting rail reaches the full parameter range (4.0)
-LEARNING PASS: icon palette shows one instrument at a time
-LEARNING PASS: visual lighting rail reaches the full parameter range (20.0)
-LEARNING PASS: icon palette shows one instrument at a time
-LEARNING PASS: visual lighting rail reaches the full parameter range (1.5)
-LEARNING PASS: released body settles to physical floating fraction (0.00000000000006)
-LEARNING PASS: equilibrium uses the selected mass, volume and water density (50.0898451844459)
-LEARNING PASS: denser body reaches full immersion and retains downward force
-LEARNING PASS: changing stages cancels settling without altering the other experiment (10.0)
-LEARNING PASS: default linked-chart French phone layout fits: boyle
-LEARNING PASS: default linked-chart French phone layout fits: snell
-LEARNING PASS: default linked-chart French phone layout fits: dalton
-LEARNING PASS: default linked-chart French phone layout fits: henry
-LEARNING PASS: default linked-chart French phone layout fits: density
-LEARNING PASS: default linked-chart French phone layout fits: gas_density
-LEARNING PASS: default linked-chart French phone layout fits: oxygen
-LEARNING PASS: default linked-chart French phone layout fits: narcosis
-LEARNING PASS: default linked-chart French phone layout fits: buhlmann
-LEARNING PASS: default linked-chart French phone layout fits: buoyancy
-LEARNING PASS: default linked-chart French phone layout fits: colour
-LEARNING PASS: default linked-chart French phone layout fits: charles
-LEARNING PASS: default linked-chart French phone layout fits: ideal_gas
-LEARNING PASS: default linked-chart French phone layout fits: real_gas
-LEARNING PASS: default linked-chart French phone layout fits: joule_thomson
-LEARNING PASS: default linked-chart French phone layout fits: fick
-LEARNING PASS: image-model distance ruler fits a phone
-LEARNING PASS: French visual mask instrument fits a phone
-LEARNING PASS: French visual mask instrument fits a phone
-LEARNING PASS: French visual mask instrument fits a phone
-LEARNING PASS: French visual mask instrument fits a phone
-LEARNING PASS: visual instrument edits leave the dive plan and history untouched
-LESSON INSTRUMENTS failures=0
+BATHYS_STARTUP_MS=161
+LEARNING PASS: only chart and information toggles remain: boyle
+LEARNING PASS: only chart and information toggles remain: snell
+LEARNING PASS: only chart and information toggles remain: dalton
+LEARNING PASS: only chart and information toggles remain: henry
+LEARNING PASS: only chart and information toggles remain: density
+LEARNING PASS: only chart and information toggles remain: gas_density
+LEARNING PASS: only chart and information toggles remain: oxygen
+LEARNING PASS: only chart and information toggles remain: narcosis
+LEARNING PASS: only chart and information toggles remain: buhlmann
+LEARNING PASS: only chart and information toggles remain: buoyancy
+LEARNING PASS: only chart and information toggles remain: colour
+LEARNING PASS: only chart and information toggles remain: charles
+LEARNING PASS: only chart and information toggles remain: ideal_gas
+LEARNING PASS: only chart and information toggles remain: real_gas
+LEARNING PASS: only chart and information toggles remain: joule_thomson
+LEARNING PASS: only chart and information toggles remain: fick
+LEARNING PASS: fixed-volume instrument is shown by default
+LEARNING PASS: ideal equation labels both compared products
+LEARNING PASS: fixed-pressure mode swaps in the pressure instrument
+BATHYS_FPS_2D_AVG=49.2
+LEARNING PASS: torch power and exposure are visible; offset has no duplicate instrument
+LEARNING PASS: vertical torch drag changes physical offset (1.1)
+LEARNING PASS: torch drag keeps fish depth unchanged (10.0)
+LEARNING PASS: torch drag keeps fish range unchanged (3.0)
+LEARNING PASS: selected torch has keyboard offset control (1.05)
+LEARNING PASS: torch remains inside the scene at deepest depth and largest offset
+LEARNING PASS: mass instrument moves the body toward its new floating level
+LEARNING PASS: volume instrument moves the body toward its new floating level
+LEARNING PASS: exchange context uses anatomical icons with tooltips
+LEARNING PASS: exchange context uses anatomical icons with tooltips
+LEARNING PASS: all lung instruments appear directly
+LEARNING PASS: tissue storage instrument appears directly
+LEARNING PASS: thin membrane thickness handle remains draggable at the smallest exchange area (1.25)
+LEARNING PASS: thickness gesture does not capture the nearby area handle (0.2)
+LEARNING PASS: ascent instrument is visible: exposure_depth
+LEARNING PASS: ascent instrument is visible: exposure_time
+LEARNING PASS: ascent instrument is visible: wait
+LEARNING PASS: profile exposure corner sets depth (25.0)
+LEARNING PASS: profile exposure corner sets duration (40.0)
+LEARNING PASS: profile wait corner sets preview depth (12.0)
+LEARNING PASS: profile wait corner sets waiting time (20.0)
+LEARNING PASS: profile edits use the existing pressure-step tissue calculation (1.87979246089231)
+LEARNING PASS: profile corners support keyboard editing
+LEARNING PASS: visual-only French phone layout fits: boyle
+LEARNING PASS: visual-only French phone layout fits: snell
+LEARNING PASS: visual-only French phone layout fits: dalton
+LEARNING PASS: visual-only French phone layout fits: henry
+LEARNING PASS: visual-only French phone layout fits: density
+LEARNING PASS: visual-only French phone layout fits: gas_density
+LEARNING PASS: visual-only French phone layout fits: oxygen
+LEARNING PASS: visual-only French phone layout fits: narcosis
+LEARNING PASS: visual-only French phone layout fits: buhlmann
+LEARNING PASS: visual-only French phone layout fits: buoyancy
+LEARNING PASS: visual-only French phone layout fits: colour
+LEARNING PASS: visual-only French phone layout fits: charles
+LEARNING PASS: visual-only French phone layout fits: ideal_gas
+LEARNING PASS: visual-only French phone layout fits: real_gas
+LEARNING PASS: visual-only French phone layout fits: joule_thomson
+LEARNING PASS: visual-only French phone layout fits: fick
+LEARNING PASS: visual lesson edits preserve plan and history
+VISUAL LESSONS failures=0

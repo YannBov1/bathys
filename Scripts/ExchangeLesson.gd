@@ -30,7 +30,9 @@ func _ready() -> void:
 	var group := ButtonGroup.new()
 	for key: String in ["lungs", "tissues"]:
 		var button := Button.new()
-		button.text = "Lungs · blood parcel" if key == "lungs" else "Tissues · storage & release"
+		button.icon = load("res://Assets/Icons/exchange-" + key + ".svg")
+		button.tooltip_text = "Lungs ↔ blood" if key == "lungs" else "Blood ↔ tissues"
+		button.custom_minimum_size = Vector2(108, 48)
 		button.toggle_mode = true
 		button.button_group = group
 		button.pressed.connect(set_context.bind(key))
@@ -65,7 +67,7 @@ func _ready() -> void:
 		number.add_theme_color_override("font_color", BathysUiStyle.AQUA)
 		column.add_child(number)
 		numbers.append(number)
-	formula = BathysUiStyle.wrapped("Q̇ ∝ A × κ × ΔP / δ · κ includes mobility and solubility", 14, BathysUiStyle.AQUA)
+	formula = BathysUiStyle.wrapped("Q̇ ∝ A × κ × ΔP / δ\n\nκ includes mobility and solubility", 14, BathysUiStyle.AQUA)
 	formula.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(formula)
 	var box: PanelContainer = BathysUiStyle.panel(Color("143c43"), 10)
