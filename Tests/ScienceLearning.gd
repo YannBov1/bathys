@@ -83,15 +83,15 @@ func run() -> void:
 		await capture("res://Screenshots/learning-" + topic + "-fr.png")
 	root.size = Vector2i(390, 900)
 	await layout()
-	check(view.topic_picker.visible and not view.topic_stack.visible, "phone navigation uses a compact selector for five topics")
+	check(view.topic_picker.visible and not view.topic_stack.visible, "phone navigation uses a compact selector with categorized topics")
 	for index: int in [2, 3, 4]:
-		view.topic_picker.select(index)
-		view.topic_picker.item_selected.emit(index)
-		app.page_scroll.scroll_vertical = 0
+		view.topic_picker.select(view.topic_picker.get_item_index(index))
+		view.topic_picker.item_selected.emit(view.topic_picker.get_item_index(index))
+		app.learning_view.lesson_scroll.scroll_vertical = 0
 		await layout()
 		check(view.get_combined_minimum_size().x <= 390, "French phone layout fits " + view.lesson)
 		await capture("res://Screenshots/learning-" + view.lesson + "-fr-phone.png")
-		app.page_scroll.scroll_vertical = 10000
+		app.learning_view.lesson_scroll.scroll_vertical = 10000
 		await layout()
 		await capture("res://Screenshots/learning-" + view.lesson + "-fr-phone-bottom.png")
 	root.size = Vector2i(1280, 1000)

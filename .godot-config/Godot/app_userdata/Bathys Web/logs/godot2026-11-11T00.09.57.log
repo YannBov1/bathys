@@ -1,0 +1,21 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=148
+BATHYS_SIM_MS=211
+DRAG PASS: event card has no drag handle
+DRAG PASS: icon, collapsed name and summary are draggable: TextureRect
+DRAG PASS: icon, collapsed name and summary are draggable: LineEdit
+DRAG PASS: icon, collapsed name and summary are draggable: Label
+DRAG PASS: card padding is draggable
+DRAG PASS: edit button still opens the editor normally
+DRAG PASS: editable name keeps native text dragging instead of moving the card
+DRAG PASS: editable fields retain native text drop behavior
+DRAG PASS: numeric input gestures never start a route drag
+DRAG PASS: numeric spin arrows remain usable
+DRAG PASS: dragging on a button never drags its card
+DRAG PASS: non-editable labels inside an open editor can drag the card
+DRAG PASS: validate button still closes the editor
+BATHYS_SIM_MS=237
+DRAG PASS: gas selector opens normally without reordering
+DRAG PASS: using controls and cancelled drags preserves event order
+CARD_INPUT_CHECKS failures=0

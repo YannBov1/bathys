@@ -203,10 +203,15 @@ func build_ui() -> void:
 	backdrop.color = BG
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
+	var shell := VBoxContainer.new()
+	shell.name = "AppShell"
+	shell.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shell.add_theme_constant_override("separation", 8)
+	add_child(shell)
 	page_scroll = ScrollContainer.new()
-	page_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(page_scroll)
+	shell.add_child(page_scroll)
 	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -214,7 +219,9 @@ func build_ui() -> void:
 	page_scroll.add_child(root)
 	var header: PanelContainer = BathysUiStyle.panel(BG, 12)
 	header.custom_minimum_size.y = 62
-	root.add_child(header)
+	header.name = "TopRibbon"
+	shell.add_child(header)
+	shell.move_child(header, 0)
 	var heading := HFlowContainer.new()
 	header_box = heading
 	header.add_child(heading)
@@ -474,7 +481,7 @@ func build_ui() -> void:
 	planning_footer = warning
 	learning_view = BathysLearningView.new()
 	learning_view.hide()
-	root.add_child(learning_view)
+	shell.add_child(learning_view)
 	set_bathymetry(false)
 	set_playback_available(false)
 	if OS.has_feature("web"):
@@ -483,7 +490,8 @@ func build_ui() -> void:
 func set_learning_mode(enabled: bool) -> void:
 	if learning_mode == enabled:
 		return
-	workspace_scroll[1 if learning_mode else 0] = page_scroll.scroll_vertical
+	if not learning_mode:
+		workspace_scroll[0] = page_scroll.scroll_vertical
 	learning_mode = enabled
 	workspace_switch.set_pressed_no_signal(enabled)
 	workspace_switch.update_hint()
@@ -498,12 +506,14 @@ func set_learning_mode(enabled: bool) -> void:
 	for control: Control in planning_header_controls:
 		control.visible = not enabled
 	learning_view.visible = enabled
+	page_scroll.visible = not enabled
 	if lake != null:
 		lake.viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if view_3d and not enabled else SubViewport.UPDATE_DISABLED
 	call_deferred("restore_workspace_scroll")
 
 func restore_workspace_scroll() -> void:
-	page_scroll.scroll_vertical = workspace_scroll[1 if learning_mode else 0]
+	if not learning_mode:
+		page_scroll.scroll_vertical = workspace_scroll[0]
 	learning_view.adapt_layout()
 
 func scroll_column(parent: Node, title: String = "") -> VBoxContainer:
@@ -554,7 +564,7 @@ func show_3d() -> void:
 	lake.viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	view_label.text = ""
 	update_view_buttons("3D")
-	view_hint.text = "Drag to orbit · Right drag to pan · Wheel to zoom · Click to inspect"
+	view_hint.text = "Drag to orbit · Right drag to pan · Wheel to zoom · Click to inspect · Warm relief: steep slopes · Contours: 5 m"
 
 func home_view() -> void:
 	if view_3d and lake != null:

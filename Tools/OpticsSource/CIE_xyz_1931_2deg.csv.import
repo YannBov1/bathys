@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://vk4ieddi5t7j"
+
+[deps]
+
+files=["res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.000129900000.translation", "res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.0000039170000.translation", "res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.000606100000.translation"]
+
+source_file="res://Tools/OpticsSource/CIE_xyz_1931_2deg.csv"
+dest_files=["res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.000129900000.translation", "res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.0000039170000.translation", "res://Tools/OpticsSource/CIE_xyz_1931_2deg.0.000606100000.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

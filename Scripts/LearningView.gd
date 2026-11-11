@@ -3,12 +3,19 @@ extends MarginContainer
 
 const BOYLE_SOURCE := "https://www.grc.nasa.gov/www/BGH/boyle.html"
 const SNELL_SOURCE := "https://openstax.org/books/university-physics-volume-3/pages/1-4-total-internal-reflection"
-const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"]]
+const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"], ["gas_density", "Gas density"], ["oxygen", "Oxygen toxicity"], ["narcosis", "Nitrogen narcosis"], ["buhlmann", "Bühlmann model"], ["buoyancy", "Archimedes & buoyancy"], ["colour", "Colour underwater"]]
+const CATEGORIES := [["Physics of diving", ["boyle", "snell", "colour", "dalton", "henry", "density", "buoyancy", "gas_density"]], ["Physiology", ["oxygen", "narcosis"]], ["Models & risk", ["buhlmann"]]]
 const SOURCES := {
+	"colour": "https://openaccess.thecvf.com/content_cvpr_2018/html/Akkaynak_A_Revised_Underwater_CVPR_2018_paper.html",
+	"buoyancy": "https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy",
 	"boyle": BOYLE_SOURCE, "snell": SNELL_SOURCE,
 	"dalton": "https://openstax.org/books/chemistry-2e/pages/9-3-stoichiometry-of-gaseous-substances-mixtures-and-reactions",
 	"henry": "https://openstax.org/books/chemistry/pages/11-3-solubility",
-	"density": "https://www.vliz.be/imisdocs/publications/ocrd/122840.pdf"}
+	"density": "https://www.vliz.be/imisdocs/publications/ocrd/122840.pdf",
+	"oxygen": "https://dan.org/health-medicine/health-resources/diseases-conditions/oxygen-toxicity/",
+	"narcosis": "https://dan.org/alert-diver/article/breathing-gases/",
+	"gas_density": "https://dan.org/alert-diver/article/performance-under-pressure/",
+	"buhlmann": "https://www.shearwater.com/wp-content/uploads/2022/05/Petrel-3_Technical_Manual_RevB.pdf"}
 var dalton_depth: float = 20.0
 var oxygen_percent: float = 21.0
 var helium_percent: float = 0.0
@@ -19,8 +26,15 @@ var salinity: float = 35.0
 var extra_controls: Dictionary = {}
 var extra_sliders: Dictionary = {}
 var extra_values: Dictionary = {}
+var topic_scroll: ScrollContainer
+var lesson_scroll: ScrollContainer
 var topic_stack: VBoxContainer
 var topic_picker: OptionButton
+var optics_view: BathysOpticsLesson
+var buoyancy_view: BathysBuoyancyLesson
+var breathing_view: BathysBreathingLessons
+var buhlmann_view: BathysBuhlmannLesson
+var standard_sections: Array[Control] = []
 var lesson: String = "boyle"
 var depth_m: float = 10.0
 var angle_deg: float = 30.0
@@ -60,33 +74,66 @@ func _ready() -> void:
 	var nav := BathysUiStyle.column(navigation, 12)
 	nav.add_child(label("LEARN & EXPLORE", 12, BathysUiStyle.AQUA))
 	var group := ButtonGroup.new()
-	topic_stack = BathysUiStyle.column(nav, 10)
+	topic_scroll = ScrollContainer.new()
+	topic_scroll.name = "LessonNavigationScroll"
+	topic_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	topic_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	topic_scroll.follow_focus = true
+	nav.add_child(topic_scroll)
+	topic_stack = BathysUiStyle.column(topic_scroll, 8)
 	topic_picker = OptionButton.new()
 	topic_picker.name = "CompactTopics"
-	topic_picker.item_selected.connect(func(index: int) -> void: select_lesson(str(TOPICS[index][0])))
+	topic_picker.item_selected.connect(func(index: int) -> void: select_lesson(str(TOPICS[topic_picker.get_item_id(index)][0])))
 	nav.add_child(topic_picker)
-	for item: Array in TOPICS:
-		var key: String = str(item[0])
-		var button := Button.new()
-		button.name = "Topic_" + key
-		button.text = str(item[1])
-		button.icon = load("res://Assets/Icons/law-" + key + ".svg")
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size.y = 48
-		button.toggle_mode = true
-		button.button_group = group
-		button.pressed.connect(select_lesson.bind(key))
-		topic_stack.add_child(button)
-		topic_buttons[key] = button
-		topic_picker.add_icon_item(button.icon, str(item[1]))
+	for category: Array in CATEGORIES:
+		var caption: Label = BathysUiStyle.wrapped(str(category[0]), 12, BathysUiStyle.AQUA)
+		caption.name = "Category_" + str(category[0]).replace(" ", "_")
+		topic_stack.add_child(caption)
+		topic_picker.add_separator(str(category[0]))
+		topic_picker.set_item_id(topic_picker.item_count - 1, -100 - topic_picker.item_count)
+		for key: String in category[1]:
+			var topic_index: int = -1
+			for index: int in TOPICS.size():
+				if str(TOPICS[index][0]) == key: topic_index = index
+			var button := Button.new()
+			button.name = "Topic_" + key
+			button.text = str(TOPICS[topic_index][1])
+			button.icon = load("res://Assets/Icons/law-" + key + ".svg")
+			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			button.custom_minimum_size.y = 45
+			button.toggle_mode = true
+			button.button_group = group
+			button.pressed.connect(select_lesson.bind(key))
+			topic_stack.add_child(button)
+			topic_buttons[key] = button
+			topic_picker.add_icon_item(button.icon, button.text, topic_index)
+	lesson_scroll = ScrollContainer.new()
+	lesson_scroll.name = "LessonContentScroll"
+	lesson_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	lesson_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lesson_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(lesson_scroll)
 	var lesson_panel: PanelContainer = BathysUiStyle.panel(BathysUiStyle.PANEL, 16)
 	lesson_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	layout.add_child(lesson_panel)
+	lesson_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lesson_scroll.add_child(lesson_panel)
 	var body := BathysUiStyle.column(lesson_panel, 10)
 	title_label = BathysUiStyle.wrapped("", 26, BathysUiStyle.TEXT)
 	body.add_child(title_label)
 	intro_label = BathysUiStyle.wrapped("", 14, BathysUiStyle.TEXT)
 	body.add_child(intro_label)
+	buhlmann_view = BathysBuhlmannLesson.new()
+	buhlmann_view.hide()
+	body.add_child(buhlmann_view)
+	breathing_view = BathysBreathingLessons.new()
+	breathing_view.hide()
+	body.add_child(breathing_view)
+	buoyancy_view = BathysBuoyancyLesson.new()
+	buoyancy_view.hide()
+	body.add_child(buoyancy_view)
+	optics_view = BathysOpticsLesson.new()
+	optics_view.hide()
+	body.add_child(optics_view)
 	diagram = BathysScienceLessonDiagram.new()
 	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(diagram)
@@ -201,6 +248,7 @@ func _ready() -> void:
 	body.add_child(source_button)
 	resized.connect(adapt_layout)
 	get_node("/root/I18n").language_changed.connect(update_values)
+	standard_sections.assign([diagram, controls, readouts, formula_label, insight, assumptions_label])
 	select_lesson("boyle")
 	call_deferred("adapt_layout")
 
@@ -246,18 +294,40 @@ func label(value: String, font_size: int = 14, color: Color = BathysUiStyle.TEXT
 
 func adapt_layout() -> void:
 	layout.vertical = size.x < 760
-	navigation.custom_minimum_size.x = 0 if layout.vertical else 208
+	navigation.custom_minimum_size = Vector2(0, 94) if layout.vertical else Vector2(228, 0)
+	navigation.size_flags_vertical = Control.SIZE_SHRINK_BEGIN if layout.vertical else Control.SIZE_EXPAND_FILL
+	topic_scroll.visible = not layout.vertical
 	topic_stack.visible = not layout.vertical
 	topic_picker.visible = layout.vertical
 	readouts.columns = 1 if size.x < 450 else (4 if lesson == "dalton" else 3)
 	diagram.adapt()
+	buhlmann_view.adapt()
+	breathing_view.adapt()
+	buoyancy_view.adapt()
+	optics_view.adapt()
 
 func select_lesson(key: String) -> void:
 	if key not in SOURCES:
 		return
 	lesson = key
+	source_button.visible = lesson != "colour"
+	lesson_scroll.set_deferred("scroll_vertical", 0)
+	buhlmann_view.visible = lesson == "buhlmann"
+	buoyancy_view.visible = lesson == "buoyancy"
+	optics_view.visible = lesson == "colour"
+	breathing_view.visible = lesson in ["oxygen", "narcosis", "gas_density"]
+	for section: Control in standard_sections:
+		section.visible = lesson not in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour"]
+	for index: int in TOPICS.size():
+		if str(TOPICS[index][0]) == lesson: topic_picker.select(topic_picker.get_item_index(index))
 	for topic: String in topic_buttons:
 		(topic_buttons[topic] as Button).set_pressed_no_signal(topic == lesson)
+	if lesson in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour"]:
+		if lesson in ["oxygen", "narcosis", "gas_density"]: breathing_view.set_lesson(lesson)
+		if lesson == "colour": optics_view.activate()
+		update_values()
+		adapt_layout()
+		return
 	slider.set_block_signals(true)
 	slider.max_value = {"boyle": 40.0, "snell": 89.0, "dalton": 40.0, "henry": 5.0, "density": 35.0}[lesson]
 	slider.value = {"boyle": depth_m, "snell": angle_deg, "dalton": dalton_depth, "henry": gas_pressure, "density": temperature_c}[lesson]
@@ -265,7 +335,7 @@ func select_lesson(key: String) -> void:
 	presets.visible = lesson == "boyle"
 	direction_picker.get_parent().visible = lesson == "snell"
 	for index: int in TOPICS.size():
-		if str(TOPICS[index][0]) == lesson: topic_picker.select(index)
+		if str(TOPICS[index][0]) == lesson: topic_picker.select(topic_picker.get_item_index(index))
 	for control_key: String in extra_controls:
 		(extra_controls[control_key] as Control).visible = control_key in {"boyle": [], "snell": [], "dalton": ["oxygen", "helium", "mixtures"], "henry": ["time", "pressure_steps"], "density": ["salinity", "waters"]}[lesson]
 	readout_values[3].get_parent().get_parent().visible = lesson == "dalton"
@@ -275,6 +345,22 @@ func select_lesson(key: String) -> void:
 	adapt_layout()
 
 func update_values() -> void:
+	if lesson == "colour":
+		title_label.text = "Colour underwater"
+		intro_label.text = "Follow the light from the surface or torch to a coloured target, then through the water to your eye. Separate colour loss, blur and the veil of scattered light."
+		return
+	if lesson == "buoyancy":
+		title_label.text = "Archimedes’ principle & buoyancy"
+		intro_label.text = "Displacing water creates an upward force. Explore what changes that force, then add a compressible gas space at depth."
+		return
+	if lesson in ["oxygen", "narcosis", "gas_density"]:
+		title_label.text = {"oxygen": "Oxygen toxicity", "narcosis": "Nitrogen narcosis", "gas_density": "Gas density & breathing"}[lesson]
+		intro_label.text = {"oxygen": "Oxygen pressure and exposure time both matter. Explore the brain and lung exposure indexes separately.", "narcosis": "Depth changes gas partial pressures. Compare a mixture with air and explore the assumptions behind equivalent narcotic depth.", "gas_density": "Pressure packs more gas mass into each litre. Explore depth, helium and temperature, then compare with air."}[lesson]
+		return
+	if lesson == "buhlmann":
+		title_label.text = "Bühlmann ZH-L16C"
+		intro_label.text = "Sixteen compartments track dissolved inert gas. Explore their half-times, then see how gradient factors change the model’s limits."
+		return
 	for value: Label in readout_values:
 		value.add_theme_font_size_override("font_size", 20)
 	for key: String in extra_sliders:

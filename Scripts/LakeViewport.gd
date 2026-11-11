@@ -87,34 +87,8 @@ func material(color: Color, unshaded: bool = true) -> StandardMaterial3D:
 	return mat
 
 func terrain_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type spatial;
-render_mode cull_disabled, specular_disabled;
-varying float bed_depth_m;
-void vertex() {
-    bed_depth_m = -(MODEL_MATRIX * vec4(VERTEX, 1.0)).y;
-}
-void fragment() {
-    float d = max(0.0, bed_depth_m);
-    vec3 a = vec3(0.270, 0.705, 0.660);
-    vec3 b = vec3(0.145, 0.540, 0.565);
-    vec3 c = vec3(0.073, 0.365, 0.455);
-    vec3 e = vec3(0.040, 0.245, 0.360);
-    vec3 f = vec3(0.025, 0.145, 0.245);
-    vec3 color = d < 10.0 ? mix(a,b,d/10.0) :
-                 d < 20.0 ? mix(b,c,(d-10.0)/10.0) :
-                 d < 30.0 ? mix(c,e,(d-20.0)/10.0) :
-                 mix(e,f,clamp((d-30.0)/15.0,0.0,1.0));
-    float phase = mod(d, 5.0);
-    float contour = 1.0 - smoothstep(0.0, 0.35, min(phase, 5.0-phase));
-    ALBEDO = color * (1.0 - 0.13 * contour);
-    ROUGHNESS = 1.0;
-    METALLIC = 0.0;
-}
-"""
 	var mat := ShaderMaterial.new()
-	mat.shader = shader
+	mat.shader = preload("res://Shaders/TerrainRelief.gdshader")
 	return mat
 
 func load_site(value: BathysSite, chosen_waterline: float) -> void:

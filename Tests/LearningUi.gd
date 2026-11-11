@@ -63,7 +63,7 @@ func run() -> void:
 	var paused_time: float = app.playback_time
 	check(not app.find_child("PlanName", true, false).is_visible_in_tree() and app.language_button.is_visible_in_tree(), "learning header keeps language selection and hides scenario actions")
 	var view: BathysLearningView = app.learning_view
-	check(view.topic_buttons.size() == 5 and view.lesson == "boyle", "left navigation includes all five lessons")
+	check(view.topic_buttons.size() == 11 and view.lesson == "boyle", "left navigation includes all eleven lessons")
 	view.slider.value = 0
 	check(view.readout_values[0].text == "1.00 bar" and view.readout_values[1].text == "1.00 L", "surface reference is one litre at one bar absolute")
 	view.slider.value = 10
@@ -116,7 +116,7 @@ func run() -> void:
 	await layout()
 	check(view.get_combined_minimum_size().x <= 390 and view.readouts.columns == 1, "French angle controls and readouts fit a phone width")
 	await capture("res://Screenshots/learning-snell-fr-phone.png")
-	app.page_scroll.scroll_vertical = 10000
+	app.learning_view.lesson_scroll.scroll_vertical = 10000
 	await layout()
 	await capture("res://Screenshots/learning-snell-fr-phone-bottom.png")
 	view.select_lesson("boyle")

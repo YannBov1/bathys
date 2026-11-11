@@ -1,0 +1,10 @@
+Colour reference data: International Commission on Illumination (CIE), Vienna, AT (2019).
+Colour-matching functions of CIE 1931 standard colorimetric observer.
+https://doi.org/10.25039/CIE.DS.xvudnb9b
+CIE standard illuminant D65. https://doi.org/10.25039/CIE.DS.hjfjmt59
+Licensed under Creative Commons Attribution-ShareAlike 4.0 International:
+https://creativecommons.org/licenses/by-sa/4.0/
+Changes: wavelength subset 400-700 nm at 5 nm, D65 divided by 100, bundled in water_spectra.dat.
+The derived table water_spectra.dat is distributed under CC BY-SA 4.0, retaining the
+Dstl/OGL/CC BY and jerlov attribution recorded in that file and jerlov-NOTICE.txt.
+No endorsement by the source authors or CIE is implied.

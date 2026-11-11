@@ -1,0 +1,450 @@
+{
+  "files": [
+    {
+      "id": 38267817,
+      "name": "README.txt",
+      "size": 5006,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/38267817",
+      "supplied_md5": "784d349117db664a14bcfc32d03b7cc1",
+      "computed_md5": "784d349117db664a14bcfc32d03b7cc1",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 38267823,
+      "name": "20221121-Dstl_MIOP_analysis_v3.xlsx",
+      "size": 859991,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/38267823",
+      "supplied_md5": "718d1abfa69ca2242daa43cb625f1176",
+      "computed_md5": "718d1abfa69ca2242daa43cb625f1176",
+      "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "id": 38267820,
+      "name": "20221121-Dstl_MIOP_code_v3.py",
+      "size": 73644,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/38267820",
+      "supplied_md5": "9130551b2ba78a02c58ebd1bdbd15940",
+      "computed_md5": "9130551b2ba78a02c58ebd1bdbd15940",
+      "mimetype": "text/x-python"
+    },
+    {
+      "id": 37985373,
+      "name": "ip_a_data.tsv",
+      "size": 37972878,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985373",
+      "supplied_md5": "6a76f0ce3740b523467a18408e374c3b",
+      "computed_md5": "6a76f0ce3740b523467a18408e374c3b",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985376,
+      "name": "ip_b_data.tsv",
+      "size": 8184094,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985376",
+      "supplied_md5": "10d6dabfc8922bef87e793bcf4ba5824",
+      "computed_md5": "10d6dabfc8922bef87e793bcf4ba5824",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985379,
+      "name": "ip_c_data.tsv",
+      "size": 71588960,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985379",
+      "supplied_md5": "f742ef7ddadda32d7d20d9a894600d67",
+      "computed_md5": "f742ef7ddadda32d7d20d9a894600d67",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985382,
+      "name": "ip_jerlov.csv",
+      "size": 30674,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985382",
+      "supplied_md5": "d4a3c685808c20aeecc265db727cac3a",
+      "computed_md5": "d4a3c685808c20aeecc265db727cac3a",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985385,
+      "name": "ip_k_data.tsv",
+      "size": 83278957,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985385",
+      "supplied_md5": "d7cbe40e5d78de0e801ca97f0aacef24",
+      "computed_md5": "d7cbe40e5d78de0e801ca97f0aacef24",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985388,
+      "name": "ip_land_locs.csv",
+      "size": 970,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985388",
+      "supplied_md5": "50a62a0cdb0140417765a339d9b85fa1",
+      "computed_md5": "50a62a0cdb0140417765a339d9b85fa1",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985391,
+      "name": "op_log.txt",
+      "size": 3356,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985391",
+      "supplied_md5": "222c3e97653daac1e7afb0af0079d563",
+      "computed_md5": "222c3e97653daac1e7afb0af0079d563",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985394,
+      "name": "op_STEP_1_a.csv",
+      "size": 25975123,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985394",
+      "supplied_md5": "c48f6b671e084ec8d145d454869efe15",
+      "computed_md5": "c48f6b671e084ec8d145d454869efe15",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985397,
+      "name": "op_STEP_1_b.csv",
+      "size": 4733175,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985397",
+      "supplied_md5": "c5e492468e41b5b77bd940a7e2ba4545",
+      "computed_md5": "c5e492468e41b5b77bd940a7e2ba4545",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985400,
+      "name": "op_STEP_1_c.csv",
+      "size": 54129993,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985400",
+      "supplied_md5": "9c09ef6d32bd2d02dd31b2cc8c9ecfeb",
+      "computed_md5": "9c09ef6d32bd2d02dd31b2cc8c9ecfeb",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985406,
+      "name": "op_STEP_1_k.csv",
+      "size": 43775914,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985406",
+      "supplied_md5": "9d18470d191f6ad065cac3cd9ef65095",
+      "computed_md5": "9d18470d191f6ad065cac3cd9ef65095",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985409,
+      "name": "op_STEP_2_k.csv",
+      "size": 45774588,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985409",
+      "supplied_md5": "481db295edcce79cb73ccd55946872bf",
+      "computed_md5": "481db295edcce79cb73ccd55946872bf",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985412,
+      "name": "op_STEP_3_a.csv",
+      "size": 9936524,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985412",
+      "supplied_md5": "ffe94df7830080feffcdf2819b629b45",
+      "computed_md5": "ffe94df7830080feffcdf2819b629b45",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985415,
+      "name": "op_STEP_3_b.csv",
+      "size": 582017,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985415",
+      "supplied_md5": "fd1fa677f6d366268a4c8966146adc87",
+      "computed_md5": "fd1fa677f6d366268a4c8966146adc87",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985418,
+      "name": "op_STEP_3_c.csv",
+      "size": 15558387,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985418",
+      "supplied_md5": "8c336fc027555213f9b7e541acea897d",
+      "computed_md5": "8c336fc027555213f9b7e541acea897d",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985421,
+      "name": "op_STEP_3_k.csv",
+      "size": 45747188,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985421",
+      "supplied_md5": "de2046a69d76552b1ef9433888653ae9",
+      "computed_md5": "de2046a69d76552b1ef9433888653ae9",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985424,
+      "name": "op_STEP_4_a.csv",
+      "size": 3299390,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985424",
+      "supplied_md5": "14c13b290d3e5024ddce4090e6234d55",
+      "computed_md5": "14c13b290d3e5024ddce4090e6234d55",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985427,
+      "name": "op_STEP_4_b.csv",
+      "size": 261045,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985427",
+      "supplied_md5": "9f68002d909e392085637dbf565ef040",
+      "computed_md5": "9f68002d909e392085637dbf565ef040",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985430,
+      "name": "op_STEP_4_c.csv",
+      "size": 5607204,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985430",
+      "supplied_md5": "ed808d4ec9bb8379b6a09b7fe5e2c558",
+      "computed_md5": "ed808d4ec9bb8379b6a09b7fe5e2c558",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985433,
+      "name": "op_STEP_4_k.csv",
+      "size": 19417245,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985433",
+      "supplied_md5": "41afc960ade10f292b4b73a425b1a9c6",
+      "computed_md5": "41afc960ade10f292b4b73a425b1a9c6",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985436,
+      "name": "op_STEP_5_a.csv",
+      "size": 3271876,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985436",
+      "supplied_md5": "ef8df888747dc9f7c36bdac8c209ecd6",
+      "computed_md5": "ef8df888747dc9f7c36bdac8c209ecd6",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985439,
+      "name": "op_STEP_5_b.csv",
+      "size": 3273502,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985439",
+      "supplied_md5": "4171598067cc44b8bdced4acab0e23ac",
+      "computed_md5": "4171598067cc44b8bdced4acab0e23ac",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985442,
+      "name": "op_STEP_5_k.csv",
+      "size": 16462586,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985442",
+      "supplied_md5": "3bee1ffd65aa0c4a799f0497ae5d2ce7",
+      "computed_md5": "3bee1ffd65aa0c4a799f0497ae5d2ce7",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985445,
+      "name": "op_STEP_5_LATLON_ab.csv",
+      "size": 5588,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985445",
+      "supplied_md5": "d18c5f0928ff4b606556746a85ce8ccd",
+      "computed_md5": "d18c5f0928ff4b606556746a85ce8ccd",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985448,
+      "name": "op_STEP_5_LATLON_k.csv",
+      "size": 74139,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985448",
+      "supplied_md5": "69b18c2b278a5ba276d08a71b2909aea",
+      "computed_md5": "69b18c2b278a5ba276d08a71b2909aea",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985451,
+      "name": "op_STEP_6_a.csv",
+      "size": 8197,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985451",
+      "supplied_md5": "19747fd31e922044b273e449a7911d38",
+      "computed_md5": "19747fd31e922044b273e449a7911d38",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985454,
+      "name": "op_STEP_6_b.csv",
+      "size": 8040,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985454",
+      "supplied_md5": "f2aaafe23eb1def9f8f9b16b9ecfc28d",
+      "computed_md5": "f2aaafe23eb1def9f8f9b16b9ecfc28d",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985457,
+      "name": "op_STEP_7_kab.csv",
+      "size": 35097,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985457",
+      "supplied_md5": "64fdbfcdad23c600375e62c472aa2bff",
+      "computed_md5": "64fdbfcdad23c600375e62c472aa2bff",
+      "mimetype": "text/plain"
+    },
+    {
+      "id": 37985463,
+      "name": "WOOD_Export_ASCIItextfile_datatables.doc",
+      "size": 114176,
+      "is_link_only": false,
+      "download_url": "https://ndownloader.figshare.com/files/37985463",
+      "supplied_md5": "ad84bd78e461c5dd0722ee14abf812fb",
+      "computed_md5": "ad84bd78e461c5dd0722ee14abf812fb",
+      "mimetype": "application/msword"
+    }
+  ],
+  "folder_structure": {},
+  "authors": [
+    {
+      "id": 3965255,
+      "full_name": "Craig Williamson",
+      "first_name": "Craig",
+      "last_name": "Williamson",
+      "is_active": true,
+      "url_name": "Craig_Williamson",
+      "orcid_id": "0000-0002-0115-0428"
+    },
+    {
+      "id": 13031836,
+      "full_name": "Richard Hollins",
+      "first_name": "Richard",
+      "last_name": "Hollins",
+      "is_active": false,
+      "url_name": "_",
+      "orcid_id": ""
+    }
+  ],
+  "custom_fields": [],
+  "figshare_url": "https://figshare.com/articles/dataset/Dataset_to_accompany_paper_Measured_inherent_optical_properties_of_Jerlov_water_types/20290782",
+  "download_disabled": false,
+  "description": "<p>Dataset to accompany paper: Measured inherent optical properties of Jerlov water types</p>",
+  "funding": "Dstl",
+  "funding_list": [
+    {
+      "id": 13474322,
+      "title": "Dstl",
+      "grant_code": "",
+      "funder_name": null,
+      "is_user_defined": 1
+    }
+  ],
+  "version": 3,
+  "status": "public",
+  "size": 500049524,
+  "created_date": "2022-11-21T10:57:50Z",
+  "modified_date": "2023-06-02T16:47:42Z",
+  "is_public": true,
+  "is_confidential": false,
+  "is_metadata_record": false,
+  "confidential_reason": "",
+  "metadata_reason": "",
+  "license": {
+    "value": 1,
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "tags": [
+    "water quality studies",
+    "water types",
+    "ocean optics",
+    "downwelling irradiance",
+    "Inherent Optical Properties",
+    "attenuation coefficient",
+    "absorption coefficient values",
+    "scattering coefficient",
+    "diffuse attenuation coefficient",
+    "Oceanography"
+  ],
+  "keywords": [
+    "water quality studies",
+    "water types",
+    "ocean optics",
+    "downwelling irradiance",
+    "Inherent Optical Properties",
+    "attenuation coefficient",
+    "absorption coefficient values",
+    "scattering coefficient",
+    "diffuse attenuation coefficient",
+    "Oceanography"
+  ],
+  "categories": [
+    {
+      "id": 25909,
+      "title": "Oceanography not elsewhere classified",
+      "parent_id": 25897,
+      "path": "/25717/25897/25909",
+      "source_id": "370899",
+      "taxonomy_id": 100
+    }
+  ],
+  "references": [
+    "https://doi.org/10.1364/AO.470464"
+  ],
+  "has_linked_file": false,
+  "citation": "Williamson, Craig; Hollins, Richard (2022). Dataset to accompany paper: Measured inherent optical properties of Jerlov water types. figshare. Dataset. https://doi.org/10.6084/m9.figshare.20290782.v3",
+  "related_materials": [
+    {
+      "id": 32503130,
+      "identifier": "https://doi.org/10.1364/AO.470464",
+      "title": "",
+      "relation": "References",
+      "identifier_type": "URL",
+      "is_linkout": false,
+      "link": "https://doi.org/10.1364/AO.470464"
+    }
+  ],
+  "is_embargoed": false,
+  "embargo_date": null,
+  "embargo_type": "file",
+  "embargo_title": "",
+  "embargo_reason": "",
+  "embargo_options": [],
+  "id": 20290782,
+  "title": "Dataset to accompany paper: Measured inherent optical properties of Jerlov water types",
+  "doi": "10.6084/m9.figshare.20290782.v3",
+  "handle": "",
+  "url": "https://api.figshare.com/v2/articles/20290782",
+  "published_date": "2022-11-21T10:57:50Z",
+  "thumb": "https://s3-eu-west-1.amazonaws.com/pfigshare-u-previews/37985463/thumb.png",
+  "defined_type": 3,
+  "defined_type_name": "dataset",
+  "group_id": null,
+  "url_private_api": "https://api.figshare.com/v2/account/articles/20290782",
+  "url_public_api": "https://api.figshare.com/v2/articles/20290782",
+  "url_private_html": "https://figshare.com/account/articles/20290782",
+  "url_public_html": "https://figshare.com/articles/dataset/Dataset_to_accompany_paper_Measured_inherent_optical_properties_of_Jerlov_water_types/20290782",
+  "timeline": {
+    "posted": "2022-11-21T10:57:50",
+    "firstOnline": "2022-07-12"
+  },
+  "resource_title": null,
+  "resource_doi": null
+}

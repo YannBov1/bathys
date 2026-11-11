@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://o3w4n47vut45"
+
+[deps]
+
+files=["res://Tools/OpticsSource/ip_jerlov.a.translation", "res://Tools/OpticsSource/ip_jerlov.b_IA.translation", "res://Tools/OpticsSource/ip_jerlov.c_IB.translation", "res://Tools/OpticsSource/ip_jerlov.d_II.translation", "res://Tools/OpticsSource/ip_jerlov.e.translation", "res://Tools/OpticsSource/ip_jerlov.f.translation", "res://Tools/OpticsSource/ip_jerlov.g.translation", "res://Tools/OpticsSource/ip_jerlov.h.translation", "res://Tools/OpticsSource/ip_jerlov.i.translation", "res://Tools/OpticsSource/ip_jerlov.j.translation"]
+
+source_file="res://Tools/OpticsSource/ip_jerlov.csv"
+dest_files=["res://Tools/OpticsSource/ip_jerlov.a.translation", "res://Tools/OpticsSource/ip_jerlov.b_IA.translation", "res://Tools/OpticsSource/ip_jerlov.c_IB.translation", "res://Tools/OpticsSource/ip_jerlov.d_II.translation", "res://Tools/OpticsSource/ip_jerlov.e.translation", "res://Tools/OpticsSource/ip_jerlov.f.translation", "res://Tools/OpticsSource/ip_jerlov.g.translation", "res://Tools/OpticsSource/ip_jerlov.h.translation", "res://Tools/OpticsSource/ip_jerlov.i.translation", "res://Tools/OpticsSource/ip_jerlov.j.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
