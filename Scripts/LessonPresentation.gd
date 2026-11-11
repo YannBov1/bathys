@@ -9,6 +9,12 @@ var chart_button: Button
 var parameter_button: Button
 var note_button: Button
 var instruments: HFlowContainer
+var range_dock: CenterContainer
+var palette: VBoxContainer
+var palette_buttons: HFlowContainer
+var palette_stage: CenterContainer
+var palette_inputs: Dictionary = {}
+var active_parameter: String = ""
 var actions: HFlowContainer
 var outcome: BoxContainer
 var outcome_title: Label
@@ -35,13 +41,23 @@ func setup(view, parent: VBoxContainer) -> void:
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	toolbar.add_child(hint)
 	chart_button = toggle("res://Assets/Icons/lesson-chart.svg", "Show linked chart")
-	parameter_button = toggle("res://Assets/Icons/settings.svg", "Precise values and more variables")
+	chart_button.set_pressed_no_signal(true)
+	parameter_button = toggle("res://Assets/Icons/settings.svg", "Precise values")
 	note_button = toggle("res://Assets/Icons/lesson-info.svg", "Explanation, equations and model limits")
 	instruments = HFlowContainer.new()
 	instruments.alignment = FlowContainer.ALIGNMENT_CENTER
 	instruments.add_theme_constant_override("h_separation", 6)
 	instruments.add_theme_constant_override("v_separation", 6)
 	body.add_child(instruments)
+	range_dock = CenterContainer.new()
+	body.add_child(range_dock)
+	palette = VBoxContainer.new()
+	body.add_child(palette)
+	palette_buttons = HFlowContainer.new()
+	palette_buttons.alignment = FlowContainer.ALIGNMENT_CENTER
+	palette.add_child(palette_buttons)
+	palette_stage = CenterContainer.new()
+	palette.add_child(palette_stage)
 	actions = HFlowContainer.new()
 	actions.add_theme_constant_override("h_separation", 6)
 	body.add_child(actions)
@@ -87,7 +103,7 @@ func compact_all() -> void:
 func _process(_delta: float) -> void:
 	if not is_instance_valid(host) or not host.is_visible_in_tree(): return
 	var key: String = str([host.lesson, host.snell_mask, host.thermal_view.kind, host.breathing_view.kind,
-		host.buoyancy_view.at_depth, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context])
+		host.buoyancy_view.at_depth, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context, host.thermal_view.parameters().get("solve", 0)])
 	if key != signature:
 		signature = key
 		sync()
@@ -122,8 +138,67 @@ func notes(owner: Control, entries: Array) -> void:
 func instrument(key: String, input: HSlider, shape: String, caption: String, suffix: String) -> void:
 	var widget := BathysLessonInstrument.new()
 	widget.bind(input, shape, caption, suffix)
-	instruments.add_child(widget)
+	if key == "range" and host.lesson == "colour": range_dock.add_child(widget)
+	else: instruments.add_child(widget)
 	widgets[key] = widget
+
+func mixture(o2: HSlider, he: HSlider) -> void:
+	var tank := BathysLessonGasMixture.new()
+	tank.bind(o2, he)
+	instruments.add_child(tank)
+	widgets["mixture"] = tank
+
+func visual_parameter(key: String, input: HSlider, shape: String, caption: String, unit: String, icon_path: String) -> void:
+	if widgets.has(key): return
+	palette_inputs[key] = [input, shape, caption, unit]
+	var button := Button.new()
+	button.icon = load("res://Assets/Icons/" + icon_path + ".svg")
+	button.custom_minimum_size = Vector2(36, 34)
+	button.expand_icon = true
+	button.toggle_mode = true
+	button.tooltip_text = caption
+	palette_buttons.add_child(button)
+	button.toggled.connect(func(selected: bool) -> void:
+		clear_children(palette_stage)
+		active_parameter = key if selected else ""
+		for other: Button in palette_buttons.get_children():
+			if other != button: other.set_pressed_no_signal(false)
+		if selected:
+			var widget := BathysLessonInstrument.new()
+			widget.bind(input, shape, caption, unit)
+			palette_stage.add_child(widget))
+
+func extra_parameters(inputs: Dictionary, keys: Array) -> void:
+	var styles: Dictionary = {
+		"temperature": ["temperature", "Temperature", "°C", "lesson-thermometer"],
+		"depth": ["depth", "Depth", "m", "buoyancy-diver"],
+		"exposure_depth": ["depth", "Exposure depth", "m", "buoyancy-diver"],
+		"exposure_time": ["clock", "Exposure time", "min", "event-clock"],
+		"wait": ["clock", "Wait", "min", "event-clock"],
+		"time": ["clock", "Time", "", "event-clock"],
+		"volume": ["amount", "Volume", "L", "law-ideal_gas"],
+		"range": ["distance", "Viewing distance", "m", "lesson-eye"],
+		"distance": ["distance", "Object distance", "m", "lesson-eye"],
+		"height": ["length", "Object height", "m", "lesson-ruler"],
+		"gap": ["length", "Air gap", "mm", "lesson-ruler"],
+		"thickness": ["length", "Barrier thickness", "×", "lesson-ruler"],
+		"glass_index": ["wave", "Window index", "", "law-snell"],
+		"area": ["length", "Exchange area", "×", "law-fick"],
+		"permeability": ["flow", "Permeability", "×", "law-fick"],
+		"capacity": ["amount", "Gas storage", "×", "cylinder"],
+		"power": ["light", "Torch strength", "×", "lesson-torch"],
+		"exposure": ["light", "Exposure", "EV", "lesson-eye"],
+		"baseline": ["length", "Torch offset", "m", "lesson-torch"],
+		"probe": ["wave", "Wavelength", "nm", "law-colour"],
+		"g": ["flow", "Forward bias", "", "law-colour"],
+		"diffuse": ["light", "Diffuse light", "", "law-colour"],
+		"cone": ["length", "Halo acceptance", "°", "law-snell"],
+		"pressure": ["gauge", "Pressure", "bar", "law-boyle"]}
+	for key: String in keys:
+		if not inputs.has(key): continue
+		var style: Array = styles.get(key, ["gauge", key.capitalize(), "", "settings"])
+		if key == "thickness" and host.lesson == "snell": style = ["length", "Window thickness", "mm", "lesson-ruler"]
+		visual_parameter(key, inputs[key], style[0], style[1], style[2], style[3])
 
 func picker(source: OptionButton) -> void:
 	var copy := OptionButton.new()
@@ -162,7 +237,12 @@ func output(readout_values: Array, index: int) -> void:
 func sync() -> void:
 	if not is_instance_valid(host) or not is_instance_valid(toolbar): return
 	clear_children(instruments)
+	clear_children(range_dock)
 	clear_children(actions)
+	clear_children(palette_buttons)
+	clear_children(palette_stage)
+	palette_inputs.clear()
+	active_parameter = ""
 	widgets.clear()
 	mirrors.clear()
 	control_nodes.clear()
@@ -187,6 +267,7 @@ func sync() -> void:
 				hint.text = "Drag the O₂ or He bar"
 				graph_available = false
 				instrument("depth", host.slider, "depth", "Depth", "m")
+				mixture(host.extra_sliders["oxygen"], host.extra_sliders["helium"])
 			"henry":
 				hint.text = "Turn pressure; scrub the clock"
 				instrument("pressure", host.slider, "gauge", "Pressure", "bar")
@@ -202,6 +283,7 @@ func sync() -> void:
 		control_nodes.append(top(view.inputs["temperature"], owner))
 		notes(owner, [view.readouts, view.formula, view.insight.get_parent().get_parent(), view.assumptions])
 		instrument("temperature", view.inputs["temperature"], "temperature", "Temperature", "°C")
+		if key == "ideal_gas": extra_parameters(view.inputs, ["volume" if int(view.parameters().get("solve", 0)) == 0 else "pressure"])
 		match key:
 			"charles": hint.text = "Drag the mercury or piston"
 			"ideal_gas":
@@ -226,8 +308,7 @@ func sync() -> void:
 		notes(owner, [view.readouts, view.formula, view.insight.get_parent().get_parent(), view.assumptions])
 		if key == "narcosis":
 			hint.text = "Drag the actual depth marker"
-			instrument("oxygen", view.inputs["oxygen"], "amount", "O₂", "%")
-			instrument("helium", view.inputs["helium"], "amount", "He", "%")
+			mixture(view.inputs["oxygen"], view.inputs["helium"])
 			picker(view.convention)
 		else:
 			instrument("depth", view.inputs["depth"], "depth", "Depth", "m")
@@ -235,9 +316,10 @@ func sync() -> void:
 				hint.text = "Compare a litre; change depth or heat"
 				instrument("temperature", view.inputs["temperature"], "temperature", "Temperature", "°C")
 				presets(view.preset_rows[key])
+				mixture(view.inputs["oxygen"], view.inputs["helium"])
 			else:
 				hint.text = "Change depth, oxygen and time"
-				instrument("oxygen", view.inputs["oxygen"], "amount", "O₂", "%")
+				mixture(view.inputs["oxygen"], view.inputs["helium"])
 				instrument("time", view.inputs["time"], "clock", "Time", "min")
 				output(view.numbers, 0)
 	elif key == "buoyancy":
@@ -250,6 +332,7 @@ func sync() -> void:
 		instrument("mass", view.inputs["mass"], "gauge", "Mass", "kg")
 		instrument("volume", view.inputs["volume"], "amount", "Volume", "L")
 		if view.at_depth: instrument("gas", view.inputs["gas"], "amount", "Trapped gas", "L")
+		if view.at_depth: action(view.balance_button, "Balance here")
 		for i: int in 2: action(view.water_buttons[i], "Fresh water" if i == 0 else "Sea water")
 		output(view.numbers, 3)
 	elif key == "buhlmann":
@@ -265,6 +348,7 @@ func sync() -> void:
 			instrument("low", view.inputs["low"], "gauge", "GF Low", "%")
 			instrument("high", view.inputs["high"], "gauge", "GF High", "%")
 		else: instrument("time", view.inputs["exposure_time"], "clock", "Time", "min")
+		extra_parameters(view.inputs, ["exposure_depth", "exposure_time", "wait"] if view.ascent else [])
 		output(view.readout_values, 1)
 	elif key == "fick":
 		var view: BathysExchangeLesson = host.exchange_view
@@ -276,6 +360,7 @@ func sync() -> void:
 		instrument("source", view.inputs["source"], "gauge", "Source", "mmHg")
 		instrument("initial", view.inputs["initial"], "gauge", "Start", "mmHg")
 		instrument("time", view.inputs["time"], "clock", "Time", "τ₀")
+		extra_parameters(view.inputs, ["area", "thickness", "permeability", "capacity"] if view.context == "tissues" else ["area", "thickness", "permeability"])
 		presets(view.preset_rows[view.context], ["O₂", "CO₂"] if view.context == "lungs" else ["O₂", "CO₂", "Uptake", "Release"])
 		output(view.numbers, 1)
 	elif key == "colour":
@@ -293,11 +378,14 @@ func sync() -> void:
 				hint.text = "Drag the target through the water"
 				graph_available = false
 				action(view.torch_switch, "Torch")
+				extra_parameters(view.inputs, ["exposure", "power", "baseline"])
 			1:
 				hint.text = "Touch a wavelength"
 				instrument("g", view.inputs["g"], "gauge", "Forward bias", "")
+				extra_parameters(view.inputs, ["probe", "diffuse", "cone"])
 			2:
 				hint.text = "Drag the range marker"
+				instrument("range", view.inputs["range"], "distance", "Viewing distance", "m")
 				instrument("depth", view.inputs["depth"], "depth", "Depth", "m")
 	else: # Mask stage of Snell.
 		var view: BathysMaskLesson = host.mask_view
@@ -308,11 +396,14 @@ func sync() -> void:
 		for child: Node in view.get_children():
 			if child is Label and child != view.assumptions: note_nodes.append(child)
 		hint.text = "Drag the target ↔"
+		extra_parameters(view.inputs, ["height", "gap", "thickness", "glass_index"])
 		output(view.numbers, 2)
 	active_owner = owner
-	for node: Control in [actions, instruments, outcome]:
+	if range_dock.get_parent() != owner: range_dock.reparent(owner)
+	owner.move_child(range_dock, diagram.get_index())
+	for node: Control in [actions, instruments, palette, outcome]:
 		if node.get_parent() != owner: node.reparent(owner)
-		owner.move_child(node, diagram.get_index() + 1 + [actions, instruments, outcome].find(node))
+		owner.move_child(node, diagram.get_index() + 1 + [actions, instruments, palette, outcome].find(node))
 	chart_button.tooltip_text = "Show linked chart"
 	if key == "snell" and host.snell_mask: chart_button.tooltip_text = "Show ray paths"
 	elif key == "density": chart_button.tooltip_text = "Compare water columns"
@@ -334,7 +425,7 @@ func apply_visibility() -> void:
 		var caption: Label = view.preview_box.get_child(1).get_child(0).get_child(0)
 		caption.text = "Surface ↔ underwater" if compare else "Received light · synthetic target"
 	if host.lesson == "colour" and host.optics_view.stage == 1 and widgets.has("g"):
-		(widgets["g"] as Control).visible = chart_button.button_pressed
+		(widgets["g"] as Control).visible = true
 		hint.text = "Turn the forward-bias dial" if chart_button.button_pressed else "Touch a wavelength"
 	for node: Control in control_nodes: node.visible = parameter_button.button_pressed
 	for node: Control in note_nodes: node.visible = note_button.button_pressed
@@ -350,6 +441,17 @@ func apply_visibility() -> void:
 	for child: Control in instruments.get_children(): any_instrument = any_instrument or child.visible
 	instruments.visible = not parameter_button.button_pressed and any_instrument
 	actions.visible = not parameter_button.button_pressed and actions.get_child_count() > 0
+	range_dock.visible = not parameter_button.button_pressed and range_dock.get_child_count() > 0
+	palette.visible = not parameter_button.button_pressed and palette_buttons.get_child_count() > 0
+	if host.lesson == "colour" and host.optics_view.stage == 0:
+		for index: int in palette_buttons.get_child_count():
+			var button: Button = palette_buttons.get_child(index)
+			var key: String = palette_inputs.keys()[index]
+			button.visible = key == "exposure" or bool(host.optics_view.params["torch"])
+			if not button.visible and active_parameter == key:
+				button.set_pressed_no_signal(false)
+				clear_children(palette_stage)
+				active_parameter = ""
 	outcome.vertical = active_owner.size.x < 500
 	outcome.visible = not note_button.button_pressed and is_instance_valid(output_source)
 	if diagram.comparison_visible != chart_button.button_pressed:

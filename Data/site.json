@@ -27,8 +27,8 @@
       "spreadM": 3.33
     },
     {
-      "id": "doll",
-      "name": "Doll",
+      "id": "fairy",
+      "name": "Fairy",
       "latitudeDeg": 46.21337294,
       "longitudeDeg": 7.33105366,
       "depthM": 23.5,
@@ -53,16 +53,16 @@
     {
       "id": "hanging_tree",
       "name": "Hanging Tree",
-      "latitudeDeg": 46.21322609,
-      "longitudeDeg": 7.33227558,
+      "latitudeDeg": 46.213227,
+      "longitudeDeg": 7.332252,
       "depthM": 24.2,
       "spreadM": 2.26
     },
     {
       "id": "small_tree",
       "name": "Small Tree",
-      "latitudeDeg": 46.21306960,
-      "longitudeDeg": 7.33209779,
+      "latitudeDeg": 46.213086,
+      "longitudeDeg": 7.332058,
       "depthM": 28.5,
       "spreadM": 1.5
     },
@@ -89,6 +89,30 @@
       "longitudeDeg": 7.33238831,
       "depthM": 13.6,
       "spreadM": 2.9
+    },
+    {
+      "id": "computer",
+      "name": "Computer",
+      "latitudeDeg": 46.21352071,
+      "longitudeDeg": 7.33213359,
+      "depthM": 13.4,
+      "spreadM": 4.7
+    },
+    {
+      "id": "freediving_buoy",
+      "name": "Freediving Buoy",
+      "latitudeDeg": 46.213039,
+      "longitudeDeg": 7.331098,
+      "depthM": 37.5,
+      "spreadM": 1.0
+    },
+    {
+      "id": "scilure_tree",
+      "name": "Scilure Tree",
+      "latitudeDeg": 46.212358,
+      "longitudeDeg": 7.327668,
+      "depthM": 10.0,
+      "spreadM": 1.0
     }
   ]
 }

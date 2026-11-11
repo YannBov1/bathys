@@ -22,6 +22,7 @@ var insight: Label
 var explanation: Label
 var assumptions: Label
 var formula: Label
+var settling: Tween
 
 func parameters() -> Dictionary:
 	return experiments["depth" if at_depth else "object"] as Dictionary
@@ -45,6 +46,8 @@ func _ready() -> void:
 	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	diagram.immersion_changed.connect(func(value: float) -> void: (inputs["immersion"] as HSlider).value = value)
 	diagram.preview_depth_changed.connect(func(value: float) -> void: (inputs["depth"] as HSlider).value = value)
+	diagram.grabbed.connect(stop_settling)
+	diagram.released.connect(settle_body)
 	add_child(diagram)
 	var panel: PanelContainer = BathysUiStyle.panel(BathysUiStyle.CARD, 10)
 	add_child(panel)
@@ -62,7 +65,7 @@ func _ready() -> void:
 		button.text = ["Fresh water · 20°C", "Sea water · 20°C"][index]
 		button.toggle_mode = true
 		button.button_group = water_group
-		button.pressed.connect(func() -> void: seawater = index == 1; refresh())
+		button.pressed.connect(func() -> void: stop_settling(); seawater = index == 1; refresh())
 		waters.add_child(button)
 		water_buttons.append(button)
 	var actions := HFlowContainer.new()
@@ -71,6 +74,7 @@ func _ready() -> void:
 	floating_button.text = "Find floating equilibrium"
 	floating_button.tooltip_text = "Set the submerged fraction so displaced water weighs the same as the body"
 	floating_button.pressed.connect(func() -> void:
+		stop_settling()
 		parameters()["immersion"] = float(parameters()["mass"]) / (density * float(parameters()["volume"]) / 1000) * 100
 		refresh())
 	actions.add_child(floating_button)
@@ -129,11 +133,15 @@ func add_slider(parent: Node, key: String, caption: String, minimum: float, maxi
 	slider.custom_minimum_size.y = 23
 	slider.tooltip_text = caption
 	slider.name = "Buoyancy_" + key
-	slider.value_changed.connect(func(number: float) -> void: parameters()[key] = number; refresh())
+	slider.value_changed.connect(func(number: float) -> void: stop_settling(); parameters()[key] = number; refresh())
 	block.add_child(slider)
 	inputs[key] = slider
+	if key == "immersion":
+		slider.drag_started.connect(stop_settling)
+		slider.drag_ended.connect(func(_changed: bool) -> void: settle_body())
 
 func set_stage(value: bool) -> void:
+	stop_settling()
 	at_depth = value
 	for index: int in 2: stage_buttons[index].set_pressed_no_signal(index == (1 if at_depth else 0))
 	for key: String in blocks: (blocks[key] as Control).visible = key in (["mass", "volume", "gas", "depth"] if at_depth else ["mass", "volume", "immersion"])
@@ -141,6 +149,17 @@ func set_stage(value: bool) -> void:
 	balance_button.visible = at_depth
 	refresh()
 	adapt()
+
+func stop_settling() -> void:
+	if is_instance_valid(settling): settling.kill()
+
+func settle_body() -> void:
+	if at_depth or not is_visible_in_tree(): return
+	stop_settling()
+	var target: float = clampf(float(parameters()["mass"]) / (density * float(parameters()["volume"]) / 1000) * 100, 0, 100)
+	# A damped visual relaxation toward force balance, not a hydrodynamic solver.
+	settling = create_tween()
+	settling.tween_method(func(value: float) -> void: parameters()["immersion"] = value; refresh(), float(parameters()["immersion"]), target, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func adapt() -> void:
 	readouts.columns = 1 if size.x < 450 else (2 if size.x < 700 else 4)
@@ -177,4 +196,4 @@ func refresh() -> void:
 		assumptions.text = "Teaching body, fully submerged: fixed rigid volume plus a flexible gas space at constant temperature; gas mass is neglected. Vgas = Vsurface / Pabsolute (surface = 1 bar). Pressure uses the selected uniform water density. No venting, inflation, suit compression, motion or real weighting advice."
 	else:
 		explanation.text = "Buoyancy equals the weight of displaced water, not the object's weight. Only the submerged volume counts. A floating body settles with buoyancy equal to weight; a fully submerged rigid body keeps the same buoyancy at any depth in uniform water."
-		assumptions.text = "Schematic rigid body held at the selected immersion; forces indicate tendency, not simulated motion. Air buoyancy and surface tension are omitted. Fresh/sea water densities use the app’s EOS-80 approximation at 20°C; g = 9.80665 m/s². Forces are in newtons, not kilograms."
+		assumptions.text = "Schematic rigid body held at the selected immersion; release eases toward floating balance (or full immersion for a sinking body), using a visual relaxation rather than simulated fluid motion. Air buoyancy and surface tension are omitted. Fresh/sea water densities use the app’s EOS-80 approximation at 20°C; g = 9.80665 m/s². Forces are in newtons, not kilograms."

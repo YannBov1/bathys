@@ -1,0 +1,34 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=151
+LEARNING PASS: Archimedes lesson opens under physics
+LEARNING PASS: fully submerged body displaces its volume (80.0)
+LEARNING PASS: eighty litres of freshwater produces the weight of eighty kilograms in buoyancy (784.532)
+LEARNING PASS: weight equals buoyancy for equal body and displaced-water mass (0.0)
+LEARNING PASS: only the immersed fraction displaces water (40.0)
+LEARNING PASS: half immersion halves buoyancy (392.266)
+LEARNING PASS: zero immersion has no water buoyancy
+LEARNING PASS: immersion slider updates displacement readout and bucket (40.0)
+LEARNING PASS: released floating body settles to equal buoyancy and weight (0.0)
+LEARNING PASS: floating equilibrium matches displaced-water weight to the body (0.0)
+LEARNING PASS: floating body balances with partial immersion
+LEARNING PASS: denser-than-water body cannot find a partially immersed floating equilibrium
+LEARNING PASS: sea water increases buoyancy at unchanged volume
+LEARNING PASS: volume slider supports keyboard control
+LEARNING PASS: second stage isolates fully submerged gas compression
+LEARNING PASS: surface gas starts at its stated volume (6.0)
+LEARNING PASS: two bar absolute halves the trapped gas volume (3.0)
+LEARNING PASS: gas compression removes exactly the corresponding displaced-water buoyancy (29.41995)
+LEARNING PASS: depth alone does not change buoyancy of a fully submerged rigid body (735.49875)
+LEARNING PASS: depth balance sets the teaching mass to displaced-water mass (0.0)
+LEARNING PASS: descending from balance produces less buoyancy with unchanged trapped gas
+LEARNING PASS: ascending from balance expands gas and produces upward net force
+LEARNING PASS: dragging the force curve changes preview depth (20.0)
+LEARNING PASS: French lesson title and live force tendency translate
+LEARNING PASS: French phone layout stacks displacement and water-weight diagrams
+LEARNING PASS: depth controls and force readouts fit the phone width
+LEARNING PASS: other interactive lessons restore their own controls
+LEARNING PASS: buoyancy experiment survives topic and language changes
+LEARNING PASS: buoyancy experiments preserve scenario, undo history and map
+LEARNING PASS: balance action fits the mass control across the full volume range
+LEARNING PASS: largest-volume body still balances correctly (0.0)

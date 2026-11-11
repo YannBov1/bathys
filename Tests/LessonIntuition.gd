@@ -44,7 +44,7 @@ func run() -> void:
 	root.add_child(app)
 	var view: BathysLearningView = app.learning_view
 	var ui: BathysLessonPresentation = view.presentation
-	check(not ui.note_button.button_pressed and not ui.parameter_button.button_pressed and not ui.chart_button.button_pressed, "fresh lessons begin with the experiment, not charts or text panels")
+	check(not ui.note_button.button_pressed and not ui.parameter_button.button_pressed and ui.chart_button.button_pressed, "fresh lessons enable linked charts while keeping text and precise controls optional")
 	await settle(app)
 	app.set_learning_mode(true)
 	var before: String = JSON.stringify(app.plan)
@@ -145,7 +145,7 @@ func run() -> void:
 	near(optics.params["range"], 7, 0.11, "same target gesture changes viewing distance")
 	optics.set_stage(1)
 	await layout()
-	check(not ui.widgets["g"].is_visible_in_tree(), "scattering dial stays hidden until its phase plot is requested")
+	check(ui.widgets["g"].is_visible_in_tree(), "scattering instrument stays accessible with optional charts")
 	var spectrum: Rect2 = optics.plots.plot(0)
 	await click(optics.plots.global_position + spectrum.position + spectrum.size * Vector2(0.25, 0.5))
 	optics.flush_update()

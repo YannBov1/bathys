@@ -1,0 +1,61 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+LEARNING PASS: offline spectra contain six traceable marine profiles at 5 nm
+LEARNING PASS: Jerlov III absorption at 530 nm matches the primary workbook (0.0806)
+LEARNING PASS: Jerlov III scattering at 530 nm matches the primary workbook (0.291)
+LEARNING PASS: historical Jerlov III Kd at 530 nm matches the primary table (0.1168)
+LEARNING PASS: measurement-band provenance flags survive export
+LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.0 (1.00000000612786)
+LEARNING PASS: full-sphere acceptance is unity (1.0)
+LEARNING PASS: zero cone accepts no scattered light (0.0)
+LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.9 (1.0000005822333)
+LEARNING PASS: full-sphere acceptance is unity (1.0)
+LEARNING PASS: zero cone accepts no scattered light (0.0)
+LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.98 (1.00001516789648)
+LEARNING PASS: full-sphere acceptance is unity (1.0)
+LEARNING PASS: zero cone accepts no scattered light (0.0)
+LEARNING PASS: zero asymmetry gives isotropic scattering (0.07957747154595)
+LEARNING PASS: isotropic scattering divides equally between hemispheres (0.5)
+LEARNING PASS: absorption without scattering produces no veil (0.0)
+LEARNING PASS: monochromatic path radiance obeys its source-term solution (0.6988057880878)
+LEARNING PASS: ambient backscatter grows toward its asymptote
+LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
+LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
+LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
+LEARNING PASS: surface daylight Y is normalized to unity (1.00000001822026)
+LEARNING PASS: zero viewing path transmits the whole object signal (1.0)
+LEARNING PASS: zero viewing path has no backscatter (0.0)
+LEARNING PASS: zero viewing path has no forward halo (0.0)
+LEARNING PASS: zero-range effective coefficient is explicitly undefined
+LEARNING PASS: truncated D65/CIE reference stays nearly neutral in linear sRGB
+LEARNING PASS: depth and horizontal range attenuate distinct light paths
+LEARNING PASS: more viewing distance reduces direct transmission
+LEARNING PASS: wideband direct attenuation depends on target reflectance
+LEARNING PASS: wideband direct and backscatter attenuation differ
+LEARNING PASS: effective direct coefficient changes with range
+LEARNING PASS: nearby white torch restores a strong red signal lost from deep ambient light
+LEARNING PASS: off-axis torch reduces nearby backscatter while illuminating the target
+LEARNING PASS: zero-power torch returns exactly to ambient illumination (0.0)
+LEARNING PASS: all presets remain finite at supported depth, range and torch extremes
+BATHYS_STARTUP_MS=155
+LEARNING PASS: colour lesson opens in physics with its own spectral model
+LEARNING PASS: optical scene advertises direct target dragging
+LEARNING PASS: coalesced slider updates refresh the preview while exploring
+LEARNING PASS: water selector applies the coastal optical table
+LEARNING PASS: torch exposes lighting geometry controls
+LEARNING PASS: component selector isolates the backscatter veil
+LEARNING PASS: water stage reveals phase assumptions and hides scene controls
+LEARNING PASS: spectral plot supports direct wavelength selection (550.0)
+LEARNING PASS: phase slider updates backward scattering probability
+LEARNING PASS: model stage plots separate integrated coefficients
+LEARNING PASS: coefficient plot supports direct viewing-range control (7.5)
+LEARNING PASS: viewing-range slider supports keyboard adjustment
+LEARNING PASS: French title and model explanation translate
+LEARNING PASS: conditional thick-water model notes remain fully French
+LEARNING PASS: French phone layout stacks the two model plots
+LEARNING PASS: French controls fit phone width in stage 0
+LEARNING PASS: French controls fit phone width in stage 1
+LEARNING PASS: generic lessons restore after leaving colour
+LEARNING PASS: lesson exploration state survives switching topics
+LEARNING PASS: optical exploration never changes the dive plan or undo history
+OPTICS LEARNING failures: 0

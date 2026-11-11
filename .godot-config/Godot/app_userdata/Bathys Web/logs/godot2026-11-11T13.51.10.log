@@ -1,0 +1,63 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=148
+LEARNING PASS: linked charts start enabled
+LEARNING PASS: visual controls work without precise drawer: boyle
+LEARNING PASS: visual controls work without precise drawer: snell
+LEARNING PASS: visual controls work without precise drawer: dalton
+LEARNING PASS: visual controls work without precise drawer: henry
+LEARNING PASS: visual controls work without precise drawer: density
+LEARNING PASS: visual controls work without precise drawer: gas_density
+LEARNING PASS: visual controls work without precise drawer: oxygen
+LEARNING PASS: visual controls work without precise drawer: narcosis
+LEARNING PASS: visual controls work without precise drawer: buhlmann
+LEARNING PASS: visual controls work without precise drawer: buoyancy
+LEARNING PASS: visual controls work without precise drawer: colour
+LEARNING PASS: visual controls work without precise drawer: charles
+LEARNING PASS: visual controls work without precise drawer: ideal_gas
+LEARNING PASS: visual controls work without precise drawer: real_gas
+LEARNING PASS: visual controls work without precise drawer: joule_thomson
+LEARNING PASS: visual controls work without precise drawer: fick
+LEARNING PASS: clock hand uses a whole dial instead of a pressure-gauge sweep (1.3)
+LEARNING PASS: tank upper divider directly changes O₂ (30.0)
+LEARNING PASS: tank lower divider directly changes He (50.0)
+LEARNING PASS: mixture separators cannot create negative nitrogen or exceed 100%
+LEARNING PASS: opposite-side handle remains usable when nitrogen is zero (40.0)
+LEARNING PASS: keyboard edits the last selected tank separator
+LEARNING PASS: distance ruler precedes the image-model plots
+LEARNING PASS: horizontal eye-to-fish ruler changes range with precise controls hidden (11.3)
+LEARNING PASS: lighting variables have visual instruments
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (4.0)
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (20.0)
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (1.5)
+LEARNING PASS: released body settles to physical floating fraction (0.00000000000006)
+LEARNING PASS: equilibrium uses the selected mass, volume and water density (50.0898451844459)
+BATHYS_FPS_2D_AVG=122.0
+LEARNING PASS: denser body reaches full immersion and retains downward force
+LEARNING PASS: changing stages cancels settling without altering the other experiment (10.0)
+LEARNING PASS: default linked-chart French phone layout fits: boyle
+LEARNING PASS: default linked-chart French phone layout fits: snell
+LEARNING PASS: default linked-chart French phone layout fits: dalton
+LEARNING PASS: default linked-chart French phone layout fits: henry
+LEARNING PASS: default linked-chart French phone layout fits: density
+LEARNING PASS: default linked-chart French phone layout fits: gas_density
+LEARNING PASS: default linked-chart French phone layout fits: oxygen
+LEARNING PASS: default linked-chart French phone layout fits: narcosis
+LEARNING PASS: default linked-chart French phone layout fits: buhlmann
+LEARNING PASS: default linked-chart French phone layout fits: buoyancy
+LEARNING PASS: default linked-chart French phone layout fits: colour
+LEARNING PASS: default linked-chart French phone layout fits: charles
+LEARNING PASS: default linked-chart French phone layout fits: ideal_gas
+LEARNING PASS: default linked-chart French phone layout fits: real_gas
+LEARNING PASS: default linked-chart French phone layout fits: joule_thomson
+LEARNING PASS: default linked-chart French phone layout fits: fick
+LEARNING PASS: image-model distance ruler fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: visual instrument edits leave the dive plan and history untouched
+LESSON INSTRUMENTS failures=0

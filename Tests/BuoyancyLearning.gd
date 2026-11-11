@@ -28,7 +28,8 @@ func run() -> void:
 	near(lesson.result["displaced_l"], 40, 1e-8, "immersion slider updates displacement readout and bucket")
 	var water_y: float = lesson.diagram.waterline_y()
 	await click(lesson.diagram.global_position + Vector2(lesson.diagram.section(0).size.x * 0.46, water_y + 25))
-	near(lesson.parameters()["immersion"], 75, 0.1, "dragging the body through the surface changes immersion")
+	await create_timer(1.0).timeout
+	near(lesson.result["net_force"], 0, 1e-6, "released floating body settles to equal buoyancy and weight")
 	await capture("res://Screenshots/learning-buoyancy-displacement-en.png")
 	await click(lesson.floating_button.get_global_rect().get_center())
 	near(lesson.result["net_force"], 0, 1e-8, "floating equilibrium matches displaced-water weight to the body")

@@ -1,61 +1,64 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 571.96 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 2050
 
-LEARNING PASS: offline spectra contain six traceable marine profiles at 5 nm
-LEARNING PASS: Jerlov III absorption at 530 nm matches the primary workbook (0.0806)
-LEARNING PASS: Jerlov III scattering at 530 nm matches the primary workbook (0.291)
-LEARNING PASS: historical Jerlov III Kd at 530 nm matches the primary table (0.1168)
-LEARNING PASS: measurement-band provenance flags survive export
-LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.0 (1.00000000612786)
-LEARNING PASS: full-sphere acceptance is unity (1.0)
-LEARNING PASS: zero cone accepts no scattered light (0.0)
-LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.9 (1.0000005822333)
-LEARNING PASS: full-sphere acceptance is unity (1.0)
-LEARNING PASS: zero cone accepts no scattered light (0.0)
-LEARNING PASS: HG integrates to unit solid-angle probability at g = 0.98 (1.00001516789648)
-LEARNING PASS: full-sphere acceptance is unity (1.0)
-LEARNING PASS: zero cone accepts no scattered light (0.0)
-LEARNING PASS: zero asymmetry gives isotropic scattering (0.07957747154595)
-LEARNING PASS: isotropic scattering divides equally between hemispheres (0.5)
-LEARNING PASS: absorption without scattering produces no veil (0.0)
-LEARNING PASS: monochromatic path radiance obeys its source-term solution (0.6988057880878)
-LEARNING PASS: ambient backscatter grows toward its asymptote
-LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
-LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
-LEARNING PASS: halo surrogate cannot exceed absorption-only energy bound
-LEARNING PASS: surface daylight Y is normalized to unity (1.00000001822026)
-LEARNING PASS: zero viewing path transmits the whole object signal (1.0)
-LEARNING PASS: zero viewing path has no backscatter (0.0)
-LEARNING PASS: zero viewing path has no forward halo (0.0)
-LEARNING PASS: zero-range effective coefficient is explicitly undefined
-LEARNING PASS: truncated D65/CIE reference stays nearly neutral in linear sRGB
-LEARNING PASS: depth and horizontal range attenuate distinct light paths
-LEARNING PASS: more viewing distance reduces direct transmission
-LEARNING PASS: wideband direct attenuation depends on target reflectance
-LEARNING PASS: wideband direct and backscatter attenuation differ
-LEARNING PASS: effective direct coefficient changes with range
-LEARNING PASS: nearby white torch restores a strong red signal lost from deep ambient light
-LEARNING PASS: off-axis torch reduces nearby backscatter while illuminating the target
-LEARNING PASS: zero-power torch returns exactly to ambient illumination (0.0)
-LEARNING PASS: all presets remain finite at supported depth, range and torch extremes
-BATHYS_STARTUP_MS=157
-LEARNING PASS: colour lesson opens in physics with its own spectral model
-LEARNING PASS: optical scene advertises direct target dragging
-LEARNING PASS: coalesced slider updates refresh the preview while exploring
-LEARNING PASS: water selector applies the coastal optical table
-LEARNING PASS: torch exposes lighting geometry controls
-LEARNING PASS: component selector isolates the backscatter veil
-LEARNING PASS: water stage reveals phase assumptions and hides scene controls
-LEARNING PASS: spectral plot supports direct wavelength selection (550.0)
-LEARNING PASS: phase slider updates backward scattering probability
-LEARNING PASS: model stage plots separate integrated coefficients
-LEARNING PASS: coefficient plot supports direct viewing-range control (7.5)
-LEARNING PASS: viewing-range slider supports keyboard adjustment
-LEARNING PASS: French title and model explanation translate
-LEARNING PASS: conditional thick-water model notes remain fully French
-LEARNING PASS: French phone layout stacks the two model plots
-LEARNING PASS: French controls fit phone width in stage 0
-LEARNING PASS: French controls fit phone width in stage 1
-LEARNING PASS: generic lessons restore after leaving colour
-LEARNING PASS: lesson exploration state survives switching topics
-LEARNING PASS: optical exploration never changes the dive plan or undo history
-OPTICS LEARNING failures: 0
+BATHYS_STARTUP_MS=156
+LEARNING PASS: linked charts start enabled
+LEARNING PASS: visual controls work without precise drawer: boyle
+LEARNING PASS: visual controls work without precise drawer: snell
+LEARNING PASS: visual controls work without precise drawer: dalton
+LEARNING PASS: visual controls work without precise drawer: henry
+LEARNING PASS: visual controls work without precise drawer: density
+LEARNING PASS: visual controls work without precise drawer: gas_density
+LEARNING PASS: visual controls work without precise drawer: oxygen
+LEARNING PASS: visual controls work without precise drawer: narcosis
+LEARNING PASS: visual controls work without precise drawer: buhlmann
+LEARNING PASS: visual controls work without precise drawer: buoyancy
+LEARNING PASS: visual controls work without precise drawer: colour
+LEARNING PASS: visual controls work without precise drawer: charles
+LEARNING PASS: visual controls work without precise drawer: ideal_gas
+LEARNING PASS: visual controls work without precise drawer: real_gas
+LEARNING PASS: visual controls work without precise drawer: joule_thomson
+LEARNING PASS: visual controls work without precise drawer: fick
+LEARNING PASS: clock hand uses a whole dial instead of a pressure-gauge sweep (1.3)
+BATHYS_FPS_2D_AVG=50.0
+LEARNING PASS: tank upper divider directly changes O₂ (30.0)
+LEARNING PASS: tank lower divider directly changes He (50.0)
+LEARNING PASS: mixture separators cannot create negative nitrogen or exceed 100%
+LEARNING PASS: opposite-side handle remains usable when nitrogen is zero (40.0)
+LEARNING PASS: keyboard edits the last selected tank separator
+LEARNING PASS: distance ruler precedes the image-model plots
+LEARNING PASS: horizontal eye-to-fish ruler changes range with precise controls hidden (11.3)
+LEARNING PASS: lighting variables have visual instruments
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (4.0)
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (20.0)
+LEARNING PASS: icon palette shows one instrument at a time
+LEARNING PASS: visual lighting rail reaches the full parameter range (1.5)
+LEARNING PASS: released body settles to physical floating fraction (0.00000000000006)
+LEARNING PASS: equilibrium uses the selected mass, volume and water density (50.0898451844459)
+LEARNING PASS: denser body reaches full immersion and retains downward force
+LEARNING PASS: changing stages cancels settling without altering the other experiment (10.0)
+LEARNING PASS: default linked-chart French phone layout fits: boyle
+LEARNING PASS: default linked-chart French phone layout fits: snell
+LEARNING PASS: default linked-chart French phone layout fits: dalton
+LEARNING PASS: default linked-chart French phone layout fits: henry
+LEARNING PASS: default linked-chart French phone layout fits: density
+LEARNING PASS: default linked-chart French phone layout fits: gas_density
+LEARNING PASS: default linked-chart French phone layout fits: oxygen
+LEARNING PASS: default linked-chart French phone layout fits: narcosis
+LEARNING PASS: default linked-chart French phone layout fits: buhlmann
+LEARNING PASS: default linked-chart French phone layout fits: buoyancy
+LEARNING PASS: default linked-chart French phone layout fits: colour
+LEARNING PASS: default linked-chart French phone layout fits: charles
+LEARNING PASS: default linked-chart French phone layout fits: ideal_gas
+LEARNING PASS: default linked-chart French phone layout fits: real_gas
+LEARNING PASS: default linked-chart French phone layout fits: joule_thomson
+LEARNING PASS: default linked-chart French phone layout fits: fick
+LEARNING PASS: image-model distance ruler fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: French visual mask instrument fits a phone
+LEARNING PASS: visual instrument edits leave the dive plan and history untouched
+LESSON INSTRUMENTS failures=0

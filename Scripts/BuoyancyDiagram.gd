@@ -1,6 +1,9 @@
 class_name BathysBuoyancyDiagram
 extends BathysLessonDiagram
 
+signal released
+signal grabbed
+
 signal immersion_changed(value: float)
 signal preview_depth_changed(value: float)
 
@@ -13,6 +16,11 @@ var surface_gas_l: float = 6.0
 var water_density: float = 998.2
 var result: Dictionary = {}
 var diver_icon: Texture2D = preload("res://Assets/Icons/buoyancy-diver.svg")
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed: grabbed.emit()
+	super._gui_input(event)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed: released.emit()
 
 func adapt() -> void:
 	custom_minimum_size.y = (580 if size.x < 660 else 350) if comparison_visible else 300
@@ -70,8 +78,9 @@ func draw_body() -> void:
 		var gas_l: float = result["gas_volume_l"]
 		var radius: float = 22 * pow(maxf(0, gas_l) / 6, 1.0 / 3.0)
 		if radius > 0:
-			draw_circle(Vector2(x + 15, center_y - 20), radius, Color(0.44, 0.9, 0.85, 0.13))
-			draw_arc(Vector2(x + 15, center_y - 20), radius, 0, TAU, 48, AQUA, 2, true)
+			var gas_center := Vector2(x - 64, maxf(surface_y + radius + 4, center_y - 40))
+			draw_circle(gas_center, radius, Color(0.44, 0.9, 0.85, 0.13))
+			draw_arc(gas_center, radius, 0, TAU, 48, AQUA, 2, true)
 		for value: int in [0, 20, 40]:
 			var y: float = 100 + (area.size.y - 182) * value / 40.0
 			words(Vector2(area.end.x - 44, y + 4), "%d m" % value, MUTED, 10)
@@ -82,20 +91,18 @@ func draw_body() -> void:
 		center_y = top + dimensions.y / 2
 		var body := Rect2(x - dimensions.x / 2, top, dimensions.x, dimensions.y)
 		draw_style_box(BathysUiStyle.box(Color("45606b"), INK, 6, 0), body)
-		if immersion > 0:
-			draw_rect(Rect2(body.position.x + 1, surface_y, body.size.x - 2, maxf(0, dimensions.y * immersion / 100 - 1)), Color("388e98"))
 		words(Vector2(16, surface_y - 14), "Air", MUTED, 11)
 		words(Vector2(16, surface_y + 24), "Water", MUTED, 11)
 		words(Vector2(16, area.end.y - 17), "Drag the body through the surface", MUTED, 11)
-	grip(Vector2(x, center_y), true)
+	grip(Vector2(x + (53 if at_depth else -body_size().x / 2 - 20), center_y), true)
 	var buoyant: float = result["buoyant_force"]
 	var weight: float = result["weight"]
 	var scale: float = maxf(1250, maxf(buoyant, weight))
 	var up_length: float = buoyant / scale * 44
 	var down_length: float = weight / scale * 44
 	if up_length > 0.1:
-		arrow(Vector2(x - 80, center_y), Vector2(x - 80, center_y - up_length), AQUA, 3)
-		words(Vector2(x - 91, maxf(49, center_y - up_length - 8)), "Fᵦ", AQUA, 13)
+		arrow(Vector2(x - 102, center_y), Vector2(x - 102, center_y - up_length), AQUA, 3)
+		words(Vector2(x - 113, maxf(49, center_y - up_length - 8)), "Fᵦ", AQUA, 13)
 	arrow(Vector2(x + 80, center_y), Vector2(x + 80, center_y + down_length), AMBER, 3)
 	words(Vector2(x + 72, center_y + down_length + 17), "W", AMBER, 13)
 

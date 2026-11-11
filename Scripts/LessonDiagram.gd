@@ -119,7 +119,7 @@ func draw_boyle() -> void:
 		draw_circle(point, 2, INK)
 	words(center + Vector2(-24, 58), "%.2f L" % volume_at(depth_m), AQUA, 16)
 	words(Vector2(18, scene.size.y - 12), "Outline: 1 L at the surface", MUTED, 11)
-	grip(center, true)
+	grip(center + Vector2(-56, 0), true)
 	if not comparison_visible: return
 	var graph_box := Rect2(size.x * 0.51, 0, size.x * 0.49, size.y)
 	if size.x < 620:

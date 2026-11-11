@@ -1,8 +1,7 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
-OpenGL API 3.3.0 NVIDIA 571.96 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 2050
 
-BATHYS_STARTUP_MS=156
-LEARNING PASS: fresh lessons begin with the experiment, not charts or text panels
+BATHYS_STARTUP_MS=151
+LEARNING PASS: fresh lessons enable linked charts while keeping text and precise controls optional
 LEARNING PASS: compact boyle has no slider wall or explanatory paragraphs
 LEARNING PASS: compact boyle starts on one focused visual
 LEARNING PASS: compact snell has no slider wall or explanatory paragraphs
@@ -35,7 +34,6 @@ LEARNING PASS: compact joule_thomson has no slider wall or explanatory paragraph
 LEARNING PASS: compact joule_thomson starts on one focused visual
 LEARNING PASS: compact fick has no slider wall or explanatory paragraphs
 LEARNING PASS: compact fick starts on one focused visual
-BATHYS_FPS_2D_AVG=49.8
 LEARNING PASS: bubble is the primary depth control (25.0)
 LEARNING PASS: linked chart can open without opening a parameter panel
 LEARNING PASS: equations, assumptions and references remain one click away
@@ -52,7 +50,11 @@ LEARNING PASS: barrier vertical handle changes active exchange area (1.5)
 LEARNING PASS: visual instruments retain keyboard access
 LEARNING PASS: underwater colour target changes depth without a slider (20.0)
 LEARNING PASS: same target gesture changes viewing distance (7.0)
+LEARNING PASS: scattering instrument stays accessible with optional charts
+LEARNING PASS: touching a spectrum reveals selected wavelength values
+LEARNING PASS: phase plot and its scattering control appear together
 LEARNING PASS: coupled visual controls redraw when model constraints update another value silently
+BATHYS_FPS_2D_AVG=124.2
 LEARNING PASS: mask comparison has a directly draggable target (2.0)
 LEARNING PASS: precise settings remain available without duplicate instruments
 LEARNING PASS: closing precise settings keeps the experiment state (8.0)
@@ -73,7 +75,8 @@ LEARNING PASS: French compact phone layout fits real_gas
 LEARNING PASS: French compact phone layout fits joule_thomson
 LEARNING PASS: French compact phone layout fits fick
 LEARNING PASS: phone colour preview combines reference and underwater image into one comparison
-LEARNING PASS: colour comparison divider is directly draggable (0.79999998139172)
+LEARNING PASS: vertical scroll intent does not move the colour divider (0.5)
+LEARNING PASS: colour comparison divider is directly draggable (0.8)
 LEARNING PASS: expanded colour view restores both original reference panes
 LEARNING PASS: gesture cue translates into French
 LEARNING PASS: optional stacked charts retain phone width

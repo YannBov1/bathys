@@ -69,11 +69,10 @@ func geometry() -> void:
 	var y: float = 62 + float(params["depth"]) / 30 * (size.y - 112)
 	var camera := Vector2(42, y)
 	var target := Vector2(85 + float(params["range"]) / 15 * (size.x - 145), y)
-	draw_rect(Rect2(camera - Vector2(14, 10), Vector2(28, 20)), MUTED, false, 1.5)
-	draw_circle(camera + Vector2(7, 0), 4, AQUA)
-	draw_rect(Rect2(target - Vector2(10, 18), Vector2(20, 36)), AQUA, false, 2)
+	draw_texture_rect(preload("res://Assets/Icons/lesson-eye.svg"), Rect2(camera - Vector2(19, 15), Vector2(38, 30)), false)
+	draw_texture_rect(preload("res://Assets/Icons/lesson-fish.svg"), Rect2(target - Vector2(20, 16), Vector2(40, 32)), false)
 	arrow(target - Vector2(14, 0), camera + Vector2(20, 0), AQUA)
-	grip(target)
+	grip(target + Vector2(0, 29))
 	words(Vector2(16, 25), tr("Depth: %.1f m") % float(params["depth"]), AMBER, 12)
 	words(Vector2(maxf(100, size.x - 155), 25), tr("View: %.1f m") % float(params["range"]), AQUA, 12)
 	for depth: int in [0, 15, 30]:
@@ -81,8 +80,8 @@ func geometry() -> void:
 		words(Vector2(size.x - 38, level + 4), "%d m" % depth, MUTED, 10)
 	arrow(Vector2(target.x, 43), target - Vector2(0, 22), AMBER)
 	if bool(params["torch"]):
-		var lamp: Vector2 = camera - Vector2(0, float(params["baseline"]) * 24)
-		draw_circle(lamp, 4, AMBER)
+		var lamp: Vector2 = camera - Vector2(0, 22 + float(params["baseline"]) * 24)
+		draw_texture_rect(preload("res://Assets/Icons/lesson-torch.svg"), Rect2(lamp - Vector2(16, 12), Vector2(32, 24)), false)
 		arrow(lamp + Vector2(7, 0), target - Vector2(13, 3), AMBER)
 
 func spectra() -> void:
