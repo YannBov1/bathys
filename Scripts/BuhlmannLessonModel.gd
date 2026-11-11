@@ -26,3 +26,19 @@ static func snapshot(depth_m: float, minutes: float, test_depth_m: float,
 	return {"model": model, "loaded": loaded, "anchor_m": anchor, "gf": gf,
 		"ceiling_m": ceiling_m, "controller": int(ceiling[1]) if ceiling_m > 1e-8 else 0,
 		"inspired": (model.ambient_bar - BathysPhysics.WATER_VAPOUR_BAR) * 0.79}
+
+# Sample the defined pressure-step profile without changing its exposure/wait lengths.
+static func at_time(depth_m: float, minutes: float, test_depth_m: float,
+		wait_minutes: float, low: float, high: float, ascent: bool, cursor_minutes: float) -> Dictionary:
+	var total: float = minutes + (wait_minutes if ascent else 0)
+	var elapsed: float = clampf(cursor_minutes, 0, total)
+	var waiting: bool = ascent and elapsed >= minutes
+	var exposure_elapsed: float = minf(elapsed, minutes)
+	var wait_elapsed: float = maxf(0, elapsed - minutes) if waiting else 0
+	var sampled: Dictionary = snapshot(depth_m, exposure_elapsed, test_depth_m, wait_elapsed, low, high, waiting)
+	sampled["ascent_phase"] = waiting
+	sampled["depth_m"] = test_depth_m if waiting else depth_m
+	sampled["exposure_elapsed"] = exposure_elapsed
+	sampled["wait_elapsed"] = wait_elapsed
+	sampled["cursor_min"] = elapsed
+	return sampled

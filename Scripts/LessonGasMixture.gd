@@ -6,8 +6,8 @@ var helium: HSlider
 var boundary: int = -1
 var keyboard_boundary: int = 0
 var last_mix := Vector2(-1, -1)
-const TOP: float = 42
-const HEIGHT: float = 100
+const TOP: float = 20
+const HEIGHT: float = 122
 
 func bind(o2: HSlider, he: HSlider) -> void:
 	oxygen = o2

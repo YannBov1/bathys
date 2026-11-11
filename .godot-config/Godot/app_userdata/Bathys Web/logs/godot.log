@@ -1,65 +1,137 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 OpenGL API 3.3.0 NVIDIA 571.96 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 2050
 
-BATHYS_STARTUP_MS=161
-LEARNING PASS: only chart and information toggles remain: boyle
-LEARNING PASS: only chart and information toggles remain: snell
-LEARNING PASS: only chart and information toggles remain: dalton
-LEARNING PASS: only chart and information toggles remain: henry
-LEARNING PASS: only chart and information toggles remain: density
-LEARNING PASS: only chart and information toggles remain: gas_density
-LEARNING PASS: only chart and information toggles remain: oxygen
-LEARNING PASS: only chart and information toggles remain: narcosis
-LEARNING PASS: only chart and information toggles remain: buhlmann
-LEARNING PASS: only chart and information toggles remain: buoyancy
-LEARNING PASS: only chart and information toggles remain: colour
-LEARNING PASS: only chart and information toggles remain: charles
-LEARNING PASS: only chart and information toggles remain: ideal_gas
-LEARNING PASS: only chart and information toggles remain: real_gas
-LEARNING PASS: only chart and information toggles remain: joule_thomson
-LEARNING PASS: only chart and information toggles remain: fick
-LEARNING PASS: fixed-volume instrument is shown by default
-LEARNING PASS: ideal equation labels both compared products
-LEARNING PASS: fixed-pressure mode swaps in the pressure instrument
-BATHYS_FPS_2D_AVG=49.2
-LEARNING PASS: torch power and exposure are visible; offset has no duplicate instrument
-LEARNING PASS: vertical torch drag changes physical offset (1.1)
-LEARNING PASS: torch drag keeps fish depth unchanged (10.0)
-LEARNING PASS: torch drag keeps fish range unchanged (3.0)
-LEARNING PASS: selected torch has keyboard offset control (1.05)
-LEARNING PASS: torch remains inside the scene at deepest depth and largest offset
-LEARNING PASS: mass instrument moves the body toward its new floating level
-LEARNING PASS: volume instrument moves the body toward its new floating level
-LEARNING PASS: exchange context uses anatomical icons with tooltips
-LEARNING PASS: exchange context uses anatomical icons with tooltips
-LEARNING PASS: all lung instruments appear directly
-LEARNING PASS: tissue storage instrument appears directly
-LEARNING PASS: thin membrane thickness handle remains draggable at the smallest exchange area (1.25)
-LEARNING PASS: thickness gesture does not capture the nearby area handle (0.2)
-LEARNING PASS: ascent instrument is visible: exposure_depth
-LEARNING PASS: ascent instrument is visible: exposure_time
-LEARNING PASS: ascent instrument is visible: wait
-LEARNING PASS: profile exposure corner sets depth (25.0)
-LEARNING PASS: profile exposure corner sets duration (40.0)
-LEARNING PASS: profile wait corner sets preview depth (12.0)
-LEARNING PASS: profile wait corner sets waiting time (20.0)
-LEARNING PASS: profile edits use the existing pressure-step tissue calculation (1.87979246089231)
-LEARNING PASS: profile corners support keyboard editing
-LEARNING PASS: visual-only French phone layout fits: boyle
-LEARNING PASS: visual-only French phone layout fits: snell
-LEARNING PASS: visual-only French phone layout fits: dalton
-LEARNING PASS: visual-only French phone layout fits: henry
-LEARNING PASS: visual-only French phone layout fits: density
-LEARNING PASS: visual-only French phone layout fits: gas_density
-LEARNING PASS: visual-only French phone layout fits: oxygen
-LEARNING PASS: visual-only French phone layout fits: narcosis
-LEARNING PASS: visual-only French phone layout fits: buhlmann
-LEARNING PASS: visual-only French phone layout fits: buoyancy
-LEARNING PASS: visual-only French phone layout fits: colour
-LEARNING PASS: visual-only French phone layout fits: charles
-LEARNING PASS: visual-only French phone layout fits: ideal_gas
-LEARNING PASS: visual-only French phone layout fits: real_gas
-LEARNING PASS: visual-only French phone layout fits: joule_thomson
-LEARNING PASS: visual-only French phone layout fits: fick
-LEARNING PASS: visual lesson edits preserve plan and history
-VISUAL LESSONS failures=0
+BATHYS_STARTUP_MS=173
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 1 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 2 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 3 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 4 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 5 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 6 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 7 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 8 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 9 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 10 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 11 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 12 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 13 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 14 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 15 (0.740467)
+LEARNING PASS: sample matches tissue solution at 0.000 min, compartment 16 (0.740467)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 1 (1.925467)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 2 (1.43462392858788)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 3 (1.2119313901126)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 4 (1.07032320220837)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 5 (0.97175990775231)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 6 (0.90597167600174)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 7 (0.85844295057782)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 8 (0.82428698405753)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 9 (0.79999146798033)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 10 (0.78504943344185)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 11 (0.77534700974982)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 12 (0.7678020110159)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 13 (0.76191374989455)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 14 (0.75725605927245)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 15 (0.75362518719864)
+LEARNING PASS: sample matches tissue solution at 4.000 min, compartment 16 (0.75079252855598)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 1 (3.09737220704649)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 2 (2.93430043308156)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 3 (2.66141106691337)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 4 (2.34025927855113)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 5 (2.01327729911787)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 6 (1.73337652143234)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 7 (1.49447586084905)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 8 (1.3013450555959)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 9 (1.15207865715625)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 10 (1.05507373416413)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 11 (0.98987863810901)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 12 (0.93794884881481)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 13 (0.89665964886844)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 14 (0.86351929751852)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 15 (0.83738756206285)
+LEARNING PASS: sample matches tissue solution at 29.999 min, compartment 16 (0.81681814525431)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 1 (3.09737447600459)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 2 (2.93431569609022)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 3 (2.6614359671713)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 4 (2.34028813570299)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 5 (2.01330546593956)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 6 (1.73340144356668)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 7 (1.49449648907286)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 8 (1.30136134107812)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 9 (1.15209111079884)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 10 (1.05508349229197)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 11 (0.98988649841446)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 12 (0.93795514953718)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 13 (0.89666467999165)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 14 (0.86352329101616)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 15 (0.8373907258731)
+LEARNING PASS: sample matches tissue solution at 30.000 min, compartment 16 (0.81682064893206)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 1 (1.74242508437212)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 2 (2.07492807645296)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 3 (2.14641168109356)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 4 (2.06254332310298)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 5 (1.88609617811871)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 6 (1.68672815574901)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 7 (1.48933984098732)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 8 (1.31428337942757)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 9 (1.17053617802089)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 10 (1.07346240103151)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 11 (1.00668255158847)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 12 (0.95263411849969)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 13 (0.90913100135448)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 14 (0.87388050523513)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 15 (0.84587861215514)
+LEARNING PASS: sample matches tissue solution at 40.000 min, compartment 16 (0.82371058773303)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 1 (1.50290160862514)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 2 (1.71360009211976)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 3 (1.85060790599306)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 4 (1.87159007950094)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 5 (1.78768912419408)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 6 (1.64778147191826)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 7 (1.4848011649031)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 8 (1.32609300751677)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 9 (1.1878448126941)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 10 (1.09098914443146)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 11 (1.02286742772779)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 12 (0.96689348248209)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 13 (0.92131720642595)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 14 (0.88405526680643)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 15 (0.85424917715875)
+LEARNING PASS: sample matches tissue solution at 50.000 min, compartment 16 (0.83052572699155)
+LEARNING PASS: time rail reaches the beginning (0.0)
+LEARNING PASS: scrubbing to zero restores initial surface-equilibrated tissues (0.740467)
+LEARNING PASS: dragging the time rail scrubs time (3.99999779805524)
+LEARNING PASS: four-minute compartment is half loaded at its half-time (1.92546654784189)
+LEARNING PASS: loading bars and curve show the cursor state during exposure
+LEARNING PASS: wait playback advances from the fully loaded exposure state (1.7424249455968)
+LEARNING PASS: playhead depth follows the wait segment (9.0)
+LEARNING PASS: wait playback displays the matching GF comparison
+LEARNING PASS: backward scrubbing recomputes exactly without accumulated integration error (2.69150643197443)
+LEARNING PASS: scrubbing leaves the profile definition untouched
+LEARNING PASS: profile background supports direct time selection (7.99999972475691)
+LEARNING PASS: play button starts animation and becomes pause
+LEARNING PASS: playback advances cursor and tissue loading
+LEARNING PASS: pause freezes the cursor (8.89955239142357)
+LEARNING PASS: pause restores the play icon
+LEARNING PASS: playback stops exactly at the profile end
+LEARNING PASS: playback endpoint matches the original snapshot model (0.83052572699155)
+LEARNING PASS: play at the end restarts at the beginning
+LEARNING PASS: keyboard playhead moves in bounded increments (4.1)
+LEARNING PASS: leaving the lesson pauses its playback
+LEARNING PASS: changing barrier geometry preserves lung and blood region sizes and positions
+LEARNING PASS: oxygen divider reaches the tank's physical top without a dead zone (0.0)
+LEARNING PASS: zero oxygen divider aligns with the top interior edge (20.0)
+LEARNING PASS: French POI translation: Fairy
+LEARNING PASS: French POI translation: Computer
+LEARNING PASS: French POI translation: Freediving Buoy
+LEARNING PASS: French POI translation: Scilure Tree
+LEARNING PASS: French POI translation: Scilure tree
+BATHYS_FPS_2D_AVG=53.6
+LEARNING PASS: French profile and playback button fit a phone
+LEARNING PASS: phone profile scrubbing follows the same time scale (5.00000232958612)
+LEARNING PASS: map POI title has a French caption
+LEARNING PASS: map POI title has a French caption
+LEARNING PASS: map POI title has a French caption
+LEARNING PASS: map POI title has a French caption
+LEARNING PASS: lesson playback and scrubbing preserve the dive plan and history
+PROFILE PLAYBACK failures=0

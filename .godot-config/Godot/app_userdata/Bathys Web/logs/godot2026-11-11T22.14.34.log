@@ -1,0 +1,56 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+LEARNING PASS: Fick receiver begins at its own initial pressure (40.0)
+LEARNING PASS: unit geometry and 60 mmHg define one relative initial transfer (1.0)
+LEARNING PASS: faster uptake can leave a smaller later rate while delivering more gas overall
+LEARNING PASS: doubling area doubles rate at unchanged gradient (2.0)
+LEARNING PASS: doubling thickness cancels the doubled area (1.0)
+LEARNING PASS: permeability scales membrane transfer (2.0)
+LEARNING PASS: normalized half-time closes half the initial pressure gap (70.0)
+LEARNING PASS: transfer rate decreases with the remaining gradient (0.5)
+LEARNING PASS: receiver pressure storage conserves transferred amount (0.5)
+LEARNING PASS: doubling storage doubles equilibration half-time (1.38629436111989)
+LEARNING PASS: storage changes the time response without changing initial diffusion rate (1.0)
+LEARNING PASS: reversed CO2 gradient transfers toward the source without overshooting
+LEARNING PASS: equal partial pressures give zero net exchange (0.0)
+LEARNING PASS: balanced receiver does not change pressure (46.0)
+LEARNING PASS: all supported barrier/storage extremes stay finite and monotonic
+LEARNING PASS: Snell invariant holds at the glass-air face (0.12633623272338)
+LEARNING PASS: Snell invariant holds at the water-glass face (0.12633623272338)
+LEARNING PASS: three-segment trace reaches the selected real target edge (0.1)
+LEARNING PASS: straight-line back projection reaches the same selected edge height (0.1)
+LEARNING PASS: normal flat-mask geometry appears larger in angle and closer
+LEARNING PASS: water-glass bends toward normal and glass-air away
+LEARNING PASS: index-matched media have no angular magnification (1.0)
+LEARNING PASS: index-matched straight rays retain actual distance (1.039)
+LEARNING PASS: small-angle water-air limit gives the familiar 1.333 angular ratio (1.33300000000436)
+LEARNING PASS: small-angle apparent distance approaches inverse water index (0.75018754687941)
+LEARNING PASS: finite window thickness changes the internal path and projected distance
+LEARNING PASS: window refractive index affects both-interface endpoint geometry
+LEARNING PASS: mask controls stay finite and within the comparison angular field at all limits
+BATHYS_STARTUP_MS=155
+LEARNING PASS: Fick lesson opens under physiology with its own controls
+LEARNING PASS: draggable equilibration curve scrubs contact time (2.5)
+LEARNING PASS: area slider updates initial rate and the equilibration curve (2.0)
+LEARNING PASS: CO2 pressure example reverses the net transfer arrow
+LEARNING PASS: tissue stage exposes storage with independent experiment state
+LEARNING PASS: inert-gas uptake expands the pressure range and loads tissue
+LEARNING PASS: inert-gas release follows the reversed tissue gradient
+LEARNING PASS: storage slider supports keyboard adjustment
+LEARNING PASS: original single-boundary Snell experiment remains the default
+LEARNING PASS: existing total internal reflection experiment remains intact
+LEARNING PASS: mask stage replaces the single-boundary controls
+LEARNING PASS: changing window index updates the internal ray angle
+LEARNING PASS: dragging the real-object view changes distance (0.8)
+LEARNING PASS: boundary stage restores its previous ray settings
+LEARNING PASS: mask geometry survives switching stages (0.4)
+LEARNING PASS: mask title and explanation translate into French
+LEARNING PASS: tissue state survives other topics and languages
+LEARNING PASS: lung pressure and area are retained separately
+LEARNING PASS: French phone Fick controls fit in lungs
+LEARNING PASS: French phone Fick controls fit in tissues
+LEARNING PASS: French phone stacks mask overview, interface zoom and apparent-size comparison
+LEARNING PASS: compact topic selector preserves existing IDs and selects the new physiology lesson
+LEARNING PASS: leaving both experiments restores generic lesson sections
+LEARNING PASS: exchange and mask experiments do not change the scenario or history
+EXCHANGE MASK failures=0

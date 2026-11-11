@@ -42,6 +42,11 @@ func _draw() -> void:
 	if comparison_visible:
 		uptake_plot()
 
+func reservoir_rect(index: int) -> Rect2:
+	var mid: float = section(0).size.x / 2
+	# Keep compartment geometry independent of the membrane's area and thickness.
+	return Rect2(18 if index == 0 else mid + 42, 105, mid - 60, 145)
+
 func membrane() -> void:
 	var area: Rect2 = section(0)
 	wrapped_words(Vector2(16, 25), "Blood ↔ tissue" if tissues else "Alveolus ↔ blood parcel", area.size.x - 32, INK, 13)
@@ -49,8 +54,8 @@ func membrane() -> void:
 	var barrier_width: float = 12 + 14 * float(params["thickness"])
 	var active_height: float = 130 * float(params["area"]) / 2
 	var top: float = 177 - active_height / 2
-	var left: Rect2 = Rect2(18, top, mid - barrier_width / 2 - 24, active_height)
-	var right: Rect2 = Rect2(mid + barrier_width / 2 + 6, top, mid - barrier_width / 2 - 24, active_height)
+	var left: Rect2 = reservoir_rect(0)
+	var right: Rect2 = reservoir_rect(1)
 	for i: int in 2:
 		var rect: Rect2 = left if i == 0 else right
 		var pressure: float = params["source"] if i == 0 else result["receiver"]
@@ -59,7 +64,7 @@ func membrane() -> void:
 		var label: String = ("Blood" if tissues else "Alveolus") if i == 0 else ("Tissue" if tissues else "Blood parcel")
 		wrapped_words(Vector2(rect.position.x + 5, 79), label, rect.size.x - 10, INK, 12)
 		words(Vector2(rect.position.x + 5, 98), "%.1f mmHg" % pressure, AQUA if i == 0 else VIOLET, 12)
-		for j: int in maxi(2, roundi(14 * float(params["area"]) / 2)):
+		for j: int in 14:
 			var pos: Vector2 = rect.position + Vector2(6, 4) + (rect.size - Vector2(12, 8)) * Vector2(fposmod(j * 0.618, 1), fposmod(j * 0.414, 1))
 			draw_circle(pos, 2, AQUA if i == 0 else VIOLET)
 			var motion: Vector2 = Vector2.from_angle(j * 2.399) * 6

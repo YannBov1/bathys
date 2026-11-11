@@ -9,6 +9,10 @@ var wait_minutes: float = 0.0
 var gf_low: float = 30.0
 var gf_high: float = 85.0
 var selected: int = 0
+var cursor_minutes: float = 30
+var playing: bool = false
+var definition_signature: String = ""
+const PLAYBACK_MINUTES_PER_SECOND: float = 2.0
 var state: Dictionary = {}
 var profile: BathysBuhlmannProfile
 var diagram: BathysBuhlmannDiagram
@@ -56,6 +60,9 @@ func _ready() -> void:
 	add_child(summary_label)
 	profile = BathysBuhlmannProfile.new()
 	profile.parameter_changed.connect(func(key: String, value: float) -> void: (inputs[key] as HSlider).value = value)
+	profile.editing_started.connect(func() -> void: playing = false; profile.set_playing(false))
+	profile.scrubbed.connect(seek_profile)
+	profile.playback_toggled.connect(toggle_playback)
 	add_child(profile)
 	diagram = BathysBuhlmannDiagram.new()
 	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -114,9 +121,33 @@ func _ready() -> void:
 	text_stack.add_child(explanation)
 	assumptions = BathysUiStyle.wrapped("", 11)
 	add_child(assumptions)
+	visibility_changed.connect(func() -> void:
+		if not is_visible_in_tree():
+			playing = false
+			profile.set_playing(false))
 	resized.connect(adapt)
 	get_node("/root/I18n").language_changed.connect(refresh)
 	set_stage(false)
+
+func total_minutes() -> float:
+	return exposure_minutes + (wait_minutes if ascent else 0)
+
+func seek_profile(minutes: float) -> void:
+	playing = false
+	cursor_minutes = clampf(minutes, 0, total_minutes())
+	refresh()
+
+func toggle_playback() -> void:
+	if total_minutes() <= 0: return
+	if cursor_minutes >= total_minutes() - 0.000001: cursor_minutes = 0
+	playing = not playing
+	refresh()
+
+func _process(delta: float) -> void:
+	if not playing or not is_visible_in_tree(): return
+	cursor_minutes = minf(total_minutes(), cursor_minutes + delta * PLAYBACK_MINUTES_PER_SECOND)
+	if cursor_minutes >= total_minutes(): playing = false
+	refresh()
 
 func add_slider(parent: Node, key: String, caption: String, minimum: float, maximum: float, step_size: float, callback: Callable) -> void:
 	var block := VBoxContainer.new()
@@ -161,8 +192,14 @@ func adapt() -> void:
 	diagram.adapt()
 
 func refresh() -> void:
-	state = BathysBuhlmannLessonModel.snapshot(exposure_depth, exposure_minutes, preview_depth,
-		wait_minutes, gf_low / 100, gf_high / 100, ascent)
+	var signature: String = str([exposure_depth, exposure_minutes, preview_depth, wait_minutes, ascent])
+	if signature != definition_signature:
+		definition_signature = signature
+		cursor_minutes = total_minutes()
+		playing = false
+	state = BathysBuhlmannLessonModel.at_time(exposure_depth, exposure_minutes, preview_depth,
+		wait_minutes, gf_low / 100, gf_high / 100, ascent, cursor_minutes)
+	var waiting: bool = state["ascent_phase"]
 	var model: BathysTissue = state["model"]
 	for key: String in inputs:
 		var value: float = {"exposure_depth": exposure_depth, "exposure_time": exposure_minutes,
@@ -177,24 +214,28 @@ func refresh() -> void:
 	profile.preview_depth = preview_depth
 	profile.wait_minutes = wait_minutes
 	profile.ascent = ascent
+	profile.cursor_minutes = cursor_minutes
+	profile.cursor_depth = state["depth_m"]
+	profile.set_playing(playing)
 	profile.queue_redraw()
 	diagram.state = state
 	diagram.selected = selected
 	diagram.exposure_depth = exposure_depth
-	diagram.exposure_minutes = exposure_minutes
+	diagram.exposure_minutes = state["exposure_elapsed"]
 	diagram.low = gf_low / 100
 	diagram.high = gf_high / 100
-	diagram.ascent = ascent
+	diagram.ascent = waiting
 	diagram.queue_redraw()
 	readout_values[2].add_theme_font_size_override("font_size", 20)
-	if not ascent:
+	readouts.get_child(3).visible = waiting
+	if not waiting:
 		summary_label.text = "Air exposure · all compartments start at surface equilibrium. Select fast and slow compartments to compare."
 		readout_titles[0].text = "Selected N₂ half-time"
 		readout_titles[1].text = "Selected tissue N₂"
 		readout_titles[2].text = "Gap to equilibrium closed"
 		readout_values[0].text = "%.1f min" % BathysTissue.N_HALF[selected]
 		readout_values[1].text = "%.3f bar" % model.n2[selected]
-		readout_values[2].text = "%.1f%%" % ((1 - pow(0.5, exposure_minutes / BathysTissue.N_HALF[selected])) * 100) if exposure_depth > 0 else "—"
+		readout_values[2].text = "%.1f%%" % ((1 - pow(0.5, float(state["exposure_elapsed"]) / BathysTissue.N_HALF[selected])) * 100) if exposure_depth > 0 else "—"
 		formula.text = "One half-time: 50%\n\ntwo: 75%\n\nthree: 87.5% of the pressure gap"
 		status_label.text = "Fast compartments respond quickly; slow ones keep loading for much longer. Half-time describes closing half the remaining pressure gap, not reaching full saturation."
 		explanation.text = "These are 16 mathematical compartments, not 16 organs. The amber line is inspired nitrogen pressure; each bar follows its own half-time. Next, explore ascent with this same gas loading."

@@ -882,5 +882,15 @@
   "Wait: %.1f m / %.1f min": "Attente : %.1f m / %.1f min",
   "Membrane height: exchange area. Width: thickness.": "Hauteur de membrane : surface d’échange. Largeur : épaisseur.",
   "Drag the fish for depth and distance; drag the torch vertically for its offset": "Déplacez le poisson pour la profondeur et la distance ; le phare verticalement pour son écart.",
-  "Drag membrane edges for area and thickness; scrub the curve for time.": "Déplacez les bords de la membrane pour la surface et l’épaisseur ; la courbe pour le temps."
+  "Drag membrane edges for area and thickness; scrub the curve for time.": "Déplacez les bords de la membrane pour la surface et l’épaisseur ; la courbe pour le temps.",
+  "Fairy": "Fée",
+  "Computer": "Ordinateur",
+  "Freediving Buoy": "Bouée d'apnée",
+  "Scilure tree": "Arbre à scilure",
+  "Scilure Tree": "Arbre à scilure",
+  "Dive profile": "Profil de plongée",
+  "Pause profile": "Mettre le profil en pause",
+  "Play profile · 2 dive minutes per second": "Lire le profil · 2 minutes de plongée par seconde",
+  "Drag corners to edit; scrub the time rail. Space: play/pause. Keys 1–3: edit handles; 4: playhead.": "Déplacez les points pour modifier le profil ; la réglette pour parcourir le temps. Espace : lecture/pause. Touches 1–3 : points ; 4 : curseur.",
+  "%.1f / %.1f min": "%.1f / %.1f min"
 }
