@@ -14,11 +14,12 @@ var air_samples: PackedVector2Array = PackedVector2Array()
 var density_result: Dictionary = {}
 
 func adapt() -> void:
-	custom_minimum_size.y = 560 if size.x < 660 else 340
-	tooltip_text = "Drag the plot to change depth"
+	custom_minimum_size.y = 560 if comparison_visible and size.x < 660 else 340
+	tooltip_text = "Drag the plot to change depth" if comparison_visible else ("Drag the actual depth marker" if kind == "narcosis" else "Use the instruments below")
 	queue_redraw()
 
 func panel(index: int) -> Rect2:
+	if not comparison_visible: return Rect2(Vector2.ZERO, size)
 	if size.x < 660: return Rect2(0, index * 280, size.x, 280)
 	return Rect2(index * size.x * 0.5, 0, size.x * 0.5, size.y)
 
@@ -27,6 +28,7 @@ func plot_rect() -> Rect2:
 	return Rect2(area.position + Vector2(43, 56), area.size - Vector2(66, 124))
 
 func manipulate(at: Vector2) -> void:
+	if not comparison_visible and kind != "narcosis": return
 	var plot: Rect2 = plot_rect()
 	if plot.grow(16).has_point(at):
 		if kind == "narcosis":
@@ -66,21 +68,22 @@ func _draw() -> void:
 		"gas_density": draw_density()
 
 func draw_oxygen() -> void:
-	var left: Rect2 = panel(0)
-	words(left.position + Vector2(16, 26), "Oxygen pressure / depth", INK)
-	var plot: Rect2 = plot_rect()
-	var maximum: float = maxf(2, ceili(9 * oxygen / 100))
-	axes(plot, maximum, "bar")
-	var y_start: float = plot.end.y - plot.size.y * 1.6 / maximum
-	draw_rect(Rect2(Vector2(plot.position.x, y_start), Vector2(plot.size.x, plot.size.y * 1.1 / maximum)), Color(1, 0.72, 0.43, 0.08))
-	draw_dashed_line(Vector2(plot.position.x, y_start), Vector2(plot.end.x, y_start), AMBER, 1.5, 5)
-	var points := PackedVector2Array()
-	for i: int in 81:
-		points.append(Vector2(plot.position.x + plot.size.x * i / 80, plot.end.y - plot.size.y * (1 + i / 10.0) * oxygen / 100 / maximum))
-	draw_polyline(points, AQUA, 2.5, true)
 	var result: Dictionary = BathysLearningModels.oxygen_exposure(depth, oxygen, minutes)
-	draw_circle(Vector2(plot.position.x + plot.size.x * depth / 80, plot.end.y - plot.size.y * float(result["pp_o2"]) / maximum), 5, AQUA)
-	words(Vector2(plot.position.x, plot.end.y + 55), "Amber: end of CNS table", AMBER, 11)
+	if comparison_visible:
+		var left: Rect2 = panel(0)
+		words(left.position + Vector2(16, 26), "Oxygen pressure / depth", INK)
+		var plot: Rect2 = plot_rect()
+		var maximum: float = maxf(2, ceili(9 * oxygen / 100))
+		axes(plot, maximum, "bar")
+		var y_start: float = plot.end.y - plot.size.y * 1.6 / maximum
+		draw_rect(Rect2(Vector2(plot.position.x, y_start), Vector2(plot.size.x, plot.size.y * 1.1 / maximum)), Color(1, 0.72, 0.43, 0.08))
+		draw_dashed_line(Vector2(plot.position.x, y_start), Vector2(plot.end.x, y_start), AMBER, 1.5, 5)
+		var points := PackedVector2Array()
+		for i: int in 81:
+			points.append(Vector2(plot.position.x + plot.size.x * i / 80, plot.end.y - plot.size.y * (1 + i / 10.0) * oxygen / 100 / maximum))
+		draw_polyline(points, AQUA, 2.5, true)
+		draw_circle(Vector2(plot.position.x + plot.size.x * depth / 80, plot.end.y - plot.size.y * float(result["pp_o2"]) / maximum), 5, AQUA)
+		words(Vector2(plot.position.x, plot.end.y + 55), "Amber: end of CNS table", AMBER, 11)
 	var right: Rect2 = panel(1)
 	words(right.position + Vector2(16, 26), "CNS exposure index", INK)
 	var center: Vector2 = right.position + Vector2(right.size.x * 0.5, right.size.y * 0.42)
@@ -125,8 +128,10 @@ func draw_narcosis() -> void:
 		draw_rect(Rect2(x - 22, y0, 44, plot.size.y), Color("10323d"))
 		draw_rect(Rect2(x - 22, y0, 44, h), Color("246a76") if i == 0 else Color("367a70"))
 		draw_line(Vector2(x - 26, y0 + h), Vector2(x + 26, y0 + h), AQUA if i == 0 else AMBER, 2)
+		if i == 0: grip(Vector2(x, y0 + h), true)
 		words(Vector2(x - 22, plot.end.y + 20), "Actual" if i == 0 else "END", INK, 11)
 		words(Vector2(x - 22, plot.end.y + 38), "≤0 m" if i == 1 and bool(result["below_surface"]) else "%.1f m" % depths[i], AQUA if i == 0 else AMBER, 12)
+	if not comparison_visible: return
 	var right: Rect2 = panel(1)
 	words(right.position + Vector2(16, 26), "Below air’s surface reference" if bool(result["below_surface"]) else "Same counted gas pressure", INK, 12)
 	var maximum: float = 9.0
@@ -159,6 +164,7 @@ func draw_density() -> void:
 			draw_circle(at, 2.5 if i == 0 and j < roundi(helium / 100 * count) else 5, AQUA if i == 0 else MUTED)
 		words(Vector2(x - 28, box.end.y + 22), "Mix · 1 L" if i == 0 else "Air · 1 L", INK, 11)
 		words(Vector2(x - 28, box.end.y + 43), "%.2f g" % float(density_result["density" if i == 0 else "air_density"]), AQUA if i == 0 else MUTED, 15)
+	if not comparison_visible: return
 	var plot: Rect2 = plot_rect()
 	words(panel(1).position + Vector2(16, 26), "Gas density / depth", INK)
 	var maximum: float = 8

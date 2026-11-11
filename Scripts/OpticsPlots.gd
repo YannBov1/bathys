@@ -4,6 +4,7 @@ extends BathysLessonDiagram
 signal probe_changed(value: float)
 signal range_changed(value: float)
 var stage: int = 0
+var probe_touched: bool = false
 var engine: BathysUnderwaterOptics
 var params: Dictionary = {}
 var result: Dictionary = {}
@@ -12,9 +13,9 @@ const VIOLET := Color("b5a3f3")
 const RED := Color("f18e87")
 
 func adapt() -> void:
-	custom_minimum_size.y = 125 if stage == 0 else (600 if size.x < 660 else 350)
-	mouse_default_cursor_shape = Control.CURSOR_ARROW if stage == 0 else Control.CURSOR_DRAG
-	tooltip_text = "" if stage == 0 else "Drag the spectral plot to select a wavelength" if stage == 1 else "Drag the model plot to change viewing distance"
+	custom_minimum_size.y = (250 if comparison_visible else 200) if stage == 0 else (600 if comparison_visible and size.x < 660 else 350)
+	mouse_default_cursor_shape = Control.CURSOR_DRAG
+	tooltip_text = "Drag the target to change depth and distance" if stage == 0 else "Drag the spectral plot to select a wavelength" if stage == 1 else "Drag the model plot to change viewing distance"
 	queue_redraw()
 
 func _draw() -> void:
@@ -22,10 +23,15 @@ func _draw() -> void:
 	if params.is_empty() or result.is_empty(): return
 	match stage:
 		0: geometry()
-		1: spectra(); phase_plot()
-		2: coefficients(); components()
+		1:
+			spectra()
+			if comparison_visible: phase_plot()
+		2:
+			coefficients()
+			if comparison_visible: components()
 
 func panel(index: int) -> Rect2:
+	if not comparison_visible: return Rect2(Vector2.ZERO, size)
 	if size.x < 660: return Rect2(0, index * 300, size.x, 300)
 	return Rect2(index * size.x * 0.5, 0, size.x * 0.5, size.y)
 
@@ -34,10 +40,16 @@ func plot(index: int) -> Rect2:
 	return Rect2(area.position + Vector2(47, 51), area.size - Vector2(72, 111))
 
 func manipulate(at: Vector2) -> void:
-	if stage == 0 or not plot(0).grow(10).has_point(at): return
+	if stage == 0:
+		range_changed.emit(clampf((at.x - 85) / maxf(1, size.x - 145) * 15, 0.2, 15))
+		depth_changed.emit(clampf((at.y - 62) / (size.y - 112) * 30, 0, 30))
+		return
+	if not plot(0).grow(10).has_point(at): return
 	var p: Rect2 = plot(0)
 	var f: float = clampf((at.x - p.position.x) / p.size.x, 0, 1)
-	if stage == 1: probe_changed.emit(400 + f * 300)
+	if stage == 1:
+		probe_touched = true
+		probe_changed.emit(400 + f * 300)
 	else: range_changed.emit(clampf(f * 15, 0.2, 15))
 
 func axes(rect: Rect2, xmin: float, xmax: float, ymin: float, ymax: float, unit: String) -> void:
@@ -52,26 +64,26 @@ func axes(rect: Rect2, xmin: float, xmax: float, ymin: float, ymax: float, unit:
 	words(rect.position + Vector2(-30, -12), unit, MUTED, 10)
 
 func geometry() -> void:
-	words(Vector2(15, 21), "Schematic light paths", INK, 12)
-	var camera := Vector2(45, 83)
-	var target := Vector2(size.x - 46, 83)
+	draw_rect(Rect2(1, 40, size.x - 2, size.y - 41), Color("0b3747"))
+	draw_line(Vector2(1, 40), Vector2(size.x - 1, 40), AQUA, 2)
+	var y: float = 62 + float(params["depth"]) / 30 * (size.y - 112)
+	var camera := Vector2(42, y)
+	var target := Vector2(85 + float(params["range"]) / 15 * (size.x - 145), y)
 	draw_rect(Rect2(camera - Vector2(14, 10), Vector2(28, 20)), MUTED, false, 1.5)
 	draw_circle(camera + Vector2(7, 0), 4, AQUA)
 	draw_rect(Rect2(target - Vector2(10, 18), Vector2(20, 36)), AQUA, false, 2)
 	arrow(target - Vector2(14, 0), camera + Vector2(20, 0), AQUA)
-	words(Vector2(size.x * 0.44, 103), tr("View: %.1f m") % float(params["range"]), AQUA, 11)
-	arrow(Vector2(target.x, 31), target - Vector2(0, 22), AMBER)
-	words(Vector2(size.x - 166, 33), tr("Depth: %.1f m") % float(params["depth"]), AMBER, 11)
+	grip(target)
+	words(Vector2(16, 25), tr("Depth: %.1f m") % float(params["depth"]), AMBER, 12)
+	words(Vector2(maxf(100, size.x - 155), 25), tr("View: %.1f m") % float(params["range"]), AQUA, 12)
+	for depth: int in [0, 15, 30]:
+		var level: float = 62 + depth / 30.0 * (size.y - 112)
+		words(Vector2(size.x - 38, level + 4), "%d m" % depth, MUTED, 10)
+	arrow(Vector2(target.x, 43), target - Vector2(0, 22), AMBER)
 	if bool(params["torch"]):
-		var lamp: Vector2 = camera - Vector2(0, float(params["baseline"]) * 32)
+		var lamp: Vector2 = camera - Vector2(0, float(params["baseline"]) * 24)
 		draw_circle(lamp, 4, AMBER)
 		arrow(lamp + Vector2(7, 0), target - Vector2(13, 3), AMBER)
-		for i: int in 9:
-			var s: float = (i + 1) / 10.0
-			draw_circle(camera.lerp(target, s) + Vector2(0, sin(i * 2.4) * 8), 1.7, VIOLET)
-		words(Vector2(16, 118), "Torch → object → camera; nearby particles also send light back", MUTED, 10)
-	else:
-		words(Vector2(16, 118), "Daylight loses wavelengths on the way down and on the way to you", MUTED, 10)
 
 func spectra() -> void:
 	var rect: Rect2 = plot(0)
@@ -90,7 +102,13 @@ func spectra() -> void:
 	var x: float = rect.position.x + rect.size.x * (float(params["probe"]) - 400) / 300
 	draw_dashed_line(Vector2(x, rect.position.y), Vector2(x, rect.end.y), INK, 1, 4)
 	words(Vector2(rect.position.x, rect.end.y + 40), "Wavelength · nm", MUTED, 11)
-	words(Vector2(rect.position.x, rect.end.y + 56), "c = a + b; Kd is a different quantity", MUTED, 10)
+	if probe_touched and not comparison_visible:
+		var index: int = clampi(roundi((float(params["probe"]) - 400) / 5), 0, 60)
+		words(Vector2(clampf(x - 18, rect.position.x, rect.end.x - 45), rect.position.y - 8), "%.0f nm" % float(params["probe"]), INK, 10)
+		var labels: Array[String] = ["a %.3f", "b %.3f", "c %.3f", "Kd %.3f"]
+		var values: Array = [profile["a"][index], profile["b"][index], float(profile["a"][index]) + float(profile["b"][index]), profile["kd"][index]]
+		for i: int in 4: words(Vector2(rect.position.x + i * rect.size.x / 4, rect.end.y + 56), labels[i] % float(values[i]), [AMBER, VIOLET, AQUA, MUTED][i], 10)
+	else: words(Vector2(rect.position.x, rect.end.y + 56), "c = a + b; Kd is a different quantity", MUTED, 10)
 
 func phase_plot() -> void:
 	var rect: Rect2 = plot(1)

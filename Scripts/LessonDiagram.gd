@@ -8,6 +8,7 @@ const AQUA := Color("71e5d9")
 const AMBER := Color("ffb96f")
 const INK := Color("e6f8f4")
 const MUTED := Color("91b6b9")
+var comparison_visible: bool = true
 var lesson: String = "boyle"
 var depth_m: float = 10.0
 var angle_deg: float = 30.0
@@ -36,7 +37,7 @@ func _ready() -> void:
 	adapt()
 
 func adapt() -> void:
-	custom_minimum_size.y = 510 if lesson == "boyle" and size.x < 620 else 330
+	custom_minimum_size.y = 510 if comparison_visible and lesson == "boyle" and size.x < 620 else 330
 	tooltip_text = "Drag in the water to change depth" if lesson == "boyle" else "Drag on the incoming side to change the ray angle"
 	queue_redraw()
 
@@ -64,6 +65,15 @@ func manipulate(at: Vector2) -> void:
 		if (from_water and offset.y >= 0) or (not from_water and offset.y <= 0):
 			angle_changed.emit(clampf(rad_to_deg(atan2(absf(offset.x), absf(offset.y))), 0.0, 89.0))
 
+func grip(at: Vector2, vertical: bool = false) -> void:
+	draw_circle(at, 7, Color("123b48"))
+	draw_arc(at, 7, 0, TAU, 24, AQUA, 1.5, true)
+	var direction: Vector2 = Vector2.DOWN if vertical else Vector2.RIGHT
+	var side := Vector2(-direction.y, direction.x)
+	for sign_value: float in [-1, 1]:
+		var point: Vector2 = at + direction * 13 * sign_value
+		draw_polyline(PackedVector2Array([point - direction * 3 * sign_value + side * 3, point, point - direction * 3 * sign_value - side * 3]), AQUA, 1.5, true)
+
 func words(at: Vector2, message: String, color: Color = MUTED, font_size: int = 12) -> void:
 	draw_string(ThemeDB.fallback_font, at, tr(message), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
@@ -84,7 +94,7 @@ func _draw() -> void:
 		draw_snell()
 
 func bubble_rect() -> Rect2:
-	return Rect2(0, 0, size.x if size.x < 620 else size.x * 0.51, 275 if size.x < 620 else size.y)
+	return Rect2(Vector2.ZERO, size) if not comparison_visible else Rect2(0, 0, size.x if size.x < 620 else size.x * 0.51, 275 if size.x < 620 else size.y)
 
 func draw_boyle() -> void:
 	var scene: Rect2 = bubble_rect()
@@ -109,6 +119,8 @@ func draw_boyle() -> void:
 		draw_circle(point, 2, INK)
 	words(center + Vector2(-24, 58), "%.2f L" % volume_at(depth_m), AQUA, 16)
 	words(Vector2(18, scene.size.y - 12), "Outline: 1 L at the surface", MUTED, 11)
+	grip(center, true)
+	if not comparison_visible: return
 	var graph_box := Rect2(size.x * 0.51, 0, size.x * 0.49, size.y)
 	if size.x < 620:
 		graph_box = Rect2(0, 284, size.x, size.y - 284)

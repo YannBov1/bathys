@@ -20,11 +20,12 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 
 func adapt() -> void:
-	custom_minimum_size.y = 620 if size.x < 680 else 360
-	tooltip_text = "Select a compartment · Left/Right keys to compare · Drag the curve to explore"
+	custom_minimum_size.y = 620 if comparison_visible and size.x < 680 else 360
+	tooltip_text = "Select a compartment · Left/Right keys to compare · Drag the curve to explore" if comparison_visible else "Select a tissue bar"
 	queue_redraw()
 
 func section(index: int) -> Rect2:
+	if not comparison_visible: return Rect2(Vector2.ZERO, size)
 	if size.x < 680:
 		return Rect2(0, index * 310, size.x, 310)
 	return Rect2(index * size.x * 0.5, 0, size.x * 0.5, size.y)
@@ -61,8 +62,9 @@ func _draw() -> void:
 	draw_style_box(BathysUiStyle.box(Color("08232f"), BathysUiStyle.EDGE, 10, 0), Rect2(Vector2.ZERO, size))
 	if state.is_empty(): return
 	draw_compartments()
-	if ascent: draw_gradient()
-	else: draw_loading()
+	if comparison_visible:
+		if ascent: draw_gradient()
+		else: draw_loading()
 	if has_focus():
 		draw_style_box(BathysUiStyle.box(Color(0, 0, 0, 0), AQUA, 10, 0), Rect2(Vector2.ONE, size - Vector2(2, 2)))
 

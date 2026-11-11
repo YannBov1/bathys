@@ -173,7 +173,7 @@ func refresh() -> void:
 	insight.text = tr("%s · displaced water density: %.1f kg/m³") % [tr(tendency), density]
 	formula.text = "Fᵦ = ρwater × g × Vdisplaced · W = m × g"
 	if at_depth:
-		explanation.text = "The rigid body keeps its volume, but the same trapped gas shrinks as pressure rises. Descend and buoyancy decreases; ascend and it increases. Balance at one depth, then move the depth slider without changing mass or adding gas."
+		explanation.text = "The rigid body keeps its volume, but the same trapped gas shrinks as pressure rises. Descend and buoyancy decreases; ascend and it increases. Balance at one depth, then drag the diver without changing mass or adding gas."
 		assumptions.text = "Teaching body, fully submerged: fixed rigid volume plus a flexible gas space at constant temperature; gas mass is neglected. Vgas = Vsurface / Pabsolute (surface = 1 bar). Pressure uses the selected uniform water density. No venting, inflation, suit compression, motion or real weighting advice."
 	else:
 		explanation.text = "Buoyancy equals the weight of displaced water, not the object's weight. Only the submerged volume counts. A floating body settles with buoyancy equal to weight; a fully submerged rigid body keeps the same buoyancy at any depth in uniform water."

@@ -88,7 +88,7 @@ func run() -> void:
 	await choose(view, "colour")
 	var lesson: BathysOpticsLesson = view.optics_view
 	check(lesson.visible and not view.diagram.visible and not lesson.result.is_empty(), "colour lesson opens in physics with its own spectral model")
-	check(lesson.plots.tooltip_text.is_empty(), "static path schematic does not advertise a drag interaction")
+	check(lesson.plots.tooltip_text.contains("Drag the target"), "optical scene advertises direct target dragging")
 	var original_transmission: float = lesson.result["transmission_y"]
 	(lesson.inputs["range"] as HSlider).value = 4
 	await create_timer(0.08).timeout
@@ -147,6 +147,12 @@ func run() -> void:
 	check(TranslationServer.translate(view.title_label.text) == "Les couleurs sous l’eau" and lesson.explanation.text.contains("CIE Y"), "French title and model explanation translate")
 	view.lesson_scroll.scroll_vertical = 0
 	await capture("res://Screenshots/learning-colour-model-fr.png")
+	var previous_range: float = lesson.params["range"]
+	lesson.params["range"] = 15.0
+	lesson.flush_update()
+	check(lesson.assumptions.text.begins_with("Modèle") and lesson.assumptions.text.contains("qualitativement"), "conditional thick-water model notes remain fully French")
+	lesson.params["range"] = previous_range
+	lesson.flush_update()
 	root.size = Vector2i(390, 900)
 	await layout()
 	check(view.get_combined_minimum_size().x <= 390 and lesson.plots.custom_minimum_size.y == 600, "French phone layout stacks the two model plots")

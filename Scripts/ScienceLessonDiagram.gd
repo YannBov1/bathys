@@ -1,6 +1,10 @@
 class_name BathysScienceLessonDiagram
 extends BathysLessonDiagram
 
+signal oxygen_changed(value: float)
+signal helium_changed(value: float)
+var gas_drag: int = -1
+
 signal time_changed(value: float)
 signal temperature_changed(value: float)
 
@@ -17,15 +21,30 @@ func adapt() -> void:
 	if lesson in ["boyle", "snell"]:
 		super.adapt()
 		return
-	custom_minimum_size.y = 530 if lesson in ["henry", "density"] and size.x < 620 else 330
+	custom_minimum_size.y = 530 if comparison_visible and lesson in ["henry", "density"] and size.x < 620 else 330
 	tooltip_text = {"dalton": "Drag vertically to change depth", "henry": "Drag along the curve to explore elapsed half-times", "density": "Drag along the curve to change temperature"}.get(lesson, "")
 	queue_redraw()
+
+func _gui_input(event: InputEvent) -> void:
+	if lesson == "dalton" and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		gas_drag = -1
+		if event.pressed:
+			var index: int = floori((event.position.x - 42) / maxf(1, size.x - 60) * 4)
+			if index in [0, 2]: gas_drag = index
+	super._gui_input(event)
 
 func manipulate(at: Vector2) -> void:
 	match lesson:
 		"dalton":
+			if gas_drag in [0, 2]:
+				var pressure: float = (1 - clampf((at.y - 64) / (size.y - 138), 0, 1)) * 5
+				var fraction: float = clampf(pressure / pressure_at(dalton_depth) * 100, 0, 100)
+				if gas_drag == 0: oxygen_changed.emit(fraction)
+				else: helium_changed.emit(fraction)
+				return
 			depth_changed.emit(clampf((1.0 - (at.y - 64) / (size.y - 138)) * 50.0 - 10.0, 0, 40))
 		"henry":
+			if not comparison_visible: return
 			var plot: Rect2 = graph_rect("henry")
 			if at.x >= plot.position.x - 20 and at.y >= plot.position.y - 20:
 				time_changed.emit(clampf((at.x - plot.position.x) / plot.size.x * 5.0, 0, 5))
@@ -77,6 +96,7 @@ func draw_dalton() -> void:
 				y -= segment
 				if segment > 0.1:
 					draw_rect(Rect2(x - width * 0.5 + 2, y, width - 4, segment), colors[j] * Color(1, 1, 1, 0.65))
+		if i in [0, 2]: grip(Vector2(x, plot.end.y - fill), true)
 		centered(Vector2(x, plot.end.y + 24), gases[i], colors[i] if i < 3 else INK, 15)
 		centered(Vector2(x, plot.end.y + 44), "%.2f" % float(values[keys[i]]), colors[i] if i < 3 else INK, 14)
 		if i < 3:
@@ -84,6 +104,7 @@ func draw_dalton() -> void:
 	words(Vector2(18, size.y - 10), "All values in bar absolute", MUTED, 11)
 
 func panel_rect(index: int) -> Rect2:
+	if not comparison_visible: return Rect2(Vector2.ZERO, size)
 	if size.x < 620:
 		return Rect2(0, index * 265, size.x, 265)
 	return Rect2(index * size.x * 0.5, 0, size.x * 0.5, size.y)
@@ -124,6 +145,7 @@ func draw_henry() -> void:
 			var center := Vector2(fluid.position.x + fluid.size.x * (i + 1) / 4, fluid.position.y)
 			arrow(center - Vector2(0, 22 if gas_pressure > current else -22), center + Vector2(0, 22 if gas_pressure > current else -22), AMBER, 2)
 	words(Vector2(area.position.x + 18, area.end.y - 20), "Dots: dissolved molecules, not bubbles", MUTED, 11)
+	if not comparison_visible: return
 	var graph_area: Rect2 = panel_rect(1)
 	words(graph_area.position + Vector2(18, 26), "Dissolved gas / elapsed half-times", INK)
 	var plot: Rect2 = graph_rect("henry")
@@ -162,6 +184,7 @@ func draw_density() -> void:
 	var marker := Vector2(plot.position.x + plot.size.x * temperature_c / 35, plot.end.y - plot.size.y * (float(properties["density"]) - low) / (high - low))
 	draw_circle(marker, 5, AMBER)
 	words(Vector2(plot.position.x, plot.end.y + 54), "Curve: selected salinity", MUTED, 11)
+	if not comparison_visible: return
 	var water_area: Rect2 = panel_rect(1)
 	words(water_area.position + Vector2(18, 26), "Water column for +1 bar", INK)
 	var column := Rect2(water_area.position + Vector2(water_area.size.x * 0.28, 49), Vector2(water_area.size.x * 0.38, water_area.size.y - 109))

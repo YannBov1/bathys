@@ -17,6 +17,7 @@ func layout() -> void:
 
 func settle(app: Control) -> void:
 	await layout()
+	if is_instance_valid(app.learning_view.presentation): app.learning_view.presentation.expand_all()
 	while app.simulation_busy or app.sim_debounce >= 0:
 		await process_frame
 	await layout()
@@ -32,8 +33,8 @@ func click(at: Vector2) -> void:
 		await layout()
 
 func capture(path: String) -> void:
-	if "--visual" not in OS.get_cmdline_user_args(): return
 	await layout()
+	if "--visual" not in OS.get_cmdline_user_args(): return
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png(path)
 
@@ -63,7 +64,7 @@ func run() -> void:
 	var paused_time: float = app.playback_time
 	check(not app.find_child("PlanName", true, false).is_visible_in_tree() and app.language_button.is_visible_in_tree(), "learning header keeps language selection and hides scenario actions")
 	var view: BathysLearningView = app.learning_view
-	check(view.topic_buttons.size() == 11 and view.lesson == "boyle", "left navigation includes all eleven lessons")
+	check(view.topic_buttons.size() == 16 and view.lesson == "boyle", "left navigation includes all sixteen lessons")
 	view.slider.value = 0
 	check(view.readout_values[0].text == "1.00 bar" and view.readout_values[1].text == "1.00 L", "surface reference is one litre at one bar absolute")
 	view.slider.value = 10

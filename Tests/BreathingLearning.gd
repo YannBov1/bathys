@@ -42,8 +42,8 @@ func run() -> void:
 	await layout()
 	var view: BathysLearningView = app.learning_view
 	var lesson: BathysBreathingLessons = view.breathing_view
-	check(view.topic_buttons.size() == 11 and view.CATEGORIES.size() == 3, "eleven topics are organized into three categories")
-	check(view.topic_picker.item_count == 14, "compact selector retains category separators")
+	check(view.topic_buttons.size() == 16 and view.CATEGORIES.size() == 3, "sixteen topics are organized into three categories")
+	check(view.topic_picker.item_count == 19, "compact selector retains category separators")
 	for index: int in view.TOPICS.size():
 		check(view.topic_picker.get_item_index(index) >= 0 and not view.topic_picker.is_item_disabled(view.topic_picker.get_item_index(index)), "stable dropdown topic ID " + str(index))
 	await choose(view, "oxygen")

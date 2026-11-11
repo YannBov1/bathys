@@ -1,5 +1,4 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
-OpenGL API 3.3.0 NVIDIA 571.96 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 2050
 
 LEARNING PASS: offline spectra contain six traceable marine profiles at 5 nm
 LEARNING PASS: Jerlov III absorption at 530 nm matches the primary workbook (0.0806)
@@ -38,9 +37,9 @@ LEARNING PASS: nearby white torch restores a strong red signal lost from deep am
 LEARNING PASS: off-axis torch reduces nearby backscatter while illuminating the target
 LEARNING PASS: zero-power torch returns exactly to ambient illumination (0.0)
 LEARNING PASS: all presets remain finite at supported depth, range and torch extremes
-BATHYS_STARTUP_MS=139
+BATHYS_STARTUP_MS=157
 LEARNING PASS: colour lesson opens in physics with its own spectral model
-LEARNING PASS: static path schematic does not advertise a drag interaction
+LEARNING PASS: optical scene advertises direct target dragging
 LEARNING PASS: coalesced slider updates refresh the preview while exploring
 LEARNING PASS: water selector applies the coastal optical table
 LEARNING PASS: torch exposes lighting geometry controls
@@ -52,6 +51,7 @@ LEARNING PASS: model stage plots separate integrated coefficients
 LEARNING PASS: coefficient plot supports direct viewing-range control (7.5)
 LEARNING PASS: viewing-range slider supports keyboard adjustment
 LEARNING PASS: French title and model explanation translate
+LEARNING PASS: conditional thick-water model notes remain fully French
 LEARNING PASS: French phone layout stacks the two model plots
 LEARNING PASS: French controls fit phone width in stage 0
 LEARNING PASS: French controls fit phone width in stage 1

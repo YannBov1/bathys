@@ -15,11 +15,12 @@ var result: Dictionary = {}
 var diver_icon: Texture2D = preload("res://Assets/Icons/buoyancy-diver.svg")
 
 func adapt() -> void:
-	custom_minimum_size.y = 580 if size.x < 660 else 350
+	custom_minimum_size.y = (580 if size.x < 660 else 350) if comparison_visible else 300
 	tooltip_text = "Drag the body to change immersion" if not at_depth else "Drag in the water or along the curve to change depth"
 	queue_redraw()
 
 func section(index: int) -> Rect2:
+	if not comparison_visible: return Rect2(Vector2.ZERO, size)
 	if size.x < 660: return Rect2(0, index * 290, size.x, 290)
 	return Rect2(index * size.x * 0.5, 0, size.x * 0.5, size.y)
 
@@ -51,8 +52,9 @@ func _draw() -> void:
 	draw_style_box(BathysUiStyle.box(Color("08232f"), BathysUiStyle.EDGE, 10, 0), Rect2(Vector2.ZERO, size))
 	if result.is_empty(): return
 	draw_body()
-	if at_depth: draw_depth_curve()
-	else: draw_displaced_water()
+	if comparison_visible:
+		if at_depth: draw_depth_curve()
+		else: draw_displaced_water()
 
 func draw_body() -> void:
 	var area: Rect2 = section(0)
@@ -85,6 +87,7 @@ func draw_body() -> void:
 		words(Vector2(16, surface_y - 14), "Air", MUTED, 11)
 		words(Vector2(16, surface_y + 24), "Water", MUTED, 11)
 		words(Vector2(16, area.end.y - 17), "Drag the body through the surface", MUTED, 11)
+	grip(Vector2(x, center_y), true)
 	var buoyant: float = result["buoyant_force"]
 	var weight: float = result["weight"]
 	var scale: float = maxf(1250, maxf(buoyant, weight))

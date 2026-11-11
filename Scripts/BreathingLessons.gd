@@ -120,6 +120,7 @@ func add_presets(parent: Node, topic: String, entries: Array) -> void:
 	for entry: Array in entries:
 		var button := Button.new()
 		button.text = str(entry[0])
+		button.set_meta("gas_mixture", Vector2(entry[2], entry[3]))
 		button.pressed.connect(func() -> void:
 			var params: Dictionary = parameters()
 			if float(entry[1]) >= 0: params["depth"] = float(entry[1])

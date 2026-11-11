@@ -11,6 +11,7 @@ var water_picker: OptionButton
 var component_picker: OptionButton
 var torch_switch: CheckBox
 var preview_box: BoxContainer
+var compare_handle: BathysColourCompare
 var preview_aspects: Array[AspectRatioContainer] = []
 var preview_materials: Array[ShaderMaterial] = []
 var plots: BathysOpticsPlots
@@ -74,6 +75,12 @@ func _ready() -> void:
 		image.material = material
 		preview_materials.append(material)
 		aspect.add_child(image)
+		if index == 1:
+			compare_handle = BathysColourCompare.new()
+			compare_handle.material_target = material
+			image.add_child(compare_handle)
+			compare_handle.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			compare_handle.hide()
 	component_picker = OptionButton.new()
 	component_picker.name = "OpticsComponent"
 	for text: String in ["All received light · D + F + B", "Direct only · D", "Forward halo only · F", "Backscatter only · B", "Object signal without veil · D + F"]: component_picker.add_item(text)
@@ -82,6 +89,7 @@ func _ready() -> void:
 	plots = BathysOpticsPlots.new()
 	plots.engine = engine
 	plots.probe_changed.connect(func(value: float) -> void: (inputs["probe"] as HSlider).value = value)
+	plots.depth_changed.connect(func(value: float) -> void: (inputs["depth"] as HSlider).value = value)
 	plots.range_changed.connect(func(value: float) -> void: (inputs["range"] as HSlider).value = value)
 	add_child(plots)
 	legend = HFlowContainer.new()
@@ -303,4 +311,4 @@ func update_text() -> void:
 	assumptions.text = "Model: uniform water, horizontal viewing, D65 daylight, 400–700 nm at 5 nm, CIE 1931 observer, synthetic Lambertian targets and fixed sRGB exposure. The torch uses single scattering and chosen beam geometry; the forward halo is an energy-bounded Gaussian surrogate, not a measured PSF. No full multiple-scattering RTE, fluorescence, camera noise or visual adaptation."
 	var profile: Dictionary = engine.water(params)
 	if float(profile["b"][30]) * float(params["range"]) > 3:
-		assumptions.text += " " + tr("At this optical thickness, multiple scattering is important: treat the preview qualitatively.")
+		assumptions.text = tr(assumptions.text) + " " + tr("At this optical thickness, multiple scattering is important: treat the preview qualitatively.")

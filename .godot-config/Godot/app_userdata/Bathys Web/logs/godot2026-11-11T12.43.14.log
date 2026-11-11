@@ -1,0 +1,85 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BATHYS_STARTUP_MS=151
+LEARNING PASS: fresh lessons begin with the experiment, not charts or text panels
+LEARNING PASS: compact boyle has no slider wall or explanatory paragraphs
+LEARNING PASS: compact boyle starts on one focused visual
+LEARNING PASS: compact snell has no slider wall or explanatory paragraphs
+LEARNING PASS: compact snell starts on one focused visual
+LEARNING PASS: compact dalton has no slider wall or explanatory paragraphs
+LEARNING PASS: compact dalton starts on one focused visual
+LEARNING PASS: compact henry has no slider wall or explanatory paragraphs
+LEARNING PASS: compact henry starts on one focused visual
+LEARNING PASS: compact density has no slider wall or explanatory paragraphs
+LEARNING PASS: compact density starts on one focused visual
+LEARNING PASS: compact gas_density has no slider wall or explanatory paragraphs
+LEARNING PASS: compact gas_density starts on one focused visual
+LEARNING PASS: compact oxygen has no slider wall or explanatory paragraphs
+LEARNING PASS: compact oxygen starts on one focused visual
+LEARNING PASS: compact narcosis has no slider wall or explanatory paragraphs
+LEARNING PASS: compact narcosis starts on one focused visual
+LEARNING PASS: compact buhlmann has no slider wall or explanatory paragraphs
+LEARNING PASS: compact buhlmann starts on one focused visual
+LEARNING PASS: compact buoyancy has no slider wall or explanatory paragraphs
+LEARNING PASS: compact buoyancy starts on one focused visual
+LEARNING PASS: compact colour has no slider wall or explanatory paragraphs
+LEARNING PASS: compact colour starts on one focused visual
+LEARNING PASS: compact charles has no slider wall or explanatory paragraphs
+LEARNING PASS: compact charles starts on one focused visual
+LEARNING PASS: compact ideal_gas has no slider wall or explanatory paragraphs
+LEARNING PASS: compact ideal_gas starts on one focused visual
+LEARNING PASS: compact real_gas has no slider wall or explanatory paragraphs
+LEARNING PASS: compact real_gas starts on one focused visual
+LEARNING PASS: compact joule_thomson has no slider wall or explanatory paragraphs
+LEARNING PASS: compact joule_thomson starts on one focused visual
+LEARNING PASS: compact fick has no slider wall or explanatory paragraphs
+LEARNING PASS: compact fick starts on one focused visual
+LEARNING PASS: bubble is the primary depth control (25.0)
+LEARNING PASS: linked chart can open without opening a parameter panel
+LEARNING PASS: equations, assumptions and references remain one click away
+LEARNING PASS: water ruler sets depth directly (20.0)
+LEARNING PASS: oxygen bar is an editable mixture control (50.0)
+LEARNING PASS: primary water-density curve sets temperature directly (4.0)
+LEARNING PASS: thermometer sits beside the gas apparatus
+LEARNING PASS: pressing the mercury handle does not jump the temperature (20.0)
+LEARNING PASS: dragging mercury heats the gas (80.0)
+LEARNING PASS: piston itself controls the Charles experiment (2.0)
+LEARNING PASS: dragging the vessel wall changes volume and pressure together (1.94990777317336)
+LEARNING PASS: barrier side handle changes diffusion thickness (2.0)
+LEARNING PASS: barrier vertical handle changes active exchange area (1.5)
+LEARNING PASS: visual instruments retain keyboard access
+LEARNING PASS: underwater colour target changes depth without a slider (20.0)
+LEARNING PASS: same target gesture changes viewing distance (7.0)
+LEARNING PASS: scattering dial stays hidden until its phase plot is requested
+LEARNING PASS: touching a spectrum reveals selected wavelength values
+LEARNING PASS: phase plot and its scattering control appear together
+LEARNING PASS: coupled visual controls redraw when model constraints update another value silently
+BATHYS_FPS_2D_AVG=123.8
+LEARNING PASS: mask comparison has a directly draggable target (2.0)
+LEARNING PASS: precise settings remain available without duplicate instruments
+LEARNING PASS: closing precise settings keeps the experiment state (8.0)
+LEARNING PASS: French compact phone layout fits boyle
+LEARNING PASS: French compact phone layout fits snell
+LEARNING PASS: French compact phone layout fits dalton
+LEARNING PASS: French compact phone layout fits henry
+LEARNING PASS: French compact phone layout fits density
+LEARNING PASS: French compact phone layout fits gas_density
+LEARNING PASS: French compact phone layout fits oxygen
+LEARNING PASS: French compact phone layout fits narcosis
+LEARNING PASS: French compact phone layout fits buhlmann
+LEARNING PASS: French compact phone layout fits buoyancy
+LEARNING PASS: French compact phone layout fits colour
+LEARNING PASS: French compact phone layout fits charles
+LEARNING PASS: French compact phone layout fits ideal_gas
+LEARNING PASS: French compact phone layout fits real_gas
+LEARNING PASS: French compact phone layout fits joule_thomson
+LEARNING PASS: French compact phone layout fits fick
+LEARNING PASS: phone colour preview combines reference and underwater image into one comparison
+LEARNING PASS: vertical scroll intent does not move the colour divider (0.5)
+LEARNING PASS: colour comparison divider is directly draggable (0.79999998139172)
+LEARNING PASS: expanded colour view restores both original reference panes
+LEARNING PASS: gesture cue translates into French
+LEARNING PASS: optional stacked charts retain phone width
+LEARNING PASS: full French model information stays available
+LEARNING PASS: presentation and gestures leave the scenario and undo history untouched
+LESSON INTUITION failures=0

@@ -3,9 +3,14 @@ extends MarginContainer
 
 const BOYLE_SOURCE := "https://www.grc.nasa.gov/www/BGH/boyle.html"
 const SNELL_SOURCE := "https://openstax.org/books/university-physics-volume-3/pages/1-4-total-internal-reflection"
-const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"], ["gas_density", "Gas density"], ["oxygen", "Oxygen toxicity"], ["narcosis", "Nitrogen narcosis"], ["buhlmann", "Bühlmann model"], ["buoyancy", "Archimedes & buoyancy"], ["colour", "Colour underwater"]]
-const CATEGORIES := [["Physics of diving", ["boyle", "snell", "colour", "dalton", "henry", "density", "buoyancy", "gas_density"]], ["Physiology", ["oxygen", "narcosis"]], ["Models & risk", ["buhlmann"]]]
+const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"], ["gas_density", "Gas density"], ["oxygen", "Oxygen toxicity"], ["narcosis", "Nitrogen narcosis"], ["buhlmann", "Bühlmann model"], ["buoyancy", "Archimedes & buoyancy"], ["colour", "Colour underwater"], ["charles", "Charles’s law"], ["ideal_gas", "Ideal gas law"], ["real_gas", "Real gases & compressibility"], ["joule_thomson", "Joule–Thomson & cooling"], ["fick", "Fick’s law & gas exchange"]]
+const CATEGORIES := [["Physics of diving", ["boyle", "charles", "ideal_gas", "real_gas", "joule_thomson", "snell", "colour", "dalton", "henry", "density", "buoyancy", "gas_density"]], ["Physiology", ["fick", "oxygen", "narcosis"]], ["Models & risk", ["buhlmann"]]]
 const SOURCES := {
+	"fick": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-4-gas-exchange",
+	"charles": "https://openstax.org/books/chemistry/pages/9-2-relating-pressure-volume-amount-and-temperature-the-ideal-gas-law",
+	"ideal_gas": "https://openstax.org/books/college-physics/pages/13-3-the-ideal-gas-law",
+	"real_gas": "https://openstax.org/books/chemistry-2e/pages/9-6-non-ideal-gas-behavior",
+	"joule_thomson": "https://interaktiv.chemie.uni-mainz.de/vpcgp/jt-man.en.html",
 	"colour": "https://openaccess.thecvf.com/content_cvpr_2018/html/Akkaynak_A_Revised_Underwater_CVPR_2018_paper.html",
 	"buoyancy": "https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy",
 	"boyle": BOYLE_SOURCE, "snell": SNELL_SOURCE,
@@ -22,14 +27,22 @@ var helium_percent: float = 0.0
 var gas_pressure: float = 3.0
 var half_times: float = 1.0
 var temperature_c: float = 20.0
-var salinity: float = 35.0
+var salinity: float = 0.0
 var extra_controls: Dictionary = {}
 var extra_sliders: Dictionary = {}
 var extra_values: Dictionary = {}
+var presentation: BathysLessonPresentation
+var navigation_heading: Label
 var topic_scroll: ScrollContainer
 var lesson_scroll: ScrollContainer
 var topic_stack: VBoxContainer
 var topic_picker: OptionButton
+var exchange_view: BathysExchangeLesson
+var mask_view: BathysMaskLesson
+var snell_mask: bool = false
+var snell_tabs: HFlowContainer
+var snell_buttons: Array[Button] = []
+var thermal_view: BathysThermalLessons
 var optics_view: BathysOpticsLesson
 var buoyancy_view: BathysBuoyancyLesson
 var breathing_view: BathysBreathingLessons
@@ -72,7 +85,8 @@ func _ready() -> void:
 	navigation = BathysUiStyle.panel(BathysUiStyle.PANEL, 12)
 	layout.add_child(navigation)
 	var nav := BathysUiStyle.column(navigation, 12)
-	nav.add_child(label("LEARN & EXPLORE", 12, BathysUiStyle.AQUA))
+	navigation_heading = label("LEARN & EXPLORE", 12, BathysUiStyle.AQUA)
+	nav.add_child(navigation_heading)
 	var group := ButtonGroup.new()
 	topic_scroll = ScrollContainer.new()
 	topic_scroll.name = "LessonNavigationScroll"
@@ -134,9 +148,32 @@ func _ready() -> void:
 	optics_view = BathysOpticsLesson.new()
 	optics_view.hide()
 	body.add_child(optics_view)
+	thermal_view = BathysThermalLessons.new()
+	thermal_view.hide()
+	body.add_child(thermal_view)
+	exchange_view = BathysExchangeLesson.new()
+	exchange_view.hide()
+	body.add_child(exchange_view)
+	snell_tabs = HFlowContainer.new()
+	snell_tabs.hide()
+	body.add_child(snell_tabs)
+	var snell_group := ButtonGroup.new()
+	for index: int in 2:
+		var button := Button.new()
+		button.text = "Boundary & rays" if index == 0 else "Mask & apparent size"
+		button.toggle_mode = true
+		button.button_group = snell_group
+		button.pressed.connect(set_snell_stage.bind(index == 1))
+		snell_tabs.add_child(button)
+		snell_buttons.append(button)
+	mask_view = BathysMaskLesson.new()
+	mask_view.hide()
+	body.add_child(mask_view)
 	diagram = BathysScienceLessonDiagram.new()
 	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(diagram)
+	diagram.oxygen_changed.connect(func(value: float) -> void: (extra_sliders["oxygen"] as HSlider).value = value)
+	diagram.helium_changed.connect(func(value: float) -> void: (extra_sliders["helium"] as HSlider).value = value)
 	diagram.depth_changed.connect(func(value: float) -> void: slider.value = value)
 	diagram.angle_changed.connect(func(value: float) -> void: slider.value = value)
 	diagram.time_changed.connect(func(value: float) -> void: (extra_sliders["time"] as HSlider).value = value)
@@ -249,6 +286,9 @@ func _ready() -> void:
 	resized.connect(adapt_layout)
 	get_node("/root/I18n").language_changed.connect(update_values)
 	standard_sections.assign([diagram, controls, readouts, formula_label, insight, assumptions_label])
+	presentation = BathysLessonPresentation.new()
+	add_child(presentation)
+	presentation.setup(self, body)
 	select_lesson("boyle")
 	call_deferred("adapt_layout")
 
@@ -294,7 +334,9 @@ func label(value: String, font_size: int = 14, color: Color = BathysUiStyle.TEXT
 
 func adapt_layout() -> void:
 	layout.vertical = size.x < 760
-	navigation.custom_minimum_size = Vector2(0, 94) if layout.vertical else Vector2(228, 0)
+	navigation.custom_minimum_size = Vector2(0, 60) if layout.vertical else Vector2(228, 0)
+	navigation_heading.visible = not layout.vertical
+	topic_picker.add_theme_constant_override("icon_max_width", 22 if layout.vertical else 32)
 	navigation.size_flags_vertical = Control.SIZE_SHRINK_BEGIN if layout.vertical else Control.SIZE_EXPAND_FILL
 	topic_scroll.visible = not layout.vertical
 	topic_stack.visible = not layout.vertical
@@ -305,6 +347,9 @@ func adapt_layout() -> void:
 	breathing_view.adapt()
 	buoyancy_view.adapt()
 	optics_view.adapt()
+	thermal_view.adapt()
+	exchange_view.adapt()
+	mask_view.adapt()
 
 func select_lesson(key: String) -> void:
 	if key not in SOURCES:
@@ -315,16 +360,20 @@ func select_lesson(key: String) -> void:
 	buhlmann_view.visible = lesson == "buhlmann"
 	buoyancy_view.visible = lesson == "buoyancy"
 	optics_view.visible = lesson == "colour"
+	thermal_view.visible = lesson in BathysThermalLessons.KINDS
+	exchange_view.visible = lesson == "fick"
 	breathing_view.visible = lesson in ["oxygen", "narcosis", "gas_density"]
 	for section: Control in standard_sections:
-		section.visible = lesson not in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour"]
+		section.visible = lesson not in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]
+	sync_snell_sections()
 	for index: int in TOPICS.size():
 		if str(TOPICS[index][0]) == lesson: topic_picker.select(topic_picker.get_item_index(index))
 	for topic: String in topic_buttons:
 		(topic_buttons[topic] as Button).set_pressed_no_signal(topic == lesson)
-	if lesson in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour"]:
+	if lesson in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]:
 		if lesson in ["oxygen", "narcosis", "gas_density"]: breathing_view.set_lesson(lesson)
 		if lesson == "colour": optics_view.activate()
+		if lesson in BathysThermalLessons.KINDS: thermal_view.activate(lesson)
 		update_values()
 		adapt_layout()
 		return
@@ -344,7 +393,34 @@ func select_lesson(key: String) -> void:
 	update_values()
 	adapt_layout()
 
+func set_snell_stage(use_mask: bool) -> void:
+	snell_mask = use_mask
+	sync_snell_sections()
+	if use_mask: mask_view.refresh()
+	lesson_scroll.set_deferred("scroll_vertical", 0)
+	update_values()
+	adapt_layout()
+
+func sync_snell_sections() -> void:
+	snell_tabs.visible = lesson == "snell"
+	mask_view.visible = lesson == "snell" and snell_mask
+	for index: int in 2: snell_buttons[index].set_pressed_no_signal((index == 1) == snell_mask)
+	if lesson == "snell":
+		for section: Control in standard_sections: section.visible = not snell_mask
+
 func update_values() -> void:
+	if lesson == "fick":
+		title_label.text = "Fick’s law & gas exchange"
+		intro_label.text = "Follow a gas across an alveolar or tissue barrier. Change the pressure gradient and the barrier, then watch a finite receiver equilibrate."
+		return
+	if lesson == "snell" and snell_mask:
+		title_label.text = "Snell’s law · the diving mask"
+		intro_label.text = "Trace light through water, a flat window and the mask’s air pocket. Compare the same target’s real geometry and angular size."
+		return
+	if lesson in BathysThermalLessons.KINDS:
+		title_label.text = {"charles": "Charles’s law", "ideal_gas": "The ideal gas law", "real_gas": "Real gases & compressibility", "joule_thomson": "Joule–Thomson effect & gas cooling"}[lesson]
+		intro_label.text = {"charles": "Warm a fixed gas sample without changing its pressure. Follow its volume and discover why temperature ratios use kelvin.", "ideal_gas": "Connect pressure, volume, temperature and gas amount. Choose what responds, then change one input at a time.", "real_gas": "Explore where PV = nRT departs from a real-gas model. Compare equal moles, then ask how much gas fits in a rigid cylinder.", "joule_thomson": "Follow gas through a pressure drop. Compare real and ideal throttling with expansion that delivers work."}[lesson]
+		return
 	if lesson == "colour":
 		title_label.text = "Colour underwater"
 		intro_label.text = "Follow the light from the surface or torch to a coloured target, then through the water to your eye. Separate colour loss, blur and the veil of scattered light."

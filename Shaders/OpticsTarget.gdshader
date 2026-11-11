@@ -7,6 +7,7 @@ uniform vec3 backscatter = vec3(0.0);
 uniform float sigma = 0.01;
 uniform float exposure = 1.0;
 uniform bool reference = false;
+uniform float compare_split = -1.0;
 uniform int component = 0;
 
 int material_at(vec2 uv) {
@@ -28,7 +29,7 @@ vec3 srgb(vec3 c) {
 }
 void fragment() {
     int index = material_at(UV);
-    if (reference) { COLOR = vec4(srgb(reference_colours[index]), 1.0); }
+    if (reference || UV.x < compare_split) { COLOR = vec4(srgb(reference_colours[index]), 1.0); }
     else {
         // Normalised nine-tap Gaussian surrogate; it is NOT a measured camera PSF.
         vec2 radius = vec2(sigma, sigma * 2.2) * 1.41421356;
