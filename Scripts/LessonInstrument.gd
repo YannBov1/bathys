@@ -15,11 +15,11 @@ func bind(input: HSlider, shape: String, title: String, suffix: String) -> void:
 	kind = shape
 	caption = title
 	unit = suffix
-	custom_minimum_size = Vector2(230, 96) if kind in ["distance", "length", "light", "wave", "flow"] else Vector2(94, 148)
-	if kind in ["distance", "length", "light", "wave", "flow"]: size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	custom_minimum_size = Vector2(230, 96) if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"] else Vector2(94, 148)
+	if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"]: size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	mouse_default_cursor_shape = Control.CURSOR_VSIZE if kind in ["temperature", "depth", "amount", "salt"] else (Control.CURSOR_HSIZE if kind in ["distance", "length", "light", "wave", "flow"] else Control.CURSOR_POINTING_HAND)
+	mouse_default_cursor_shape = Control.CURSOR_VSIZE if kind in ["temperature", "depth", "amount", "salt", "energy"] else (Control.CURSOR_HSIZE if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"] else Control.CURSOR_POINTING_HAND)
 	tooltip_text = tr(caption) + " · " + tr("Drag or use arrow keys")
 	source.value_changed.connect(func(_value: float) -> void: queue_redraw())
 	source.changed.connect(queue_redraw)
@@ -44,12 +44,12 @@ func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(source): return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			if kind in ["distance", "length", "light", "wave", "flow"]:
+			if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"]:
 				if event.position.y < 34 or event.position.y > 74: return
-			var vertical: bool = kind in ["temperature", "depth", "amount", "salt"]
+			var vertical: bool = kind in ["temperature", "depth", "amount", "salt", "energy"]
 			var distance: float = event.position.distance_to(Vector2(size.x / 2, 86))
 			if vertical and (absf(event.position.x - size.x / 2) > 27 or event.position.y < 40 or event.position.y > 128): return
-			if kind not in ["distance", "length", "light", "wave", "flow"] and not vertical and (distance < 10 or distance > 43): return
+			if kind not in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"] and not vertical and (distance < 10 or distance > 43): return
 		held = event.pressed
 		if held: grab_focus(); change_at(event.position)
 		accept_event()
@@ -68,11 +68,11 @@ func _gui_input(event: InputEvent) -> void:
 
 func change_at(at: Vector2) -> void:
 	var fraction: float
-	if kind in ["distance", "length", "light", "wave", "flow"]:
+	if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"]:
 		fraction = clampf((at.x - 38) / (size.x - 76), 0, 1)
 	elif kind == "clock":
 		fraction = clampf(fposmod((at - Vector2(size.x / 2, 86)).angle() + PI / 2, TAU) / deg_to_rad(350), 0, 1)
-	elif kind in ["temperature", "depth", "amount", "salt"]:
+	elif kind in ["temperature", "depth", "amount", "salt", "energy"]:
 		fraction = clampf((111 - at.y) / 65, 0, 1) if kind == "temperature" else (clampf((at.y - 46) / 73, 0, 1) if kind == "depth" else clampf((121 - at.y) / (66 if kind == "salt" else 73), 0, 1))
 	else:
 		var angle: float = rad_to_deg((at - Vector2(size.x / 2, 86)).angle())
@@ -126,6 +126,15 @@ func _draw() -> void:
 			if at.y >= level: draw_rect(Rect2(at, Vector2(2.5, 2.5)), ink)
 		draw_line(Vector2(x - 18, level), Vector2(x + 18, level), aqua, 2)
 		draw_circle(Vector2(x, level), 5, ink)
+	elif kind == "energy":
+		var rect := Rect2(x - 20, 45, 40, 76)
+		draw_rect(Rect2(x - 8, 38, 16, 7), BathysUiStyle.MUTED)
+		draw_rect(rect, Color("092430"))
+		draw_rect(Rect2(x - 16, 121 - fraction * 73, 32, fraction * 73), amber)
+		draw_rect(rect, ink, false, 1.5)
+		draw_line(Vector2(x - 7, 63), Vector2(x + 7, 63), ink, 2)
+		draw_line(Vector2(x, 56), Vector2(x, 70), ink, 2)
+		draw_circle(Vector2(x, 121 - fraction * 73), 5, ink)
 	elif kind == "amount":
 		var rect := Rect2(x - 21, 43, 42, 78)
 		draw_rect(rect, Color("092430"))
@@ -136,7 +145,7 @@ func _draw() -> void:
 			if kind == "salt": draw_rect(Rect2(at, Vector2(3, 3)), ink)
 			else: draw_circle(at, 2, aqua)
 		draw_circle(Vector2(x, rect.end.y - 73 * fraction), 5, ink)
-	elif kind in ["distance", "length", "light", "wave", "flow"]:
+	elif kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"]:
 		var left := Vector2(38, 55)
 		var right := Vector2(size.x - 38, 55)
 		var at: Vector2 = left.lerp(right, fraction)
@@ -145,9 +154,15 @@ func _draw() -> void:
 		for i: int in 9:
 			var tick := left.lerp(right, i / 8.0)
 			draw_line(tick + Vector2(0, 8), tick + Vector2(0, 12), BathysUiStyle.MUTED)
-		if kind == "distance":
-			draw_texture_rect(preload("res://Assets/Icons/lesson-eye.svg"), Rect2(9, 43, 24, 24), false)
-			draw_texture_rect(preload("res://Assets/Icons/lesson-fish.svg"), Rect2(at - Vector2(13, 12), Vector2(26, 24)), false)
+		if kind in ["distance", "sound_distance"]:
+			draw_texture_rect((preload("res://Assets/Icons/transport-sound.svg") if kind == "sound_distance" else preload("res://Assets/Icons/lesson-eye.svg")), Rect2(9, 43, 24, 24), false)
+			draw_texture_rect(preload("res://Assets/Icons/buoyancy-diver.svg") if kind == "sound_distance" else preload("res://Assets/Icons/lesson-fish.svg"), Rect2(at - Vector2(13, 12), Vector2(26, 24)), false)
+		elif kind == "finish":
+			draw_circle(Vector2(20, 55), 10, Color("bacbd0"))
+			draw_line(Vector2(15, 48), Vector2(23, 56), ink, 2)
+			draw_circle(Vector2(size.x - 20, 55), 10, Color("15232c"))
+			draw_circle(at, 7, Color("bacbd0").lerp(Color("15232c"), fraction))
+			draw_arc(at, 7, 0, TAU, 24, ink, 1, true)
 		elif kind == "light":
 			draw_texture_rect(preload("res://Assets/Icons/lesson-torch.svg"), Rect2(8, 42, 25, 25), false)
 			draw_circle(at, 7, amber)
@@ -197,4 +212,4 @@ func _draw() -> void:
 		draw_circle(center, 3, aqua)
 	var digits: int = 0 if source.step >= 1 else (1 if source.step >= 0.1 else (2 if source.step >= 0.01 else 3))
 	var value_text: String = (("%." + str(digits) + "f") % source.value) + (" " + unit if not unit.is_empty() else "")
-	centered(88 if kind in ["distance", "length", "light", "wave", "flow"] else 139, value_text, aqua, 13)
+	centered(88 if kind in ["distance", "length", "light", "wave", "flow", "sound_distance", "finish"] else 139, value_text, aqua, 13)

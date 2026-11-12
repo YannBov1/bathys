@@ -3,9 +3,14 @@ extends MarginContainer
 
 const BOYLE_SOURCE := "https://www.grc.nasa.gov/www/BGH/boyle.html"
 const SNELL_SOURCE := "https://openstax.org/books/university-physics-volume-3/pages/1-4-total-internal-reflection"
-const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"], ["gas_density", "Gas density"], ["oxygen", "Oxygen toxicity"], ["narcosis", "Nitrogen narcosis"], ["buhlmann", "Bühlmann model"], ["buoyancy", "Archimedes & buoyancy"], ["colour", "Colour underwater"], ["charles", "Charles’s law"], ["ideal_gas", "Ideal gas law"], ["real_gas", "Real gases & compressibility"], ["joule_thomson", "Joule–Thomson & cooling"], ["fick", "Fick’s law & gas exchange"]]
-const CATEGORIES := [["Physics of diving", ["boyle", "charles", "ideal_gas", "real_gas", "joule_thomson", "snell", "colour", "dalton", "henry", "density", "buoyancy", "gas_density"]], ["Physiology", ["fick", "oxygen", "narcosis"]], ["Models & risk", ["buhlmann"]]]
+const TOPICS := [["boyle", "Boyle’s law"], ["snell", "Snell’s law"], ["dalton", "Dalton’s law"], ["henry", "Henry’s law"], ["density", "Water density"], ["gas_density", "Gas density"], ["oxygen", "Oxygen toxicity"], ["narcosis", "Nitrogen narcosis"], ["buhlmann", "Bühlmann model"], ["buoyancy", "Archimedes & buoyancy"], ["colour", "Colour underwater"], ["charles", "Charles’s law"], ["ideal_gas", "Ideal gas law"], ["real_gas", "Real gases & compressibility"], ["joule_thomson", "Joule–Thomson & cooling"], ["fick", "Fick’s law & gas exchange"], ["viscosity", "Dynamic viscosity"], ["flow", "Laminar & turbulent flow"], ["heat_transfer", "Heat transfer"], ["thermal_properties", "Heat capacity & conductivity"], ["sound", "Sound in water"]]
+const CATEGORIES := [["Physics of diving", ["boyle", "charles", "ideal_gas", "real_gas", "joule_thomson", "snell", "colour", "dalton", "henry", "density", "buoyancy", "gas_density", "viscosity", "flow", "heat_transfer", "thermal_properties", "sound"]], ["Physiology", ["fick", "oxygen", "narcosis"]], ["Models & risk", ["buhlmann"]]]
 const SOURCES := {
+	"viscosity": "https://www.grc.nasa.gov/WWW/winddocs/user/keywords/viscosity.html",
+	"flow": "https://openstax.org/books/university-physics-volume-1/pages/14-7-viscosity-and-turbulence",
+	"heat_transfer": "https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer",
+	"thermal_properties": "https://openstax.org/books/chemistry-atoms-first/pages/9-1-energy-basics",
+	"sound": "https://resource.npl.co.uk/acoustics/techguides/soundseawater/",
 	"fick": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-4-gas-exchange",
 	"charles": "https://openstax.org/books/chemistry/pages/9-2-relating-pressure-volume-amount-and-temperature-the-ideal-gas-law",
 	"ideal_gas": "https://openstax.org/books/college-physics/pages/13-3-the-ideal-gas-law",
@@ -42,6 +47,7 @@ var mask_view: BathysMaskLesson
 var snell_mask: bool = false
 var snell_tabs: HFlowContainer
 var snell_buttons: Array[Button] = []
+var transport_view: BathysTransportLessons
 var thermal_view: BathysThermalLessons
 var optics_view: BathysOpticsLesson
 var buoyancy_view: BathysBuoyancyLesson
@@ -97,6 +103,8 @@ func _ready() -> void:
 	topic_stack = BathysUiStyle.column(topic_scroll, 8)
 	topic_picker = OptionButton.new()
 	topic_picker.name = "CompactTopics"
+	topic_picker.fit_to_longest_item = false
+	topic_picker.clip_text = true
 	topic_picker.item_selected.connect(func(index: int) -> void: select_lesson(str(TOPICS[topic_picker.get_item_id(index)][0])))
 	nav.add_child(topic_picker)
 	for category: Array in CATEGORIES:
@@ -112,6 +120,9 @@ func _ready() -> void:
 			var button := Button.new()
 			button.name = "Topic_" + key
 			button.text = str(TOPICS[topic_index][1])
+			if key in BathysTransportLessons.KINDS:
+				button.clip_text = true
+				button.tooltip_text = button.text
 			button.icon = load("res://Assets/Icons/law-" + key + ".svg")
 			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			button.custom_minimum_size.y = 45
@@ -154,6 +165,9 @@ func _ready() -> void:
 	exchange_view = BathysExchangeLesson.new()
 	exchange_view.hide()
 	body.add_child(exchange_view)
+	transport_view = BathysTransportLessons.new()
+	transport_view.hide()
+	body.add_child(transport_view)
 	snell_tabs = HFlowContainer.new()
 	snell_tabs.hide()
 	body.add_child(snell_tabs)
@@ -350,6 +364,7 @@ func adapt_layout() -> void:
 	thermal_view.adapt()
 	exchange_view.adapt()
 	mask_view.adapt()
+	transport_view.adapt()
 
 func select_lesson(key: String) -> void:
 	if key not in SOURCES:
@@ -357,6 +372,7 @@ func select_lesson(key: String) -> void:
 	lesson = key
 	source_button.visible = lesson != "colour"
 	lesson_scroll.set_deferred("scroll_vertical", 0)
+	transport_view.visible = lesson in BathysTransportLessons.KINDS
 	buhlmann_view.visible = lesson == "buhlmann"
 	buoyancy_view.visible = lesson == "buoyancy"
 	optics_view.visible = lesson == "colour"
@@ -364,13 +380,14 @@ func select_lesson(key: String) -> void:
 	exchange_view.visible = lesson == "fick"
 	breathing_view.visible = lesson in ["oxygen", "narcosis", "gas_density"]
 	for section: Control in standard_sections:
-		section.visible = lesson not in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]
+		section.visible = lesson not in BathysTransportLessons.KINDS and lesson not in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]
 	sync_snell_sections()
 	for index: int in TOPICS.size():
 		if str(TOPICS[index][0]) == lesson: topic_picker.select(topic_picker.get_item_index(index))
 	for topic: String in topic_buttons:
 		(topic_buttons[topic] as Button).set_pressed_no_signal(topic == lesson)
-	if lesson in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]:
+	if lesson in BathysTransportLessons.KINDS or lesson in ["buhlmann", "oxygen", "narcosis", "gas_density", "buoyancy", "colour", "charles", "ideal_gas", "real_gas", "joule_thomson", "fick"]:
+		if lesson in BathysTransportLessons.KINDS: transport_view.activate(lesson)
 		if lesson in ["oxygen", "narcosis", "gas_density"]: breathing_view.set_lesson(lesson)
 		if lesson == "colour": optics_view.activate()
 		if lesson in BathysThermalLessons.KINDS: thermal_view.activate(lesson)
@@ -409,6 +426,10 @@ func sync_snell_sections() -> void:
 		for section: Control in standard_sections: section.visible = not snell_mask
 
 func update_values() -> void:
+	if lesson in BathysTransportLessons.KINDS:
+		title_label.text = BathysTransportLessons.TITLES[lesson]
+		intro_label.text = BathysTransportLessons.INTROS[lesson]
+		return
 	if lesson == "fick":
 		title_label.text = "Fick’s law & gas exchange"
 		intro_label.text = "Follow a gas across an alveolar or tissue barrier. Change the pressure gradient and the barrier, then watch a finite receiver equilibrate."

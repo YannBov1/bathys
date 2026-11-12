@@ -23,6 +23,8 @@ func run() -> void:
 	app.set_learning_mode(true)
 	await layout()
 	var view: BathysLearningView = app.learning_view
+	view.topic_scroll.ensure_control_visible(view.topic_buttons["buhlmann"])
+	await layout()
 	await click((view.topic_buttons["buhlmann"] as Button).get_global_rect().get_center())
 	var lesson: BathysBuhlmannLesson = view.buhlmann_view
 	check(view.lesson == "buhlmann" and lesson.visible and not view.diagram.visible and not view.readouts.visible, "Bühlmann navigation opens a dedicated interactive lesson")

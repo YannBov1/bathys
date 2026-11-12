@@ -91,7 +91,7 @@ func compact_all() -> void:
 func _process(_delta: float) -> void:
 	if not is_instance_valid(host) or not host.is_visible_in_tree(): return
 	var key: String = str([host.lesson, host.snell_mask, host.thermal_view.kind, host.breathing_view.kind,
-		host.buoyancy_view.at_depth, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context, host.thermal_view.parameters().get("solve", 0)])
+		host.buoyancy_view.at_depth, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context, host.thermal_view.parameters().get("solve", 0), host.transport_view.parameters().get("stage", 0), host.transport_view.parameters().get("medium", 0), host.transport_view.parameters().get("material", 0), host.transport_view.parameters().get("basis", 0), host.transport_view.parameters().get("boundary", 0)])
 	if key != signature:
 		signature = key
 		sync()
@@ -167,9 +167,9 @@ func extra_parameters(inputs: Dictionary, keys: Array) -> void:
 		if key == "thickness" and host.lesson == "snell": style = ["length", "Window thickness", "mm", "lesson-ruler"]
 		if not widgets.has(key): instrument(key, inputs[key], style[0], style[1], style[2])
 
-func picker(source: OptionButton) -> void:
+func picker(source: OptionButton, minimum_width: float = 144) -> void:
 	var copy := OptionButton.new()
-	copy.custom_minimum_size.x = 144
+	copy.custom_minimum_size.x = minimum_width
 	copy.fit_to_longest_item = false
 	copy.clip_text = true
 	var short_names: Dictionary = {"Solve pressure · rigid volume": "Fixed volume", "Solve volume · fixed pressure": "Fixed pressure", "Real-gas throttle · h constant": "Real throttle", "Ideal-gas throttle · h constant": "Ideal throttle", "Ideal expansion with work · s constant": "Work expansion"}
@@ -239,6 +239,22 @@ func sync() -> void:
 				hint.text = "Warm the water; add salt"
 				instrument("temperature", host.slider, "temperature", "Temperature", "°C")
 				instrument("salinity", host.extra_sliders["salinity"], "salt", "Salt", "g/kg")
+	elif key in BathysTransportLessons.KINDS:
+		var view: BathysTransportLessons = host.transport_view
+		owner = view
+		diagram = view.diagram
+		control_nodes.append(view.control_bank)
+		notes(owner, [view.formula, view.explanation, view.assumptions, view.source_links])
+		var p: Dictionary = view.parameters()
+		hint.text = {"viscosity": "Drag the plate or its gap", "flow": "Drag the tube edges or flow arrow", "heat_transfer": "Change the layer, flow or surface finish", "thermal_properties": "Give both samples the same energy", "sound": "Drag the source or explore the chart"}[key]
+		if key == "sound" and int(p["stage"]) == 0: hint.text = "Drag the diver to change distance"
+		for spec: Array in view.instruments(): instrument(spec[0], view.inputs[spec[0]], spec[1], spec[2], spec[3])
+		if key in ["viscosity", "flow"] or key == "heat_transfer" and int(p["stage"]) != 2: picker(view.medium_picker)
+		elif key == "thermal_properties":
+			picker(view.material_picker)
+			if int(p["stage"]) == 0: picker(view.basis_picker, 300)
+		elif key == "sound" and int(p["stage"]) == 1: picker(view.boundary_picker)
+		if view.uses_mixture(): mixture(view.inputs["oxygen"], view.inputs["helium"])
 	elif key in BathysThermalLessons.KINDS:
 		var view: BathysThermalLessons = host.thermal_view
 		owner = view
