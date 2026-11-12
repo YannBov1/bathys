@@ -17,6 +17,7 @@ var world: Node3D
 var camera: Camera3D
 var terrain_root: Node3D
 var route_root: Node3D
+var gpx_root: Node3D
 var marker_root: Node3D
 var diver: MeshInstance3D
 var hud: Control
@@ -116,6 +117,9 @@ func load_site(value: BathysSite, chosen_waterline: float) -> void:
 	route_root = Node3D.new()
 	route_root.name = "Planned route"
 	world.add_child(route_root)
+	gpx_root = Node3D.new()
+	gpx_root.name = "GPX map overlays"
+	world.add_child(gpx_root)
 	marker_root = Node3D.new()
 	marker_root.name = "Observed POIs"
 	world.add_child(marker_root)
@@ -132,9 +136,53 @@ func load_site(value: BathysSite, chosen_waterline: float) -> void:
 	print("BATHYS_TERRAIN_TRIANGLES=", triangle_count)
 
 func set_waterline(value: float) -> void:
+	if gpx_root != null: gpx_root.position.y += waterline - value
 	waterline = value
 	if terrain_root != null:
 		terrain_root.position.y = mesh_reference - waterline
+
+func set_gpx_overlays(overlays: Array[Dictionary]) -> void:
+	if gpx_root == null: return
+	for child: Node in gpx_root.get_children():
+		gpx_root.remove_child(child)
+		child.queue_free()
+	# Prepared coordinates share the import waterline; later waterline edits move this root.
+	for item: Dictionary in overlays:
+		if not item["visible"]: continue
+		var parent := Node3D.new()
+		parent.name = str(item["name"]).validate_node_name()
+		parent.position.y = float(item["waterline"]) - waterline - gpx_root.position.y
+		gpx_root.add_child(parent)
+		var paths: Array = item["geometry"]["paths"].duplicate()
+		for point: Vector3 in item["geometry"]["markers"]:
+			paths.append(PackedVector3Array([point - Vector3(0.8, 0, 0), point + Vector3(0.8, 0, 0)]))
+			paths.append(PackedVector3Array([point - Vector3(0, 0, 0.8), point + Vector3(0, 0, 0.8)]))
+		gpx_ribbon(paths, 0.65, BG, parent, -0.015)
+		gpx_ribbon(paths, 0.32, item["color"], parent, 0)
+
+func gpx_ribbon(paths: Array, radius: float, color: Color, parent: Node3D, lift: float) -> void:
+	var mesh := ImmediateMesh.new()
+	var started: bool = false
+	for path: PackedVector3Array in paths:
+		for i: int in range(1, path.size()):
+			var a: Vector3 = path[i - 1] + Vector3.UP * lift
+			var b: Vector3 = path[i] + Vector3.UP * lift
+			var direction := Vector3(b.x - a.x, 0, b.z - a.z)
+			if direction.length_squared() < 1e-10: continue
+			if not started:
+				mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+				started = true
+			var side: Vector3 = direction.normalized().cross(Vector3.UP) * radius
+			for point: Vector3 in [a - side, a + side, b - side, b - side, a + side, b + side]: mesh.surface_add_vertex(point)
+	if not started: return
+	mesh.surface_end()
+	var instance := MeshInstance3D.new()
+	instance.mesh = mesh
+	var mat: StandardMaterial3D = material(color)
+	mat.no_depth_test = false
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	instance.material_override = mat
+	parent.add_child(instance)
 
 func world_at(lat: float, lon: float, depth: float) -> Vector3:
 	var local: PackedFloat64Array = site.to_local(lat, lon)

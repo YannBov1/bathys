@@ -12,6 +12,7 @@ const BG := Color("071c29")
 
 var site: BathysSite
 var route: Array[Dictionary] = []
+var gpx_geometry: Array[Dictionary] = []
 var show_bathymetry: bool = false:
 	set(value):
 		show_bathymetry = value
@@ -111,6 +112,36 @@ func set_route(value: Array[Dictionary]) -> void:
 	route = value
 	queue_redraw()
 
+func set_gpx_overlays(overlays: Array[Dictionary]) -> void:
+	gpx_geometry.clear()
+	for item: Dictionary in overlays:
+		if not item["visible"]: continue
+		var paths: Array[PackedVector2Array] = []
+		for source: PackedFloat64Array in item["data"]["segments"]:
+			var points := PackedVector2Array()
+			for i: int in range(0, source.size(), 2): points.append((project(source[i], source[i + 1]) - map_origin()) / map_scale())
+			paths.append(points)
+		var markers := PackedVector2Array()
+		var source: PackedFloat64Array = item["data"]["points"]
+		for i: int in range(0, source.size(), 2): markers.append((project(source[i], source[i + 1]) - map_origin()) / map_scale())
+		gpx_geometry.append({"paths": paths, "markers": markers, "color": item["color"]})
+	queue_redraw()
+
+func draw_gpx_overlays() -> void:
+	for item: Dictionary in gpx_geometry:
+		var markers := PackedVector2Array()
+		for point: Vector2 in item["markers"]: markers.append(point * map_scale())
+		for raw: PackedVector2Array in item["paths"]:
+			var points := PackedVector2Array()
+			for point: Vector2 in raw: points.append(map_origin() + point * map_scale())
+			if points.size() == 1: markers.append(raw[0] * map_scale())
+			elif points.size() > 1:
+				draw_polyline(points, BG, 5, true)
+				draw_polyline(points, item["color"], 2.5, true)
+		for point: Vector2 in markers:
+			draw_circle(map_origin() + point, 5, BG)
+			draw_circle(map_origin() + point, 3, item["color"])
+
 func set_diver(lat: float, lon: float) -> void:
 	diver_lat = lat
 	diver_lon = lon
@@ -138,6 +169,7 @@ func _draw() -> void:
 		draw_set_transform_matrix(Transform2D(east - corner, south - corner, corner))
 		draw_texture_rect(overlay, Rect2(Vector2.ZERO, overlay.get_size()), false)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
+	draw_gpx_overlays()
 	var previous_lat: float = float(site.pois[0].get("latitudeDeg", site.origin_lat))
 	var previous_lon: float = float(site.pois[0].get("longitudeDeg", site.origin_lon))
 	for waypoint: Dictionary in route:

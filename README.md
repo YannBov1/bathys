@@ -2,6 +2,10 @@
 
 # Bathys Web
 
+## Licence
+
+Original application code and documentation are available under the [MIT licence](LICENSE). Third-party imagery, survey data, and optical datasets retain their own terms; the MIT licence does not grant rights to those materials. See the source attributions in the app and [optical data provenance](Data/Optics/PROVENANCE.md). Redistribution permission for the NavSurf survey data should be confirmed separately before publishing the repository or web export.
+
 Godot 4.7.2, typed GDScript, Compatibility renderer. This project exports with the **standard Godot editor**, without .NET or Godot C# support. It is educational software only and must not be used for real dive decisions. The app displays its warning and © swisstopo SWISSIMAGE attribution.
 
 ## Run and test
@@ -24,6 +28,10 @@ The Web preset does not package `Tools` or `Tests`. `Data/survey_grid.dat` is ex
 Packaged site JSON, satellite imagery, survey grid, bathymetry, and terrain tiles load from `res://`. The grid stores raw measured elevations and separately flagged interpolated small gap values; the rendered mesh uses the same display smoothing as the C# reference. The web app does not parse the full survey CSV or build the terrain and overlay pixel by pixel on launch.
 
 Plans persist in `user://plan.json`. Packaged POIs are read only. **SAVE** downloads a plan JSON file and keeps a backup in local `user://` storage. **LOAD** opens a plan file or the saved backup on this device. **EXPORT** downloads the current 2D or 3D map view as a JPG, with source attribution. The gear opens gas-limit settings; these are included in plan files and remembered as defaults for new scenarios on this device.
+
+**Settings → Map overlays** loads one or several local GPX files using the folder icon (Ctrl/Shift-select on desktop). Each file gets a colour and icon-only visibility/removal controls. GPX tracks, separate track segments, routes and standalone waypoints appear on satellite and bathymetry maps; 3D paths follow the prepared terrain mesh at a vertical offset of 1 m. Recorded GPX elevations are ignored. Portions outside terrain coverage remain available in 2D, with feedback in settings. Overlays last for the current app session, remain separate from the dive plan/history and appear in JPG exports when visible. Desktop file dialogs remember the last browsed folder for this app session, including after cancellation. Compatible browsers reuse a GPX picker ID and the last selected handle; other browsers use a reusable multi-file input and manage the folder themselves. The browser reads selected files locally; no upload is required. A batch imports valid files together and reports any failed files without discarding the successes. See [browser picker options](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker).
+
+Run `godot --headless --path . --script Tests/GpxOverlay.gd` for import/rendering integration checks; add `-- --visual --examples=C:/path/to/GPX` without `--headless` to render all supplied examples and English/French phone views. The parser accepts GPX 1.0/1.1 track/route/waypoint coordinates in WGS84, retains double precision and keeps segment boundaries. See the [GPX schema](https://www.topografix.com/GPX/1/1/) and [Godot XMLParser](https://docs.godotengine.org/en/stable/classes/class_xmlparser.html).
 
 Offline data preparation, when the source survey changes:
 

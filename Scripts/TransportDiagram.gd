@@ -9,6 +9,7 @@ var result: Dictionary = {}
 
 var stage: int = 0
 var phase: float = 0
+var plate_travel: float = 0
 var curve: Array[float] = []
 var reference_curve: Array[float] = []
 var plot_key: String = "temperature"
@@ -41,6 +42,7 @@ func graph() -> Rect2:
 func _process(delta: float) -> void:
 	if not is_visible_in_tree(): return
 	phase = fposmod(phase + delta * 0.4, 1.4)
+	if kind == "viscosity": plate_travel = fposmod(plate_travel + delta * float(params.get("speed", 0)) * 90, 24)
 	queue_redraw()
 
 func plate_y() -> float:
@@ -186,15 +188,25 @@ func draw_shear() -> void:
 			var x: float = 44 + fposmod(i / 5.0 + phase * float(params["speed"]) * f, 1) * (width - 100)
 			draw_circle(Vector2(x, y), 2, AQUA)
 		arrow(Vector2(52, y), Vector2(52 + f * float(params["speed"]) * 90, y), AQUA, 1)
-	draw_line(Vector2(35, 253), Vector2(width - 43, 253), MUTED, 6)
-	draw_line(Vector2(35, top), Vector2(width - 43, top), INK, 6)
+	draw_plate(Rect2(35, 252, width - 78, 12), 0, MUTED)
+	draw_plate(Rect2(35, top - 12, width - 78, 12), plate_travel, INK)
 	grip(Vector2(width - 65, top - 15))
 	grip(Vector2(width - 24, top), true)
 	var resistance: float = 20 + 70 * float(result["stress"]) / (float(result["stress"]) + 0.03)
-	arrow(Vector2(width - 50, top - 42), Vector2(width - 50 - resistance, top - 42), AMBER, 3)
+	if float(result["stress"]) > 0: arrow(Vector2(width - 50, top - 42), Vector2(width - 50 - resistance, top - 42), AMBER, 3)
 	value(Vector2(18, 94), float(result["properties"]["mu"]) * 1000, "mPa·s")
 	value(Vector2(18, 291), float(result["force"]) * 1000, "mN", AMBER)
 	words(Vector2(18, 316), tr("Kinematic viscosity: %.2f mm²/s") % (float(result["nu"]) * 1e6), MUTED, 11)
+
+func draw_plate(rect: Rect2, travel: float, color: Color) -> void:
+	draw_rect(rect, color)
+	# Clip each diagonal hatch to the plate; only the upper pattern translates.
+	for i: int in range(-1, ceili(rect.size.x / 24) + 1):
+		var x: float = i * 24 + travel
+		var start: float = maxf(0, -x / 8)
+		var end: float = minf(1, (rect.size.x - x) / 8)
+		if start < end:
+			draw_line(rect.position + Vector2(x + 8 * start, 12 * start), rect.position + Vector2(x + 8 * end, 12 * end), Color("345362"), 3, true)
 
 func draw_pipe() -> void:
 	title("Open the tube; change the flow")

@@ -21,6 +21,61 @@ var route_count_label: Label
 var settings_dialog: ConfirmationDialog
 var settings_inputs: Dictionary = {}
 var settings_route_inputs: Dictionary = {}
+var gpx_overlays: Array[Dictionary] = []
+var gpx_list: VBoxContainer
+var gpx_status: Label
+var gpx_callback: JavaScriptObject
+var next_gpx_color: int = 0
+var last_file_directory: String = ""
+var gpx_batch_active: bool = false
+var gpx_batch_loaded: int = 0
+var gpx_batch_errors: Array[String] = []
+var gpx_batch_filename: String = ""
+var gpx_batch_outside: bool = false
+var gpx_batch_skipped: int = 0
+
+const GPX_PICKER_SCRIPT := """
+(async () => {
+  const send = window.bathysGpxImport;
+  const readFiles = async (entries) => {
+    if (!entries.length) return;
+    const batch = entries.length > 1;
+    if (batch) send('', '', 'begin');
+    try {
+      for (const entry of entries) {
+        try {
+          const file = entry.getFile ? await entry.getFile() : entry;
+          if (file.size > 10485760) { send('', file.name, 'large'); continue; }
+          send(await file.text(), file.name, '');
+        } catch (e) { send('', entry.name, 'read'); }
+      }
+    } finally { if (batch) send('', '', 'end'); }
+  };
+  if (window.showOpenFilePicker && window.isSecureContext) {
+    let handles;
+    try {
+      const options = {id: 'bathys-gpx', multiple: true,
+        types: [{description: 'GPX', accept: {'application/gpx+xml': ['.gpx']}}]};
+      if (window.bathysGpxStartIn) options.startIn = window.bathysGpxStartIn;
+      handles = await window.showOpenFilePicker(options);
+    } catch (e) { if (e.name === 'AbortError') return; }
+    if (handles) {
+      if (handles.length) window.bathysGpxStartIn = handles[0];
+      await readFiles(handles);
+      return;
+    }
+  }
+  // Keep the same fallback input for repeat selections; its folder is browser-managed.
+  let input = document.getElementById('bathys-gpx-input');
+  if (!input) {
+    input = document.createElement('input'); input.id = 'bathys-gpx-input';
+    input.type = 'file'; input.style.display = 'none'; document.body.appendChild(input);
+  }
+  input.multiple = true; input.accept = '.gpx,application/gpx+xml'; input.value = '';
+  input.onchange = () => readFiles(Array.from(input.files));
+  input.click();
+})();
+"""
 var left_divider: BathysPanelDivider
 var right_divider: BathysPanelDivider
 var tank_panel_width: float = 275
@@ -547,6 +602,7 @@ func show_3d() -> void:
 		lake.pick_rejected.connect(func(message: String) -> void: status_label.text = message)
 		view_container.add_child(lake)
 		lake.load_site(site, float((plan["environment"] as Dictionary)["waterlineAltitudeNf02M"]))
+		lake.set_gpx_overlays(gpx_overlays)
 		var compass := BathysCompass.new()
 		compass.lake = lake
 		lake.hud.add_child(compass)
@@ -1380,6 +1436,7 @@ func export_plan() -> void:
 		chooser.filters = PackedStringArray([tr("*.json ; JSON plans")])
 		chooser.current_file = str(plan.get("name", "bathys-plan")).validate_filename() + ".json"
 		add_child(chooser)
+		configure_file_directory(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
 			var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 			if file != null:
@@ -1404,6 +1461,7 @@ func import_plan() -> void:
 		chooser.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		chooser.filters = PackedStringArray([tr("*.json ; JSON plans")])
 		add_child(chooser)
+		configure_file_directory(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
 			accept_plan(FileAccess.get_file_as_string(path))
 			chooser.queue_free())
@@ -1627,12 +1685,48 @@ func open_settings() -> void:
 	settings_dialog.title = "Settings"
 	settings_dialog.ok_button_text = "Apply"
 	settings_dialog.dialog_hide_on_ok = false
+	# Both pages scroll internally; their contents must not grow the modal beyond the screen.
+	settings_dialog.wrap_controls = false
 	add_child(settings_dialog)
 	settings_inputs.clear()
 	settings_route_inputs.clear()
+	var tabs := TabContainer.new()
+	tabs.name = "SettingsTabs"
+	tabs.custom_minimum_size = Vector2(350, mini(500, maxi(300, int(get_viewport_rect().size.y) - 140)))
+	settings_dialog.add_child(tabs)
+	var scroll := ScrollContainer.new()
+	scroll.name = "Dive settings"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tabs.add_child(scroll)
 	var body := VBoxContainer.new()
 	body.custom_minimum_size.x = 330
-	settings_dialog.add_child(body)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(body)
+	var overlays := VBoxContainer.new()
+	overlays.name = "Map overlays"
+	tabs.add_child(overlays)
+	var overlay_heading := HBoxContainer.new()
+	overlays.add_child(overlay_heading)
+	var overlay_title: Label = make_label("GPX overlays", 16, AQUA)
+	overlay_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	overlay_heading.add_child(overlay_title)
+	var load_gpx: Button = icon_button("folder", "Load GPX", import_gpx)
+	load_gpx.name = "LoadGpx"
+	overlay_heading.add_child(load_gpx)
+	overlays.add_child(BathysUiStyle.wrapped("3D: 1 m above the terrain. GPX elevations are ignored.", 12))
+	var overlay_scroll := ScrollContainer.new()
+	overlay_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	overlay_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	overlays.add_child(overlay_scroll)
+	gpx_list = VBoxContainer.new()
+	gpx_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	overlay_scroll.add_child(gpx_list)
+	gpx_status = BathysUiStyle.wrapped("", 12)
+	overlays.add_child(gpx_status)
+	refresh_gpx_list()
+	tabs.tab_changed.connect(func(index: int) -> void:
+		settings_dialog.ok_button_text = "Apply" if index == 0 else "Done"
+		settings_dialog.get_cancel_button().visible = index == 0)
 	body.add_child(make_label("GAS LIMITS", 16, AQUA))
 	body.add_child(BathysUiStyle.wrapped("Oxygen limits control simulation checks. Density and END limits control the physiology warning bands."))
 	var grid := GridContainer.new()
@@ -1682,6 +1776,9 @@ func open_settings() -> void:
 		settings_dialog.hide()
 		new_plan()))
 	settings_dialog.confirmed.connect(func() -> void:
+		if tabs.current_tab == 1:
+			settings_dialog.hide()
+			return
 		var edited: Dictionary = {}
 		for key: String in settings_inputs:
 			var input: SpinBox = settings_inputs[key]
@@ -1708,12 +1805,180 @@ func open_settings() -> void:
 		if child is Label:
 			(child as Label).custom_minimum_size.x = 330
 			(child as Label).size.x = 330
-	settings_dialog.popup_centered(Vector2i(380, 590))
+	var dialog_size := Vector2i(380, mini(590, int(get_viewport_rect().size.y) - 24))
+	settings_dialog.popup_centered(dialog_size)
 	await get_tree().process_frame
 	if is_instance_valid(settings_dialog):
+		tabs.reset_size()
 		settings_dialog.reset_size()
-		settings_dialog.size = Vector2i(380, 590)
+		settings_dialog.size = dialog_size
 		settings_dialog.position = (Vector2i(get_viewport_rect().size) - settings_dialog.size) / 2
+
+func import_gpx() -> void:
+	if gpx_batch_active: return
+	if OS.has_feature("web"):
+		gpx_callback = JavaScriptBridge.create_callback(on_gpx_callback)
+		JavaScriptBridge.get_interface("window").bathysGpxImport = gpx_callback
+		JavaScriptBridge.eval(GPX_PICKER_SCRIPT, true)
+	else:
+		var chooser := FileDialog.new()
+		chooser.name = "GpxFileChooser"
+		chooser.title = "Load GPX"
+		chooser.access = FileDialog.ACCESS_FILESYSTEM
+		chooser.file_mode = FileDialog.FILE_MODE_OPEN_FILES
+		chooser.filters = PackedStringArray([tr("*.gpx ; GPX tracks")])
+		settings_dialog.add_child(chooser)
+		configure_file_directory(chooser)
+		chooser.files_selected.connect(func(paths: PackedStringArray) -> void:
+			load_gpx_files(paths)
+			chooser.queue_free())
+		chooser.canceled.connect(func() -> void: chooser.queue_free())
+		chooser.popup_centered_ratio(0.8)
+
+func on_gpx_callback(args: Array) -> void:
+	if args.size() >= 3:
+		if str(args[2]) == "begin":
+			begin_gpx_batch()
+			return
+		if str(args[2]) == "end":
+			finish_gpx_batch()
+			return
+		gpx_batch_filename = str(args[1]).get_file()
+	if args.size() < 3 or str(args[2]) == "read":
+		gpx_message("Could not read this GPX file.", true)
+	elif str(args[2]) == "large":
+		gpx_message("GPX file is too large (maximum 10 MB).", true)
+	else: accept_gpx(str(args[0]), str(args[1]))
+
+func configure_file_directory(chooser: FileDialog) -> void:
+	if not last_file_directory.is_empty() and DirAccess.dir_exists_absolute(last_file_directory):
+		chooser.current_dir = last_file_directory
+	chooser.file_selected.connect(func(path: String) -> void: last_file_directory = path.get_base_dir())
+	chooser.files_selected.connect(func(paths: PackedStringArray) -> void:
+		if not paths.is_empty(): last_file_directory = paths[0].get_base_dir())
+	chooser.canceled.connect(func() -> void: last_file_directory = chooser.current_dir)
+
+func load_gpx_files(paths: PackedStringArray) -> void:
+	if paths.is_empty(): return
+	if paths.size() == 1:
+		load_gpx_file(paths[0])
+		return
+	begin_gpx_batch()
+	for path: String in paths:
+		gpx_batch_filename = path.get_file()
+		load_gpx_file(path)
+	finish_gpx_batch()
+
+func begin_gpx_batch() -> void:
+	gpx_batch_active = true
+	gpx_batch_loaded = 0
+	gpx_batch_errors.clear()
+	gpx_batch_outside = false
+	gpx_batch_skipped = 0
+
+func finish_gpx_batch() -> void:
+	if not gpx_batch_active: return
+	gpx_batch_active = false
+	if gpx_batch_loaded > 0:
+		refresh_gpx_maps()
+		refresh_gpx_list()
+	var message: String = tr("Loaded GPX files: %d") % gpx_batch_loaded
+	if gpx_batch_skipped > 0: message += "\n" + tr("Invalid coordinates skipped: %d") % gpx_batch_skipped
+	if gpx_batch_outside: message += "\n" + tr("Outside terrain coverage: shown in 2D only.")
+	if not gpx_batch_errors.is_empty():
+		message += "\n" + tr("GPX files not loaded: %d") % gpx_batch_errors.size()
+		message += "\n" + "\n".join(gpx_batch_errors.slice(0, 3))
+	gpx_message(message, not gpx_batch_errors.is_empty())
+	if is_instance_valid(gpx_status): gpx_status.tooltip_text = "\n".join(gpx_batch_errors)
+
+func load_gpx_file(path: String) -> bool:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		gpx_message("Could not read this GPX file.", true)
+		return false
+	if file.get_length() > BathysGpxOverlay.MAX_BYTES:
+		gpx_message("GPX file is too large (maximum 10 MB).", true)
+		return false
+	return accept_gpx(file.get_as_text(), path.get_file())
+
+func accept_gpx(text: String, filename: String = "Track.gpx") -> bool:
+	var data: Dictionary = BathysGpxOverlay.parse(text)
+	if not str(data["error"]).is_empty():
+		gpx_message(data["error"], true)
+		return false
+	var waterline: float = float(plan["environment"]["waterlineAltitudeNf02M"])
+	var geometry: Dictionary = BathysGpxOverlay.prepare(data, site, waterline)
+	if not str(geometry["error"]).is_empty():
+		gpx_message(geometry["error"], true)
+		return false
+	var item := {"name": filename.get_file(), "data": data, "geometry": geometry, "waterline": waterline,
+		"visible": true, "color": BathysGpxOverlay.COLORS[next_gpx_color % BathysGpxOverlay.COLORS.size()]}
+	next_gpx_color += 1
+	gpx_overlays.append(item)
+	if gpx_batch_active:
+		gpx_batch_loaded += 1
+		gpx_batch_outside = gpx_batch_outside or bool(geometry["outside"])
+		gpx_batch_skipped += int(data["skipped"])
+	else:
+		refresh_gpx_maps()
+		refresh_gpx_list()
+	var message: String = tr("Loaded %s · %d points") % [item["name"], data["point_count"]]
+	if int(data["skipped"]) > 0: message += "\n" + tr("Invalid coordinates skipped: %d") % int(data["skipped"])
+	if geometry["outside"]: message += "\n" + tr("Outside terrain coverage: shown in 2D only.")
+	gpx_message(message)
+	return true
+
+func gpx_message(message: String, error: bool = false) -> void:
+	if gpx_batch_active:
+		if error: gpx_batch_errors.append(gpx_batch_filename + ": " + tr(message))
+		return
+	status_label.text = tr(message)
+	if is_instance_valid(gpx_status):
+		gpx_status.tooltip_text = ""
+		gpx_status.text = tr(message)
+		gpx_status.add_theme_color_override("font_color", RED if error else BathysUiStyle.MUTED)
+
+func refresh_gpx_maps() -> void:
+	map.set_gpx_overlays(gpx_overlays)
+	if lake != null: lake.set_gpx_overlays(gpx_overlays)
+
+func set_gpx_visible(index: int, visible: bool) -> void:
+	if index < 0 or index >= gpx_overlays.size(): return
+	gpx_overlays[index]["visible"] = visible
+	refresh_gpx_maps()
+	refresh_gpx_list()
+
+func remove_gpx(index: int) -> void:
+	if index < 0 or index >= gpx_overlays.size(): return
+	gpx_overlays.remove_at(index)
+	refresh_gpx_maps()
+	refresh_gpx_list()
+	if is_instance_valid(gpx_status): gpx_status.text = ""
+
+func refresh_gpx_list() -> void:
+	if not is_instance_valid(gpx_list): return
+	clear_children(gpx_list)
+	if gpx_overlays.is_empty():
+		gpx_list.add_child(BathysUiStyle.wrapped("Load a GPX file to display it on the map.", 12))
+	for index: int in gpx_overlays.size():
+		var item: Dictionary = gpx_overlays[index]
+		var row := HBoxContainer.new()
+		gpx_list.add_child(row)
+		var swatch := ColorRect.new()
+		swatch.custom_minimum_size.x = 4
+		swatch.color = item["color"]
+		row.add_child(swatch)
+		var caption := make_label(item["name"], 12)
+		caption.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		caption.tooltip_text = item["name"]
+		row.add_child(caption)
+		var eye: Button = icon_button("lesson-eye", "Show/hide GPX", func() -> void: set_gpx_visible(index, not bool(item["visible"])))
+		eye.add_theme_constant_override("icon_max_width", 20)
+		eye.toggle_mode = true
+		eye.set_pressed_no_signal(item["visible"])
+		row.add_child(eye)
+		row.add_child(icon_button("trash", "Remove GPX", func() -> void: remove_gpx(index)))
 
 func apply_limits(limits: Dictionary, persist: bool = true, route_defaults: Dictionary = {}) -> bool:
 	if route_defaults.is_empty():
@@ -1791,6 +2056,7 @@ func export_map_jpg() -> void:
 		chooser.filters = PackedStringArray([tr("*.jpg ; JPEG map view")])
 		chooser.current_file = filename
 		add_child(chooser)
+		configure_file_directory(chooser)
 		chooser.file_selected.connect(func(path: String) -> void:
 			var file := FileAccess.open(path, FileAccess.WRITE)
 			if file != null:

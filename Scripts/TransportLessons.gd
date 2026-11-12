@@ -119,6 +119,7 @@ func activate(topic: String) -> void:
 		source_links.get_child(i).visible = (kind == "sound") if i == 3 else (kind in ["heat_transfer", "thermal_properties"] if i == 2 else kind in ["viscosity", "flow", "heat_transfer", "thermal_properties"])
 	var p: Dictionary = parameters()
 	for input: HSlider in inputs.values(): input.set_block_signals(true)
+	(inputs["speed"] as HSlider).min_value = 0 if kind == "viscosity" else 0.01
 	(inputs["temperature"] as HSlider).max_value = 30 if kind == "heat_transfer" else (34 if kind == "sound" and int(p["stage"]) == 2 else 35)
 	(inputs["range"] as HSlider).max_value = 1000 if kind == "sound" and int(p["stage"]) == 2 else (20 if kind == "sound" and int(p["stage"]) == 3 else 100)
 	(inputs["energy"] as HSlider).step = 0.01 if int(p["basis"]) == 1 else 1
