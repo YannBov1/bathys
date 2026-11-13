@@ -37,6 +37,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 900)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await layout()
 	var bounds: Rect2 = app.content_box.get_global_rect()
 	var y: float = app.left_divider.get_global_rect().get_center().y

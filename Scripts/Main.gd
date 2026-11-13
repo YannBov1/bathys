@@ -13,7 +13,10 @@ var workspace_switch: BathysWorkspaceSwitch
 var learning_view: BathysLearningView
 var learning_mode: bool = false
 var planning_header_controls: Array[Control] = []
-var planning_footer: Label
+var educational_notice: BathysEducationalNotice
+var educational_shade: ColorRect
+var educational_use_acknowledged: bool = false
+var touch_cancel_callback: JavaScriptObject
 var page_scroll: ScrollContainer
 var workspace_scroll: Array[int] = [0, 0]
 var language_button: Button
@@ -180,6 +183,28 @@ func _ready() -> void:
 	request_simulation()
 	get_viewport().size_changed.connect(adapt_layout)
 	call_deferred("adapt_layout")
+	show_educational_notice()
+
+func show_educational_notice() -> void:
+	if not is_instance_valid(educational_notice):
+		educational_shade = ColorRect.new()
+		educational_shade.color = Color(0, 0, 0, 0.55)
+		educational_shade.z_index = 500
+		educational_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		educational_shade.hide()
+		add_child(educational_shade)
+		educational_notice = BathysEducationalNotice.new()
+		add_child(educational_notice)
+		educational_notice.visibility_changed.connect(func() -> void:
+			if is_instance_valid(educational_shade): educational_shade.visible = educational_notice.visible)
+		educational_notice.agreed.connect(acknowledge_educational_use)
+		educational_notice.canceled.connect(func() -> void:
+			if not educational_use_acknowledged: educational_notice.show_notice.call_deferred(true))
+	educational_notice.show_notice(not educational_use_acknowledged)
+
+func acknowledge_educational_use() -> void:
+	educational_use_acknowledged = true
+	if is_instance_valid(educational_notice): educational_notice.hide()
 
 func _process(delta: float) -> void:
 	if not route_drag_id.is_empty():
@@ -530,10 +555,6 @@ func build_ui() -> void:
 		jump.add_theme_font_size_override("font_size", 11)
 		plot_buttons.add_child(jump)
 	graph = graphs[0]
-	var warning := make_label("EDUCATIONAL SOFTWARE ONLY · Do not use for real dive decisions. Survey datum and water level require confirmation. © swisstopo SWISSIMAGE", 11, AMBER)
-	warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(warning)
-	planning_footer = warning
 	learning_view = BathysLearningView.new()
 	learning_view.hide()
 	shell.add_child(learning_view)
@@ -541,6 +562,19 @@ func build_ui() -> void:
 	set_playback_available(false)
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("window.addEventListener('beforeunload', function(e) { if(window.bathysHasChanges) { e.preventDefault(); e.returnValue = ''; } });", true)
+		# The web template reports touchcancel as a release. Clear map contacts
+		# in capture phase, before that release could become an inspection tap.
+		touch_cancel_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: cancel_map_navigation())
+		JavaScriptBridge.get_interface("window").bathysCancelMapGestures = touch_cancel_callback
+		JavaScriptBridge.eval("document.getElementById('canvas').addEventListener('touchcancel', () => window.bathysCancelMapGestures(), {capture: true, passive: true});", true)
+
+func cancel_map_navigation() -> void:
+	map.navigation.clear()
+	map.dragging = false
+	if lake != null:
+		lake.navigation.clear()
+		lake.dragging = false
+		lake.panning = false
 
 func set_learning_mode(enabled: bool) -> void:
 	if learning_mode == enabled:
@@ -557,7 +591,6 @@ func set_learning_mode(enabled: bool) -> void:
 		play_button.text = "PLAY"
 	content_box.visible = not enabled
 	bottom_panel.visible = not enabled
-	planning_footer.visible = not enabled
 	for control: Control in planning_header_controls:
 		control.visible = not enabled
 	learning_view.visible = enabled
@@ -588,7 +621,8 @@ func set_bathymetry(enabled: bool) -> void:
 	map.show_bathymetry = enabled
 	view_label.text = ""
 	update_view_buttons("BATHYMETRY" if enabled else "SATELLITE")
-	view_hint.text = "Drag to pan · Wheel to zoom · Click a point to inspect"
+	view_hint.text = "Drag / two fingers to pan · Pinch / wheel to zoom · Tap a point to inspect"
+	view_hint.tooltip_text = ""
 	fps_context = "2D"
 	fps_samples.clear()
 
@@ -620,7 +654,8 @@ func show_3d() -> void:
 	lake.viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	view_label.text = ""
 	update_view_buttons("3D")
-	view_hint.text = "Drag to orbit · Right drag to pan · Wheel to zoom · Click to inspect · Warm relief: steep slopes · Contours: 5 m"
+	view_hint.text = "One finger / drag to orbit · Two fingers / Shift-drag to pan · Pinch / wheel to zoom · Twist to rotate"
+	view_hint.tooltip_text = "Warm relief: steep slopes · Contours: 5 m"
 
 func home_view() -> void:
 	if view_3d and lake != null:
@@ -1564,6 +1599,7 @@ func inspect_location(location: Dictionary, interpolated: bool) -> void:
 	inspection.position = at
 
 func _on_inspection_outside_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.device == -1: return
 	if (event is InputEventMouseButton and not event.pressed) or (event is InputEventScreenTouch and not event.pressed):
 		dismiss_inspection()
 		inspection_overlay.accept_event()
@@ -1775,6 +1811,9 @@ func open_settings() -> void:
 	body.add_child(make_button("New empty scenario", func() -> void:
 		settings_dialog.hide()
 		new_plan()))
+	body.add_child(make_button("Educational use and limitations", func() -> void:
+		settings_dialog.hide()
+		show_educational_notice()))
 	settings_dialog.confirmed.connect(func() -> void:
 		if tabs.current_tab == 1:
 			settings_dialog.hide()

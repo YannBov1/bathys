@@ -32,6 +32,7 @@ var dragging: bool = false
 var moved: bool = false
 var diver_lat: float = NAN
 var diver_lon: float = NAN
+var navigation := BathysMapGesture.new()
 
 func set_waterline(elevation: float) -> void:
 	if site == null or absf(site.waterline - elevation) < 1e-6:
@@ -69,6 +70,10 @@ func _ready() -> void:
 	name = "Offline satellite map"
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	clip_contents = true
+	navigation.single_drag.connect(pan_pixels)
+	navigation.pan.connect(pan_pixels)
+	navigation.magnify.connect(zoom_at)
+	navigation.tap.connect(click_map)
 	resized.connect(queue_redraw)
 	var meta: Dictionary = BathysSite.read_json("res://Data/site_satellite.json")
 	zoom = int(meta.get("zoom", 18))
@@ -104,6 +109,8 @@ func unproject(screen: Vector2) -> PackedFloat64Array:
 	return PackedFloat64Array([rad_to_deg(atan(sinh(PI * (1.0 - 2.0 * y / tiles)))), x / tiles * 360.0 - 180.0])
 
 func reset_view() -> void:
+	navigation.clear()
+	dragging = false
 	magnification = 1.0
 	pan = Vector2.ZERO
 	queue_redraw()
@@ -258,13 +265,29 @@ func draw_poi_labels() -> void:
 		draw_circle(points[i],6 if i==0 else 4,AMBER if i==0 else AQUA)
 
 func _gui_input(event: InputEvent) -> void:
+	if navigation.handle(event):
+		dragging = false
+		accept_event()
+		return
+	if event is InputEventMagnifyGesture:
+		if navigation.accept_native_gesture(event) and navigation.touches.is_empty(): zoom_at(event.factor, event.position)
+		accept_event()
+		return
+	if event is InputEventPanGesture:
+		if navigation.accept_native_gesture(event) and navigation.touches.is_empty(): pan_pixels(-event.delta * 12)
+		accept_event()
+		return
+	# Touch is handled above; ignore its synthetic mouse copy.
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == -1:
+		accept_event()
+		return
 	if event is InputEventMouseButton:
 		var mouse: InputEventMouseButton = event as InputEventMouseButton
-		if mouse.pressed and (mouse.button_index == MOUSE_BUTTON_WHEEL_UP or mouse.button_index == MOUSE_BUTTON_WHEEL_DOWN):
-			var before: Vector2 = (mouse.position - map_origin()) / map_scale()
-			magnification = clampf(magnification * (1.16 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.16), 0.6, 8.0)
-			pan = mouse.position - (size - image_size() * map_scale()) / 2.0 - before * map_scale()
-			queue_redraw()
+		if mouse.pressed and mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+			var amount: float = clampf(absf(mouse.factor), 0.01, 8)
+			if mouse.shift_pressed or mouse.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+				pan_pixels(BathysMapGesture.wheel_pan(mouse))
+			else: zoom_at(pow(1.16, amount * (1 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else -1)), mouse.position)
 			accept_event()
 			return
 		if mouse.button_index == MOUSE_BUTTON_LEFT or mouse.button_index == MOUSE_BUTTON_RIGHT or mouse.button_index == MOUSE_BUTTON_MIDDLE:
@@ -288,6 +311,17 @@ func _gui_input(event: InputEvent) -> void:
 		last = motion.position
 		accept_event()
 
+func pan_pixels(delta: Vector2) -> void:
+	pan += delta
+	queue_redraw()
+
+func zoom_at(factor: float, at: Vector2) -> void:
+	if not is_finite(factor) or factor <= 0: return
+	var before: Vector2 = (at - map_origin()) / map_scale()
+	magnification = clampf(magnification * factor, 0.6, 8)
+	pan = at - (size - image_size() * map_scale()) / 2 - before * map_scale()
+	queue_redraw()
+
 func click_map(point: Vector2) -> void:
 	for poi: Dictionary in site.pois:
 		if project(float(poi.get("latitudeDeg", 0.0)), float(poi.get("longitudeDeg", 0.0))).distance_to(point) < 13.0:
@@ -302,5 +336,8 @@ func click_map(point: Vector2) -> void:
 
 
 func _notification(what: int) -> void:
+	if what in [NOTIFICATION_VISIBILITY_CHANGED, NOTIFICATION_WM_WINDOW_FOCUS_OUT]:
+		navigation.clear()
+		dragging = false
 	if what == NOTIFICATION_TRANSLATION_CHANGED:
 		queue_redraw()

@@ -53,6 +53,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 1400)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	var example: Dictionary = BathysPlan.example(app.site)
 	var last: Dictionary = BathysPlan.waypoint_at_poi(app.site.pois[2])

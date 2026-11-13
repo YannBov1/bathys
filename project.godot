@@ -28,6 +28,10 @@ I18n="*res://Scripts/I18n.gd"
 
 locale/fallback="en"
 
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
 [display]
 
 window/size/viewport_width=1600

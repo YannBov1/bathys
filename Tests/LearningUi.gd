@@ -53,6 +53,7 @@ func run() -> void:
 	localization.set_language("en", false)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	check(not app.learning_mode and not app.learning_view.visible, "dive workspace is the default")
 	check(app.workspace_switch.text.is_empty() and app.workspace_switch.tooltip_text == "Open learning workspace", "header switch has icons and a descriptive tooltip")

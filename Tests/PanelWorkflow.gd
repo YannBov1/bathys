@@ -17,6 +17,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 900)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	var original_width: float = app.view_container.size.x
 	app.toggle_side_panel(true)

@@ -17,6 +17,7 @@ func run() -> void:
 	root.get_node("I18n").set_language("en", false)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	app.plan = BathysPlan.example(app.site)
 	app.refresh_all()

@@ -19,6 +19,7 @@ func wait_for_simulation(app: Control) -> void:
 func run() -> void:
 	var app: Control = load("res://Main.tscn").instantiate() as Control
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	app.plan = BathysPlan.example(app.site)
 	app.refresh_all()
 	app.request_simulation()

@@ -10,6 +10,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 1000)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await process_frame
 	app.plan = BathysPlan.example(app.site)
 	app.plan["waypoints"] = [app.plan["waypoints"][0], BathysPlan.hold("Hold", 30), BathysPlan.gas_switch("stage", "Switch to Stage")]

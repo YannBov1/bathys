@@ -32,6 +32,7 @@ func run() -> void:
 	check(cuts.size() == 5, "long track legs split at every crossed mesh boundary")
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	app.learning_view.presentation.note_button.button_pressed = false
 	var plan_before: String = JSON.stringify(app.plan)

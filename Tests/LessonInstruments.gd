@@ -6,6 +6,7 @@ func run() -> void:
 	localization.set_language("en", false)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	var view: BathysLearningView = app.learning_view
 	var ui: BathysLessonPresentation = view.presentation
 	check(ui.chart_button.button_pressed, "linked charts start enabled")

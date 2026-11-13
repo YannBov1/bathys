@@ -27,6 +27,7 @@ func run_checks() -> void:
 	check(bool(cancelled.get("cancelled", false)), "superseded calculation cancels at next batch")
 	var app: Control = load("res://Main.tscn").instantiate() as Control
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	app.plan = BathysPlan.example(app.site)
 	app.refresh_all()
 	app.request_simulation()

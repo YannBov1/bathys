@@ -10,6 +10,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 900)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await process_frame
 	app.adapt_layout()
 	await capture("res://Screenshots/ux-empty.png")

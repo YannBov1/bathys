@@ -79,6 +79,7 @@ func run() -> void:
 	localization.set_language("en", false)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	var before: String = JSON.stringify(app.plan)
 	var history: int = app.undo_stack.size()

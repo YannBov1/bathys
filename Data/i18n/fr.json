@@ -1034,5 +1034,12 @@
   "Outside terrain coverage: shown in 2D only.": "Hors couverture du terrain : affichage en 2D uniquement.",
   "Done": "Terminé",
   "Loaded GPX files: %d": "Fichiers GPX chargés : %d",
-  "GPX files not loaded: %d": "Fichiers GPX non chargés : %d"
+  "GPX files not loaded: %d": "Fichiers GPX non chargés : %d",
+  "Educational use only": "Usage pédagogique uniquement",
+  "I understand and agree": "Je comprends et j’accepte",
+  "Educational use and limitations": "Usage pédagogique et limites",
+  "Bathys is an educational simulator.\n\nDo not use this app to plan, validate or carry out a real dive. Calculations, maps and examples may contain errors and omit real-world conditions.\n\nSurvey elevations and the water level are illustrative. This app does not replace training, certified equipment or professional guidance.": "Bathys est un simulateur pédagogique.\n\nN’utilisez pas cette application pour planifier, valider ou effectuer une plongée réelle. Les calculs, cartes et exemples peuvent contenir des erreurs et omettre des conditions réelles.\n\nLes altitudes du relevé et le niveau de l’eau sont indicatifs. Cette application ne remplace ni une formation, ni un équipement certifié, ni un encadrement professionnel.",
+  "Drag / two fingers to pan · Pinch / wheel to zoom · Tap a point to inspect": "Glissez / deux doigts pour déplacer · Pincez / molette pour zoomer · Touchez un point pour l’inspecter",
+  "One finger / drag to orbit · Two fingers / Shift-drag to pan · Pinch / wheel to zoom · Twist to rotate": "Un doigt / glisser pour orbiter · Deux doigts / Maj-glisser pour déplacer · Pincer / molette pour zoomer · Tourner les doigts pour pivoter",
+  "Warm relief: steep slopes · Contours: 5 m": "Relief chaud : pentes fortes · Courbes : 5 m"
 }

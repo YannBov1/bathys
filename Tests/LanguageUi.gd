@@ -27,6 +27,7 @@ func run() -> void:
 	localization.set_language("en", false)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await settle(app)
 	check(app.language_button.icon.resource_path.ends_with("flag-en.svg"), "English flag is shown initially")
 	app.on_poi_clicked(app.site.pois[1])

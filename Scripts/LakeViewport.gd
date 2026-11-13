@@ -32,12 +32,19 @@ var dragging: bool = false
 var panning: bool = false
 var moved: bool = false
 var last_mouse: Vector2 = Vector2.ZERO
+var mouse_origin: Vector2 = Vector2.ZERO
 var triangle_count: int = 0
+var navigation := BathysMapGesture.new()
 
 func _ready() -> void:
 	name = "3D lake view"
 	stretch = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	navigation.single_drag.connect(orbit_pixels)
+	navigation.pan.connect(pan_pixels)
+	navigation.magnify.connect(func(factor: float, _at: Vector2) -> void: zoom_by(factor))
+	navigation.rotate.connect(func(angle: float) -> void: yaw += angle; update_camera())
+	navigation.tap.connect(pick)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	resized.connect(update_labels)
@@ -73,6 +80,14 @@ func _ready() -> void:
 	hud.clip_contents = true
 	hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	add_child(hud)
+	var credit := Label.new()
+	credit.text = "NavSurf 2015 · © swisstopo SWISSIMAGE"
+	credit.add_theme_font_size_override("font_size", 10)
+	credit.add_theme_color_override("font_color", Color("91b6b9"))
+	credit.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(credit)
+	credit.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	credit.position = Vector2(8, -20)
 	update_camera()
 
 func _process(_delta: float) -> void:
@@ -323,6 +338,9 @@ func update_camera() -> void:
 	update_labels()
 
 func reset_view() -> void:
+	navigation.clear()
+	dragging = false
+	panning = false
 	target = Vector3(40.0, -16.0, 40.0)
 	distance = 155.0
 	yaw = 0.35
@@ -336,21 +354,42 @@ func focus_poi(poi: Dictionary) -> void:
 	update_camera()
 
 func _gui_input(event: InputEvent) -> void:
+	if navigation.handle(event):
+		dragging = false
+		panning = false
+		accept_event()
+		return
+	if event is InputEventMagnifyGesture:
+		if navigation.accept_native_gesture(event) and navigation.touches.is_empty(): zoom_by(event.factor)
+		accept_event()
+		return
+	if event is InputEventPanGesture:
+		if navigation.accept_native_gesture(event) and navigation.touches.is_empty():
+			if event.alt_pressed: orbit_pixels(event.delta * 12)
+			else: pan_pixels(-event.delta * 12)
+		accept_event()
+		return
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == -1:
+		accept_event()
+		return
 	if event is InputEventMouseButton:
 		var mouse: InputEventMouseButton = event as InputEventMouseButton
-		if mouse.pressed and (mouse.button_index == MOUSE_BUTTON_WHEEL_UP or mouse.button_index == MOUSE_BUTTON_WHEEL_DOWN):
-			distance = clampf(distance * (0.86 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else 1.16), 22.0, 1250.0)
-			update_camera()
+		if mouse.pressed and mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+			var amount: float = clampf(absf(mouse.factor), 0.01, 8)
+			if mouse.shift_pressed or mouse.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+				pan_pixels(BathysMapGesture.wheel_pan(mouse))
+			else: zoom_by(pow(1.16, amount * (1 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else -1)))
 			accept_event()
 			return
 		if mouse.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
 			if mouse.pressed:
-				dragging = mouse.button_index == MOUSE_BUTTON_LEFT
-				panning = mouse.button_index != MOUSE_BUTTON_LEFT
+				dragging = mouse.button_index == MOUSE_BUTTON_LEFT and not mouse.shift_pressed
+				panning = mouse.button_index != MOUSE_BUTTON_LEFT or mouse.shift_pressed
 				moved = false
 				last_mouse = mouse.position
+				mouse_origin = mouse.position
 			else:
-				if mouse.button_index == MOUSE_BUTTON_LEFT and not moved:
+				if mouse.button_index == MOUSE_BUTTON_LEFT and dragging and not moved:
 					pick(mouse.position)
 				dragging = false
 				panning = false
@@ -360,17 +399,34 @@ func _gui_input(event: InputEvent) -> void:
 		var mouse: InputEventMouseMotion = event as InputEventMouseMotion
 		var delta: Vector2 = mouse.position - last_mouse
 		last_mouse = mouse.position
-		if delta.length() > 1.0:
+		if mouse.position.distance_to(mouse_origin) > 6:
 			moved = true
-		if dragging:
-			yaw -= delta.x * 0.006
-			pitch = clampf(pitch + delta.y * 0.006, 0.16, 1.53)
-		else:
-			var scale: float = distance / maxf(1.0, size.y) * 1.6
-			target -= camera.global_transform.basis.x * delta.x * scale
-			target += camera.global_transform.basis.y * delta.y * scale
-		update_camera()
+		if moved:
+			if dragging and not mouse.shift_pressed: orbit_pixels(delta)
+			else: pan_pixels(delta)
 		accept_event()
+
+func orbit_pixels(delta: Vector2) -> void:
+	yaw -= delta.x * 0.006
+	pitch = clampf(pitch + delta.y * 0.006, 0.16, 1.53)
+	update_camera()
+
+func pan_pixels(delta: Vector2) -> void:
+	var scale: float = distance / maxf(1, size.y) * 1.6
+	target -= camera.global_transform.basis.x * delta.x * scale
+	target += camera.global_transform.basis.y * delta.y * scale
+	update_camera()
+
+func zoom_by(factor: float) -> void:
+	if not is_finite(factor) or factor <= 0: return
+	distance = clampf(distance / factor, 22, 1250)
+	update_camera()
+
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_VISIBILITY_CHANGED, NOTIFICATION_WM_WINDOW_FOCUS_OUT]:
+		navigation.clear()
+		dragging = false
+		panning = false
 
 func pick(mouse: Vector2) -> void:
 	if site == null:

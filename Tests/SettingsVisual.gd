@@ -11,6 +11,7 @@ func run() -> void:
 	root.size = Vector2i(1280, 1000)
 	var app: Control = load("res://Main.tscn").instantiate()
 	root.add_child(app)
+	app.acknowledge_educational_use()
 	await process_frame
 	app.on_poi_clicked(app.site.pois[1])
 	app.add_inspected_waypoint()
