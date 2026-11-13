@@ -68,6 +68,42 @@ static func buoyancy(mass_kg: float, volume_l: float, submerged_percent: float, 
 	return {"displaced_l": displaced_l, "displaced_mass": displaced_mass,
 		"buoyant_force": buoyant_force, "weight": weight, "net_force": buoyant_force - weight}
 
+static func cylinder_buoyancy_preset(index: int) -> Dictionary:
+	return cylinder_buoyancy_state(index < 2, 200.0 if index % 2 == 0 else 50.0)
+
+static func cylinder_buoyancy_state(steel: bool, gauge_bar: float) -> Dictionary:
+	# Body masses: Faber 232 bar / 171 mm (2023), Luxfer P3080V (2022).
+	var pressure: float = clampf(gauge_bar, 0, 200)
+	var bare_mass: float = 13.3 if steel else 16.5
+	var metal_density: float = 7.85 if steel else 2.70 # kg/L
+	var valve_mass: float = 0.6
+	var valve_l: float = valve_mass / 8.4
+	var external_l: float = 12 + bare_mass / metal_density + valve_l
+	var gas_mass: float = BathysPhysics.gas_density({"o2": 0.21, "n2": 0.79, "he": 0.0}, pressure + 1, 20) * 0.012
+	return {"mass": bare_mass + valve_mass + gas_mass, "volume": external_l,
+		"gas_mass": gas_mass, "bare_mass": bare_mass, "valve_mass": valve_mass, "valve_l": valve_l,
+		"tare": bare_mass + valve_mass, "pressure": pressure, "steel": steel,
+		"length": 0.65 if steel else 0.612}
+
+static func cylinder_trim(cylinder: Dictionary, water_density: float) -> Dictionary:
+	# Axial positions relative to the body neck. Uniform body/gas assumptions,
+	# not measured centres of a particular cylinder or a calibrated harness.
+	var body_x: float = float(cylinder["length"]) / 2
+	var valve_x: float = -0.03
+	var pivot_x: float = 0.07
+	var volume: float = cylinder["volume"]
+	var mass: float = cylinder["mass"]
+	var cm: float = ((mass - float(cylinder["valve_mass"])) * body_x + float(cylinder["valve_mass"]) * valve_x) / mass
+	var cb: float = ((volume - float(cylinder["valve_l"])) * body_x + float(cylinder["valve_l"]) * valve_x) / volume
+	var force: Dictionary = buoyancy(mass, volume, 100, water_density)
+	var moment: float = float(force["buoyant_force"]) * (cb - pivot_x) - float(force["weight"]) * (cm - pivot_x)
+	# Weak elastic support gives finite illustrative attitudes. This is not a
+	# prediction of rigging angles: tau(theta) = tau0 cos(theta) - k sin(theta).
+	var stiffness: float = 3.0 # N m
+	return {"cm": cm, "cb": cb, "pivot": pivot_x, "moment": moment,
+		"stiffness": stiffness, "angle_deg": rad_to_deg(atan2(moment, stiffness)),
+		"net_force": force["net_force"]}
+
 static func buoyancy_at_depth(mass_kg: float, rigid_volume_l: float, surface_gas_l: float, depth_m: float, density: float) -> Dictionary:
 	var pressure: float = 1.0 + density * BathysPhysics.G * depth_m / 100000
 	var gas_volume: float = surface_gas_l / pressure

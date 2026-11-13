@@ -14,6 +14,7 @@ var horizontal: bool = false:
 		queue_redraw()
 var active: bool = false
 var hovered: bool = false
+var touch_index: int = -1
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
@@ -34,6 +35,28 @@ func _draw() -> void:
 		draw_line(Vector2(size.x / 2, 8), Vector2(size.x / 2, size.y - 8), color, 1)
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed and touch_index == -1:
+			if event.double_tap:
+				toggle_requested.emit()
+			else:
+				touch_index = event.index
+				active = true
+				grab_focus()
+				drag_started.emit(get_global_transform() * event.position)
+		elif not event.pressed and event.index == touch_index:
+			touch_index = -1
+			active = false
+		queue_redraw()
+		accept_event()
+		return
+	if event is InputEventScreenDrag:
+		if active and event.index == touch_index: dragged.emit(get_global_transform() * event.position)
+		accept_event()
+		return
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == -1:
+		accept_event()
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and event.double_click:
 			active = false
@@ -55,3 +78,9 @@ func _gui_input(event: InputEvent) -> void:
 		elif event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
 			nudged.emit(-24.0 if event.keycode in [KEY_LEFT, KEY_UP] else 24.0)
 			accept_event()
+
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_VISIBILITY_CHANGED, NOTIFICATION_WM_WINDOW_FOCUS_OUT]:
+		active = false
+		touch_index = -1
+		queue_redraw()

@@ -91,7 +91,7 @@ func compact_all() -> void:
 func _process(_delta: float) -> void:
 	if not is_instance_valid(host) or not host.is_visible_in_tree(): return
 	var key: String = str([host.lesson, host.snell_mask, host.thermal_view.kind, host.breathing_view.kind,
-		host.buoyancy_view.at_depth, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context, host.thermal_view.parameters().get("solve", 0), host.transport_view.parameters().get("stage", 0), host.transport_view.parameters().get("medium", 0), host.transport_view.parameters().get("material", 0), host.transport_view.parameters().get("basis", 0), host.transport_view.parameters().get("boundary", 0)])
+		host.buoyancy_view.at_depth, host.buoyancy_view.cylinder_preset_index >= 0, host.buhlmann_view.ascent, host.optics_view.stage, host.exchange_view.context, host.thermal_view.parameters().get("solve", 0), host.transport_view.parameters().get("stage", 0), host.transport_view.parameters().get("medium", 0), host.transport_view.parameters().get("material", 0), host.transport_view.parameters().get("basis", 0), host.transport_view.parameters().get("boundary", 0)])
 	if key != signature:
 		signature = key
 		sync()
@@ -307,9 +307,11 @@ func sync() -> void:
 		diagram = view.diagram
 		control_nodes.append(top(view.inputs["mass"], owner))
 		notes(owner, [view.readouts, view.formula, view.insight.get_parent().get_parent(), view.assumptions])
-		hint.text = "Drag the diver ↕" if view.at_depth else "Drag the body through the surface"
+		if not view.at_depth: notes(owner, [view.cylinder_sources])
+		hint.text = "Drag the diver ↕" if view.at_depth else ("Lift the base, then release · change pressure" if view.cylinder_preset_index >= 0 else "Drag the body through the surface")
 		instrument("mass", view.inputs["mass"], "gauge", "Mass", "kg")
 		instrument("volume", view.inputs["volume"], "amount", "Volume", "L")
+		if not view.at_depth and view.cylinder_preset_index >= 0: instrument("pressure", view.inputs["pressure"], "pressure", "Cylinder pressure", "bar")
 		if view.at_depth: instrument("gas", view.inputs["gas"], "amount", "Trapped gas", "L")
 		if view.at_depth: action(view.balance_button, "Balance here")
 		for i: int in 2: action(view.water_buttons[i], "Fresh water" if i == 0 else "Sea water")
@@ -386,7 +388,7 @@ func sync() -> void:
 	chart_button.tooltip_text = "Show linked chart"
 	if key == "snell" and host.snell_mask: chart_button.tooltip_text = "Show ray paths"
 	elif key == "density": chart_button.tooltip_text = "Compare water columns"
-	elif key == "buoyancy" and not host.buoyancy_view.at_depth: chart_button.tooltip_text = "Show displaced water"
+	elif key == "buoyancy" and not host.buoyancy_view.at_depth: chart_button.tooltip_text = "Base angle / cylinder pressure" if host.buoyancy_view.cylinder_preset_index >= 0 else "Show displaced water"
 	elif key == "colour": chart_button.tooltip_text = "Show scattering directions" if host.optics_view.stage == 1 else "Show signal budget"
 	apply_visibility()
 
@@ -425,6 +427,11 @@ func apply_visibility() -> void:
 		for key: String in ["power"]:
 			(widgets[key] as Control).visible = bool(host.optics_view.params["torch"])
 	outcome.vertical = active_owner.size.x < 500
+	var close_pair: bool = host.lesson == "buoyancy"
+	outcome.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if close_pair else Control.SIZE_FILL
+	outcome_title.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if close_pair else Control.SIZE_EXPAND_FILL
+	outcome_title.autowrap_mode = TextServer.AUTOWRAP_OFF if close_pair else TextServer.AUTOWRAP_WORD_SMART
+	outcome.add_theme_constant_override("separation", 4 if close_pair and outcome.vertical else 12)
 	outcome.visible = not note_button.button_pressed and is_instance_valid(output_source)
 	if diagram.comparison_visible != chart_button.button_pressed:
 		diagram.comparison_visible = chart_button.button_pressed

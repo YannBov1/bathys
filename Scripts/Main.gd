@@ -100,6 +100,13 @@ var feedback_label: Label
 var content_box: BoxContainer
 var header_box: HFlowContainer
 var bottom_panel: PanelContainer
+var bottom_divider: BathysPanelDivider
+var physiology_scroll: ScrollContainer
+var physiology_panel_height: float = 200
+var physiology_collapsed: bool = false
+var physiology_drag_origin: Vector2 = Vector2.ZERO
+var physiology_drag_height: float = 0
+var physiology_drag_restore_height: float = 200
 var playback_controls: Array[Control] = []
 var center_panel: PanelContainer
 var left_panel: PanelContainer
@@ -426,11 +433,19 @@ func build_ui() -> void:
 	bind_route_drop_target(route_list)
 	site_list = scroll_column(tabs, "SITE")
 	tissue_list = scroll_column(tabs, "TISSUES")
+	bottom_divider = create_physiology_divider()
+	root.add_child(bottom_divider)
 	var bottom: PanelContainer = BathysUiStyle.panel(BG, 9)
 	bottom_panel = bottom
-	bottom.custom_minimum_size.y = 350
+	bottom.custom_minimum_size.y = physiology_panel_height
+	bottom.size_flags_vertical = Control.SIZE_SHRINK_END
 	root.add_child(bottom)
-	var playback: VBoxContainer = BathysUiStyle.column(bottom, 6)
+	physiology_scroll = ScrollContainer.new()
+	physiology_scroll.name = "PhysiologyScroll"
+	physiology_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	physiology_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_RESERVE
+	bottom.add_child(physiology_scroll)
+	var playback: VBoxContainer = BathysUiStyle.column(physiology_scroll, 6)
 	var live_heading := HFlowContainer.new()
 	feedback_label = BathysUiStyle.wrapped("", 14, AMBER)
 	feedback_label.visible = false
@@ -590,7 +605,8 @@ func set_learning_mode(enabled: bool) -> void:
 		playing = false
 		play_button.text = "PLAY"
 	content_box.visible = not enabled
-	bottom_panel.visible = not enabled
+	bottom_panel.visible = not enabled and not physiology_collapsed
+	bottom_divider.visible = not enabled
 	for control: Control in planning_header_controls:
 		control.visible = not enabled
 	learning_view.visible = enabled
@@ -608,6 +624,7 @@ func scroll_column(parent: Node, title: String = "") -> VBoxContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = title if not title.is_empty() else "Scroll"
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_RESERVE
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	parent.add_child(scroll)
 	return BathysUiStyle.column(scroll, 8)
@@ -1688,7 +1705,44 @@ func new_plan() -> void:
 func set_playback_available(available: bool) -> void:
 	for control: Control in playback_controls:
 		control.visible = available
-	bottom_panel.custom_minimum_size.y = 330 if available else 105
+	# The contents scroll within the user's allocation. Simulation readiness
+	# must never resize the map or reopen a collapsed panel.
+
+func create_physiology_divider() -> BathysPanelDivider:
+	var divider := BathysPanelDivider.new()
+	divider.name = "PhysiologyDivider"
+	divider.horizontal = true
+	divider.drag_started.connect(func(at: Vector2) -> void:
+		physiology_drag_origin = at
+		physiology_drag_restore_height = physiology_panel_height
+		physiology_drag_height = bottom_panel.size.y if bottom_panel.visible else 0.0)
+	divider.dragged.connect(func(at: Vector2) -> void:
+		resize_physiology_panel(physiology_drag_height + physiology_drag_origin.y - at.y))
+	divider.toggle_requested.connect(toggle_physiology_panel)
+	divider.nudged.connect(func(delta: float) -> void:
+		if physiology_collapsed:
+			if delta < 0: resize_physiology_panel(120)
+		else: resize_physiology_panel(bottom_panel.size.y - delta))
+	return divider
+
+func toggle_physiology_panel() -> void:
+	physiology_collapsed = not physiology_collapsed
+	bottom_panel.visible = not learning_mode and not physiology_collapsed
+	adapt_layout()
+
+func resize_physiology_panel(extent: float) -> void:
+	if extent <= 36:
+		physiology_collapsed = true
+		if bottom_divider.active:
+			# Collapsing is one gesture: retain the size from before that drag.
+			physiology_panel_height = physiology_drag_restore_height
+			bottom_panel.custom_minimum_size.y = physiology_panel_height
+	elif extent >= 72:
+		physiology_collapsed = false
+		physiology_panel_height = clampf(extent, 120, maxf(180, minf(650, page_scroll.size.y * 0.65)))
+		bottom_panel.custom_minimum_size.y = physiology_panel_height
+	bottom_panel.visible = not learning_mode and not physiology_collapsed
+	adapt_layout()
 
 func show_load_menu() -> void:
 	var menu := PopupMenu.new()

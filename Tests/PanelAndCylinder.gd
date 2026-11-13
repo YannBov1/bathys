@@ -1,0 +1,161 @@
+extends "res://Tests/MapNavigation.gd"
+
+func run() -> void:
+	root.size = Vector2i(1440, 1050)
+	root.get_node("I18n").set_language("en", false)
+	var app: Control = load("res://Main.tscn").instantiate()
+	root.add_child(app)
+	app.acknowledge_educational_use()
+	await settle(app)
+	var bounds: Rect2 = app.view_container.get_global_rect()
+	var initial_height: float = app.bottom_panel.size.y
+	check(app.bottom_divider.horizontal and app.bottom_divider.mouse_default_cursor_shape == Control.CURSOR_VSIZE, "physiology divider uses a vertical resize cursor")
+	app.on_poi_clicked(app.site.pois[1])
+	app.add_inspected_waypoint()
+	await settle(app)
+	check(app.view_container.get_global_rect().is_equal_approx(bounds), "missing-gas feedback stays inside the allocated panel without moving the map")
+	app.add_tank()
+	await settle(app)
+	check(not app.frames.is_empty() and app.bottom_panel.size.y == initial_height and app.view_container.size.y == bounds.size.y and app.view_container.global_position.y == bounds.position.y, "first valid simulation leaves map and panel heights unchanged")
+	app.on_poi_clicked(app.site.pois[2])
+	app.add_inspected_waypoint()
+	await settle(app)
+	var start: Vector2 = app.bottom_divider.get_global_rect().get_center()
+	await drag(start, start - Vector2(0, 130))
+	check(app.bottom_panel.size.y > initial_height + 80 and app.view_container.size.y < bounds.size.y, "dragging the horizontal divider upward expands physiology and deliberately reduces map height")
+	var preferred: float = app.physiology_panel_height
+	await capture("res://Screenshots/physiology-expanded-en.png")
+	start = app.bottom_divider.get_global_rect().get_center()
+	await drag(start, start + Vector2(0, app.bottom_panel.size.y + 10))
+	check(app.physiology_collapsed and not app.bottom_panel.visible and app.bottom_divider.visible, "dragging to the bottom collapses physiology and keeps its divider available")
+	check(app.view_container.size.y > bounds.size.y, "collapsed physiology gives its space to the map")
+	await capture("res://Screenshots/physiology-collapsed-en.png")
+	app.set_learning_mode(true)
+	app.set_learning_mode(false)
+	app.request_simulation()
+	await settle(app)
+	check(not app.bottom_panel.visible and app.physiology_panel_height == preferred, "workspace changes and recalculation preserve collapse state and preferred height")
+	app.bottom_divider.toggle_requested.emit()
+	await layout()
+	near(app.bottom_panel.size.y, preferred, 1, "restoring physiology remembers its previous height")
+	app.resize_physiology_panel(200)
+	await layout()
+	var page_scroll_before: int = app.page_scroll.scroll_vertical
+	start = app.bottom_divider.get_global_rect().get_center()
+	await touch(0, true, start)
+	await move_touch(0, start - Vector2(0, 65))
+	await touch(0, false, start - Vector2(0, 65))
+	check(app.bottom_panel.size.y > 245 and not app.bottom_divider.active and app.page_scroll.scroll_vertical == page_scroll_before, "touch dragging resizes the panel without scrolling the page or sticking")
+	app.bottom_divider.grab_focus()
+	var key := InputEventKey.new()
+	key.keycode = KEY_ENTER
+	key.pressed = true
+	Input.parse_input_event(key)
+	await layout()
+	check(app.physiology_collapsed, "keyboard Enter collapses the focused panel divider")
+	key = InputEventKey.new()
+	key.keycode = KEY_UP
+	key.pressed = true
+	Input.parse_input_event(key)
+	await layout()
+	check(app.bottom_panel.visible, "keyboard Up can restore a collapsed bottom panel")
+	app.resize_physiology_panel(200)
+	app.map.magnification = 6
+	var target: Dictionary = app.site.pois[3]
+	app.map.pan += app.map.size / 2 - app.map.project(target["latitudeDeg"], target["longitudeDeg"])
+	var route: Array[Dictionary] = []
+	for poi: Dictionary in app.site.pois.slice(1, 10): route.append(BathysPlan.waypoint_at_poi(poi))
+	app.map.set_route(route)
+	for bathymetry: bool in [false, true]:
+		app.set_bathymetry(bathymetry)
+		app.map.set_route(route)
+		await layout()
+		if DisplayServer.get_name() == "headless": continue
+		check(not app.map.bearing_annotations.is_empty(), "2D route bearings are drawn: " + str(bathymetry))
+		var clear: bool = true
+		for annotation: Dictionary in app.map.bearing_annotations:
+			for rectangle: Rect2 in app.map.poi_label_rects:
+				clear = clear and not rectangle.intersects(annotation["rect"])
+		for index: int in app.map.bearing_annotations.size():
+			for other: int in range(index + 1, app.map.bearing_annotations.size()):
+				check(not app.map.bearing_annotations[index]["rect"].intersects(app.map.bearing_annotations[other]["rect"]), "nearby bearings remain separate")
+		check(clear, "POI name rectangles never overlap reserved bearing text: " + str(bathymetry))
+		await capture("res://Screenshots/bearing-labels-" + str(bathymetry) + ".png")
+	var before_plan: String = JSON.stringify(app.plan)
+	var before_history: int = app.undo_stack.size()
+	app.set_learning_mode(true)
+	var view: BathysLearningView = app.learning_view
+	view.select_lesson("buoyancy")
+	view.presentation.note_button.button_pressed = false
+	await layout()
+	var lesson: BathysBuoyancyLesson = view.buoyancy_view
+	check(lesson.cylinder_buttons.size() == 4 and lesson.cylinder_examples.visible, "displacement exposes four cylinder presets")
+	var forces: Array[float] = []
+	for index: int in 4:
+		lesson.cylinder_buttons[index].pressed.emit()
+		await layout()
+		var preset: Dictionary = BathysLearningModels.cylinder_buoyancy_preset(index)
+		near(lesson.parameters()["mass"], preset["mass"], 1e-8, "preset total mass includes air: " + str(index))
+		near(lesson.parameters()["volume"], preset["volume"], 1e-8, "preset displacing volume includes shell and valve: " + str(index))
+		near(lesson.parameters()["immersion"], 100, 0.01, "preset begins fully submerged: " + str(index))
+		check(lesson.cylinder_buttons[index].button_pressed and lesson.diagram.cylinder_pressure == int(preset["pressure"]), "preset highlight and cylinder graphic follow pressure: " + str(index))
+		forces.append(lesson.result["net_force"])
+		print("CYLINDER ", index, " mass=", preset["mass"], " volume=", preset["volume"], " gas=", preset["gas_mass"], " force=", forces[-1])
+		await capture("res://Screenshots/cylinder-preset-" + str(index) + ".png")
+	check(forces[0] < forces[1] and forces[2] < forces[3], "consuming the same air increases buoyancy for both materials")
+	check(forces[0] < 0 and forces[1] < 0 and forces[2] < 0 and forces[3] > 0, "reference steel examples sink while the aluminium reserve example rises in fresh water")
+	near(forces[1] - forces[0], forces[3] - forces[2], 1e-7, "equal 12 L pressure changes remove equal gas weight in both materials")
+	var first: Dictionary = BathysLearningModels.cylinder_buoyancy_preset(0)
+	var second: Dictionary = BathysLearningModels.cylinder_buoyancy_preset(1)
+	check(first["volume"] == second["volume"] and first["mass"] > second["mass"], "a rigid tank keeps its external volume as gas is consumed")
+	var ui: BathysLessonPresentation = view.presentation
+	check(ui.outcome_title.size.y < 35 and ui.outcome_title.size.x > 70 and ui.outcome_value.get_global_rect().position.x - ui.outcome_title.get_global_rect().end.x < 18, "net-force title and numerical value sit together on desktop")
+	ui.note_button.button_pressed = true
+	await layout()
+	check(lesson.assumptions.text.contains("sidemount") and lesson.cylinder_sources.is_visible_in_tree(), "preset assumptions and primary cylinder sources remain accessible")
+	ui.note_button.button_pressed = false
+	lesson.set_stage(true)
+	await layout()
+	check(not lesson.cylinder_examples.visible and not lesson.cylinder_sources.visible, "cylinder presets belong only to the displacement tab")
+	lesson.set_stage(false)
+	await layout()
+	check(lesson.cylinder_preset_index == 3, "cylinder selection survives stage changes")
+	lesson.inputs["mass"].value += 1
+	await layout()
+	check(lesson.cylinder_preset_index == -1 and lesson.diagram.cylinder_pressure == 0, "manual mass edits return the experiment to a custom body")
+	root.get_node("I18n").set_language("fr", false)
+	root.size = Vector2i(390, 900)
+	lesson.apply_cylinder_preset(3)
+	await layout()
+	check(view.get_combined_minimum_size().x <= 390, "French cylinder controls fit a phone")
+	check(TranslationServer.translate(lesson.cylinder_buttons[0].text).contains("Acier"), "cylinder presets translate into French")
+	await capture("res://Screenshots/cylinder-preset-fr-phone.png")
+	view.lesson_scroll.ensure_control_visible(ui.outcome)
+	await layout()
+	check(ui.outcome_value.get_global_rect().position.y - ui.outcome_title.get_global_rect().end.y <= 6, "net-force title remains close to the value on phones")
+	await capture("res://Screenshots/cylinder-force-fr-phone.png")
+	check(JSON.stringify(app.plan) == before_plan and app.undo_stack.size() == before_history, "teaching presets do not modify the dive scenario or history")
+	app.set_learning_mode(false)
+	await layout()
+	app.page_scroll.scroll_vertical = 100000
+	await layout()
+	check(app.bottom_divider.horizontal and app.bottom_divider.visible, "phone layout retains the bottom divider")
+	await capture("res://Screenshots/physiology-fr-phone.png")
+	start = app.bottom_divider.get_global_rect().get_center()
+	await touch(0, true, start)
+	await move_touch(0, start + Vector2(0, app.bottom_panel.size.y + 20))
+	await touch(0, false, start + Vector2(0, 220))
+	check(app.physiology_collapsed and not app.bottom_divider.active, "phone divider collapses physiology by touch")
+	await layout()
+	app.page_scroll.scroll_vertical = 100000
+	await layout()
+	start = app.bottom_divider.get_global_rect().get_center()
+	await touch(0, true, start)
+	await move_touch(0, start - Vector2(0, 180))
+	await touch(0, false, start - Vector2(0, 180))
+	check(app.bottom_panel.visible and app.bottom_panel.size.y >= 175, "phone divider restores physiology by touch")
+	root.get_node("I18n").set_language("en", false)
+	app.queue_free()
+	await layout()
+	print("PANEL AND CYLINDER failures=", failures)
+	quit(1 if failures else 0)

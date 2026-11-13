@@ -33,6 +33,8 @@ var moved: bool = false
 var diver_lat: float = NAN
 var diver_lon: float = NAN
 var navigation := BathysMapGesture.new()
+var bearing_annotations: Array[Dictionary] = []
+var poi_label_rects: Array[Rect2] = []
 
 func set_waterline(elevation: float) -> void:
 	if site == null or absf(site.waterline - elevation) < 1e-6:
@@ -177,6 +179,7 @@ func _draw() -> void:
 		draw_texture_rect(overlay, Rect2(Vector2.ZERO, overlay.get_size()), false)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 	draw_gpx_overlays()
+	bearing_annotations.clear()
 	var previous_lat: float = float(site.pois[0].get("latitudeDeg", site.origin_lat))
 	var previous_lon: float = float(site.pois[0].get("longitudeDeg", site.origin_lon))
 	for waypoint: Dictionary in route:
@@ -195,12 +198,35 @@ func _draw() -> void:
 			draw_line(mid - direction * 6, mid + direction * 8, AMBER, 2.5, true)
 			draw_line(mid + direction * 8, mid - direction.rotated(0.65) * 5, AMBER, 2.5, true)
 			draw_line(mid + direction * 8, mid - direction.rotated(-0.65) * 5, AMBER, 2.5, true)
-			label("%03.0f° · %.0f m" % [leg[1], leg[0]], mid + Vector2(5, -9), 11)
+			var caption: String = "%03.0f° · %.0f m" % [leg[1], leg[0]]
+			var text_width: float = ThemeDB.fallback_font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+			var at: Vector2 = mid + Vector2(5, -9)
+			var dimensions := Vector2(text_width + 8, 18)
+			for offset: Vector2 in [Vector2(5, -9), Vector2(5, 14), Vector2(5, -31), Vector2(5, 36), Vector2(-text_width - 5, -9), Vector2(-text_width - 5, 14)]:
+				var candidate := Rect2(mid + offset - Vector2(4, 13), dimensions)
+				var overlaps: bool = false
+				for existing: Dictionary in bearing_annotations:
+					if candidate.grow(2).intersects(existing["rect"]): overlaps = true; break
+				if not overlaps:
+					at = mid + offset
+					break
+			bearing_annotations.append({"text": caption, "at": at, "mid": mid, "rect": Rect2(at - Vector2(4, 13), dimensions)})
 		draw_circle(b, 6.0, BG)
 		draw_circle(b, 4.0, AMBER)
 		previous_lat = lat
 		previous_lon = lon
 	draw_poi_labels()
+	# Bearings have their own reserved rectangles and are drawn after POI
+	# leaders/labels, so dense labels can never cover navigation text.
+	for annotation: Dictionary in bearing_annotations:
+		var rectangle: Rect2 = annotation["rect"]
+		var midpoint: Vector2 = annotation["mid"]
+		var nearest := Vector2(clampf(midpoint.x, rectangle.position.x, rectangle.end.x), clampf(midpoint.y, rectangle.position.y, rectangle.end.y))
+		if midpoint.distance_to(nearest) > 12:
+			draw_line(midpoint, nearest, BG, 3, true)
+			draw_line(midpoint, nearest, AMBER, 1, true)
+		draw_style_box(BathysUiStyle.box(Color("09232d"), AMBER, 3, 0), annotation["rect"])
+		label(annotation["text"], annotation["at"], 11, AMBER)
 	if not is_nan(diver_lat):
 		var diver: Vector2 = project(diver_lat, diver_lon)
 		draw_arc(diver, 10.0, 0.0, TAU, 30, Color("ff6676"), 2.5)
@@ -216,6 +242,7 @@ func _draw() -> void:
 	label(tr("NavSurf 2015 measured/interpolated bathymetry · © swisstopo SWISSIMAGE") if show_bathymetry else "© swisstopo SWISSIMAGE", Vector2(12.0, size.y - 7.0), 10)
 
 func draw_poi_labels() -> void:
+	poi_label_rects.clear()
 	var points := PackedVector2Array()
 	for poi: Dictionary in site.pois:
 		points.append(project(float(poi["latitudeDeg"]), float(poi["longitudeDeg"])))
@@ -231,12 +258,19 @@ func draw_poi_labels() -> void:
 		var dimensions := Vector2(width,20)
 		var best := Rect2(marker+Vector2(12,-11),dimensions)
 		var best_score: float = INF
+		var found: bool = false
 		for radius: float in radii:
 			for angle: float in angles:
 				var direction := Vector2(cos(angle),sin(angle))
 				var anchor: Vector2 = marker+direction*radius
 				var x: float = anchor.x if direction.x>0.25 else (anchor.x-width if direction.x < -0.25 else anchor.x-width/2)
 				var candidate := Rect2(Vector2(x,anchor.y-10),dimensions)
+				var covers_bearing: bool = false
+				for annotation: Dictionary in bearing_annotations:
+					if candidate.intersects((annotation["rect"] as Rect2).grow(3)):
+						covers_bearing = true
+						break
+				if covers_bearing: continue
 				var score: float = radius
 				if candidate.position.x<5 or candidate.position.y<5 or candidate.end.x>size.x-5 or candidate.end.y>size.y-24:
 					score+=100000
@@ -247,11 +281,15 @@ func draw_poi_labels() -> void:
 					if j!=i and candidate.grow(5).has_point(points[j]):
 						score+=30000
 				if score<best_score:
+					found = true
 					best_score=score
 					best=candidate
-		occupied.append(best.grow(3))
-		captions.append({"rect":best,"title":title})
+		if found:
+			occupied.append(best.grow(3))
+			poi_label_rects.append(best)
+		captions.append({"rect":best,"title":title,"visible":found})
 	for i: int in captions.size():
+		if not captions[i]["visible"]: continue
 		var bounds: Rect2 = captions[i]["rect"] as Rect2
 		var marker: Vector2 = points[i]
 		var nearest := Vector2(clampf(marker.x,bounds.position.x,bounds.end.x),clampf(marker.y,bounds.position.y,bounds.end.y))
